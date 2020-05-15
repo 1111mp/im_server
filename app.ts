@@ -1,5 +1,4 @@
 const Koa = require('koa')
-// @ts-ignore
 const app = new Koa()
 const views = require('koa-views')
 const json = require('koa-json')
@@ -7,10 +6,16 @@ const onerror = require('koa-onerror')
 const bodyparser = require('koa-bodyparser')
 const compose = require('koa-compose')
 const staticServ = require('koa-static')
+// const session = require("koa-session2")
+import session from "koa-session2"
+require('./sequelize')
 
 const { createLogger, logs } = require('./middlewares/logger')
+const RedisStore = require("./redis")
 const index = require('./routes/index')
 const users = require('./routes/users')
+
+app.keys = ['keys', 'keykeys']
 
 // error handler
 onerror(app)
@@ -21,6 +26,9 @@ const middlewares = [
     ctx.log4js = logs
     await next()
   },
+  session({
+    store: new RedisStore()
+  }),
   bodyparser({
     enableTypes: ['json', 'form', 'text']
   }),
@@ -44,3 +52,5 @@ app.on('error', (err, ctx) => {
 });
 
 module.exports = app
+
+export { }

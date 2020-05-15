@@ -1,8 +1,9 @@
-const Sequelize = require('sequelize')
+const Sequelize = require('sequelize/lib/sequelize')
 const moment = require('moment')
 const bcrypt = require('bcrypt')
 const sequelize = require('../sequelize')
 
+/** https://juejin.im/post/5d81d4906fb9a06aeb10f378 */
 const User = sequelize.define('user',
 	{
 		id: {

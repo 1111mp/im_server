@@ -1,5 +1,5 @@
 const User = require('../models/user')
-const { Op } = require('sequelize')
+const { Op } = require('sequelize/lib/sequelize')
 
 /** 获取所有用户 */
 const queryAll = async (ctx) => {
@@ -35,4 +35,9 @@ const register = async (ctx) => {
 			data: msg.value + msg.message
 		}
 	}
+}
+
+module.exports = {
+	queryAll,
+	register
 }

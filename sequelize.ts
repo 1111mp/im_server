@@ -1,4 +1,4 @@
-const Sequelize = require('sequelize')
+const Sequelize = require('sequelize/lib/sequelize')
 /** require 文档：https://github.com/demopark/sequelize-docs-Zh-CN/tree/v5 */
 
 const sequelize = new Sequelize('test', 'root', 'root', {
