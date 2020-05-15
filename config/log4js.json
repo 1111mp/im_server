@@ -1,0 +1,89 @@
+{
+	"appenders": {
+		"console": {
+			"type": "console"
+		},
+		"access": {
+			"type": "dateFile",
+			"filename": "logs/access/access.log",
+			"encoding": "utf-8",
+			"maxLogSize": 100000000,
+			"alwaysIncludePattern": true,
+			"numBackups": 3,
+			"pattern": "-yyyy-MM-dd-hh.log"
+		},
+		"api-access": {
+			"type": "dateFile",
+			"filename": "logs/api/access/access.log",
+			"encoding": "utf-8",
+			"maxLogSize": 100000000,
+			"alwaysIncludePattern": true,
+			"numBackups": 3,
+			"pattern": "-yyyy-MM-dd-hh.log",
+			"layout": {
+				"type": "pattern",
+				"pattern": "%m%n"
+			}
+		},
+		"api-error": {
+			"type": "dateFile",
+			"filename": "logs/api/error/error.log",
+			"encoding": "utf-8",
+			"maxLogSize": 100000000,
+			"alwaysIncludePattern": true,
+			"numBackups": 3,
+			"pattern": "-yyyy-MM-dd-hh.log",
+			"layout": {
+				"type": "pattern",
+				"pattern": "%m%n"
+			}
+		},
+		"error": {
+			"type": "dateFile",
+			"filename": "logs/error/error.log",
+			"encoding": "utf-8",
+			"maxLogSize": 100000000,
+			"alwaysIncludePattern": true,
+			"numBackups": 3,
+			"pattern": "-yyyy-MM-dd-hh.log"
+		}
+	},
+	"categories": {
+		"default": {
+			"appenders": [
+				"console"
+			],
+			"level": "debug"
+		},
+		"console": {
+			"appenders": [
+				"console"
+			],
+			"level": "debug"
+		},
+		"http": {
+			"appenders": [
+				"access"
+			],
+			"level": "info"
+		},
+		"error": {
+			"appenders": [
+				"error"
+			],
+			"level": "error"
+		},
+		"api-access": {
+			"appenders": [
+				"api-access"
+			],
+			"level": "info"
+		},
+		"api-error": {
+			"appenders": [
+				"api-error"
+			],
+			"level": "error"
+		}
+	}
+}

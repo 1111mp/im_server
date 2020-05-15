@@ -1,0 +1,25 @@
+{
+	"compilerOptions": {
+		"module": "commonjs",
+		"target": "es5",
+		"allowJs": true,
+		"strict": true,
+		"rootDir": "./",
+		"baseUrl": ".",
+		"noImplicitAny": false,
+		"noUnusedLocals": true,
+		"skipLibCheck": true,
+		"suppressImplicitAnyIndexErrors": true,
+		"experimentalDecorators": true,
+		"sourceMap": true,
+		"moduleResolution": "Node",
+		"isolatedModules": false,
+		"lib": [
+			"es6",
+			"dom"
+		]
+	},
+	"exclude": [
+		"node_modules"
+	]
+}
