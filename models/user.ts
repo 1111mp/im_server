@@ -22,9 +22,8 @@ const User = sequelize.define('user',
 			type: Sequelize.STRING(64),
 			set(val) {
 				// 对密码进行加密
-				bcrypt.hash(val, 10, (err, hash) => {
-					(this as any).setDataValue('pwd', hash)
-				})
+				const hash = bcrypt.hashSync(val, 10);
+				(this as any).setDataValue('pwd', hash);
 			}
 		},
 		createdAt: {

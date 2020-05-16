@@ -1,7 +1,8 @@
 const router = require('koa-router')()
 
 router.get('/', async (ctx, next) => {
-  ctx.session.user = '1111111111'
+  // 缓存一小时
+  ctx.session.set('user', { maxAge: 60 * 60 * 1000 })
   await ctx.render('index', {
     title: 'Hello Koa 2ss!'
   })

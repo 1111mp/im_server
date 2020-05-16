@@ -37,6 +37,10 @@ const register = async (ctx) => {
 	}
 }
 
+const checkUser = async (ctx) => {
+	
+}
+
 module.exports = {
 	queryAll,
 	register

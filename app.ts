@@ -6,16 +6,17 @@ const onerror = require('koa-onerror')
 const bodyparser = require('koa-bodyparser')
 const compose = require('koa-compose')
 const staticServ = require('koa-static')
-// const session = require("koa-session2")
 import session from "koa-session2"
 require('./sequelize')
 
+const Auth = require('./middlewares/auth')
 const { createLogger, logs } = require('./middlewares/logger')
 const RedisStore = require("./redis")
 const index = require('./routes/index')
 const users = require('./routes/users')
 
-app.keys = ['keys', 'keykeys']
+// 设置配置session的加密字符串，可以任意字符串
+app.keys = ['random keys']
 
 // error handler
 onerror(app)
@@ -26,6 +27,7 @@ const middlewares = [
     ctx.log4js = logs
     await next()
   },
+  Auth(),
   session({
     store: new RedisStore()
   }),
