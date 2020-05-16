@@ -14,6 +14,7 @@ const { createLogger, logs } = require('./middlewares/logger')
 const RedisStore = require("./redis")
 const index = require('./routes/index')
 const users = require('./routes/users')
+const login = require('./routes/login')
 
 // 设置配置session的加密字符串，可以任意字符串
 app.keys = ['random keys']
@@ -27,7 +28,20 @@ const middlewares = [
     ctx.log4js = logs
     await next()
   },
-  Auth(),
+  // 处理Auth中throw的401错误
+  async (ctx, next) => {
+    return next().catch((err) => {
+      if (401 == err.status) {
+        ctx.status = 401
+        ctx.body = {
+          code: 401,
+          msg: 'Protected resource, use Authorization header to get access\n'
+        }
+      } else {
+        throw err
+      }
+    })
+  },
   session({
     store: new RedisStore()
   }),
@@ -35,6 +49,7 @@ const middlewares = [
     enableTypes: ['json', 'form', 'text']
   }),
   json(),
+  Auth(),
   createLogger(),
   staticServ(__dirname + '/public'),
   views(__dirname + '/views', {
@@ -47,6 +62,7 @@ app.use(compose(middlewares))
 // routes
 app.use(index.routes(), index.allowedMethods())
 app.use(users.routes(), users.allowedMethods())
+app.use(login.routes(), login.allowedMethods())
 
 // error-handling
 app.on('error', (err, ctx) => {

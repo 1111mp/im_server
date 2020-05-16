@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt')
 const sequelize = require('../sequelize')
 
 /** https://juejin.im/post/5d81d4906fb9a06aeb10f378 */
+/** https://juejin.im/post/5b6baf9a5188251aa0166d82 */
 const User = sequelize.define('user',
 	{
 		id: {
@@ -20,6 +21,7 @@ const User = sequelize.define('user',
 		},
 		pwd: {
 			type: Sequelize.STRING(64),
+			allowNull: false,
 			set(val) {
 				// 对密码进行加密
 				const hash = bcrypt.hashSync(val, 10);
