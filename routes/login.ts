@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken')
 const { v4 } = require('uuid')
 const bcrypt = require('bcrypt')
 const User = require('../models/user')
-const Op = require('sequelize').Op
+const { Op } = require('sequelize/lib/sequelize')
 const { secretOrPrivateKey, tokenExp } = require('../config')
 
 router.prefix('/login')
@@ -16,6 +16,7 @@ router.prefix('/login')
  */
 router.post('/', async (ctx, next) => {
   const { username, pwd } = ctx.request.body
+  console.log(ctx.request.body)
 
   if (!username || !pwd) {
     ctx.body = {
@@ -27,12 +28,11 @@ router.post('/', async (ctx, next) => {
 
   const user = await User.findOne({
     where: {
-      name: {
+      username: {
         [Op.eq]: `${username}`
       }
     }
   })
-  console.log(user)
 
   if (!user) {
     ctx.body = {
@@ -42,12 +42,12 @@ router.post('/', async (ctx, next) => {
     return
   }
 
-  const { pwdHash } = user
-  const isPwd = bcrypt.compareSync(pwd, pwdHash)
+  const { dataValues } = user
+  const isPwd = bcrypt.compareSync(pwd, dataValues.pwd)
   if (isPwd) {
     // 密码正确 生成token和key 将token存在redis的key中 并将key返回给前端
     const key = v4()
-    const token = jwt.sign(user, secretOrPrivateKey)
+    const token = jwt.sign(dataValues, secretOrPrivateKey)
     ctx.redis.set(key, token, tokenExp)
     ctx.body = {
       code: 200,
