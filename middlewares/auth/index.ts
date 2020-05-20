@@ -15,7 +15,7 @@ module.exports = function () {
     if (!token) ctx.throw(401, 'Authentication Error')
 
     // 获取redis中的token
-    const realToken = ctx.session[token]
+    const realToken = ctx.redis.get(token)
 
     if (!realToken) {
 

@@ -6,12 +6,11 @@ const onerror = require('koa-onerror')
 const bodyparser = require('koa-bodyparser')
 const compose = require('koa-compose')
 const staticServ = require('koa-static')
-import session from "koa-session2"
 require('./sequelize')
 
+const redis = require('./middlewares/redis')
 const Auth = require('./middlewares/auth')
 const { createLogger, logs } = require('./middlewares/logger')
-const RedisStore = require("./redis")
 const index = require('./routes/index')
 const users = require('./routes/users')
 const login = require('./routes/login')
@@ -42,9 +41,7 @@ const middlewares = [
       }
     })
   },
-  session({
-    store: new RedisStore()
-  }),
+  redis(),
   bodyparser({
     enableTypes: ['json', 'form', 'text']
   }),

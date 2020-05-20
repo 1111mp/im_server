@@ -4,7 +4,7 @@ const { v4 } = require('uuid')
 const bcrypt = require('bcrypt')
 const User = require('../models/user')
 const Op = require('sequelize').Op
-const { secretOrPrivateKey, tokenExp } = require('../../config')
+const { secretOrPrivateKey, tokenExp } = require('../config')
 
 router.prefix('/login')
 
@@ -48,7 +48,7 @@ router.post('/', async (ctx, next) => {
     // 密码正确 生成token和key 将token存在redis的key中 并将key返回给前端
     const key = v4()
     const token = jwt.sign(user, secretOrPrivateKey)
-    ctx.session.set(token, { sid: key, maxAge: tokenExp })
+    ctx.redis.set(key, token, tokenExp)
     ctx.body = {
       code: 200,
       data: key
@@ -62,5 +62,7 @@ router.post('/', async (ctx, next) => {
   }
 
 })
+
+module.exports = router
 
 export { }
