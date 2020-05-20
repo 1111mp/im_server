@@ -15,9 +15,6 @@ const index = require('./routes/index')
 const users = require('./routes/users')
 const login = require('./routes/login')
 
-// 设置配置session的加密字符串，可以任意字符串
-app.keys = ['random keys']
-
 // error handler
 onerror(app)
 

@@ -28,7 +28,7 @@ module.exports = function () {
         // @ts-ignore
         let decoded = jwt.verify(realToken, secretOrPrivateKey)
         // 校验成功之后 自动延长token的缓存时间
-        ctx.session.set(realToken, { sid: token, maxAge: tokenExp })
+        ctx.redis.set(token, realToken, tokenExp)
       } catch (err) {
 
         if (err.name === 'TokenExpiredError') {

@@ -46,7 +46,8 @@ const User = sequelize.define('user',
 	},
 	{
 		// sequelize会自动使用传入的模型名（define的第一个参数）的复数做为表名 设置true取消默认设置
-		freezeTableName: true
+		freezeTableName: true,
+		initialAutoIncrement: 10000
 	}
 )
 

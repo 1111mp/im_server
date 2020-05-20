@@ -13,6 +13,7 @@ const queryAll = async (ctx) => {
 /** 注册用户 */
 const register = async (ctx) => {
 	const params = ctx.request.body
+	console.log(ctx.request.body)
 
 	if (!params.username || !params.pwd) {
 		ctx.body = {

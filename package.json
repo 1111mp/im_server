@@ -17,7 +17,7 @@
     "ip": "^1.1.5",
     "jsonwebtoken": "^8.5.1",
     "koa": "^2.7.0",
-    "koa-bodyparser": "^4.2.1",
+    "koa-bodyparser": "^4.3.0",
     "koa-compose": "^4.1.0",
     "koa-convert": "^1.2.0",
     "koa-json": "^2.0.2",
