@@ -13,7 +13,7 @@ const Auth = require('./middlewares/auth')
 const { createLogger, logs } = require('./middlewares/logger')
 const index = require('./routes/index')
 const users = require('./routes/users')
-const login = require('./routes/login')
+const { unlessPaths } = require('./config')
 
 // error handler
 onerror(app)
@@ -31,7 +31,7 @@ const middlewares = [
         ctx.status = 401
         ctx.body = {
           code: 401,
-          msg: 'Protected resource, use Authorization header to get access\n'
+          msg: 'Protected resource, use Authorization header to get access'
         }
       } else {
         throw err
@@ -43,7 +43,7 @@ const middlewares = [
     enableTypes: ['json', 'form', 'text']
   }),
   json(),
-  Auth(),
+  Auth().unless({ path: unlessPaths }),
   createLogger(),
   staticServ(__dirname + '/public'),
   views(__dirname + '/views', {
@@ -56,7 +56,6 @@ app.use(compose(middlewares))
 // routes
 app.use(index.routes(), index.allowedMethods())
 app.use(users.routes(), users.allowedMethods())
-app.use(login.routes(), login.allowedMethods())
 
 // error-handling
 app.on('error', (err, ctx) => {

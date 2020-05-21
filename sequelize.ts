@@ -24,6 +24,7 @@ sequelize
 
 /** 根据model 一次性自动创建所有 */
 sequelize.sync()
+// sequelize.sync({ force: true })
 
 module.exports = sequelize
 

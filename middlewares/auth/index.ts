@@ -1,15 +1,12 @@
 const jwt = require('jsonwebtoken')
-const { unlessPaths, secretOrPrivateKey, tokenExp } = require('../../config')
+const unless = require('koa-unless')
+const { secretOrPrivateKey, tokenExp } = require('../../config')
 
 /**
  * 返回前端的token为存在redis中真正token的key
  */
 module.exports = function () {
-  return (ctx, next) => {
-    const path = ctx.path
-    let index = unlessPaths.findIndex((unlessPath) => unlessPath === path)
-
-    if (index !== -1) return next()
+  const auth = (ctx, next) => {
 
     const { token } = ctx.headers
     if (!token) ctx.throw(401, 'Authentication Error')
@@ -46,6 +43,10 @@ module.exports = function () {
 
     return next()
   }
+
+  auth.unless = unless
+
+  return auth
 }
 
 export { }

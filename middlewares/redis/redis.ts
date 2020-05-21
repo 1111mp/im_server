@@ -33,12 +33,12 @@ class RedisStore {
 
 	async set(key, val, maxAge = 60 * 60 * 1000) {
 		try {
-			await this.redis.set(`SESSION:${key}`, JSON.stringify(val), 'EX', maxAge / 1000);
+			await this.redis.set(`SESSION:${key}`, JSON.stringify(val), 'EX', maxAge / 1000)
 		} catch (e) { }
 	}
 
 	async destroy(key) {
-		return await this.redis.del(`SESSION:${key}`);
+		return await this.redis.del(`SESSION:${key}`)
 	}
 }
 

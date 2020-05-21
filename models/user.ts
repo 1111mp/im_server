@@ -28,6 +28,14 @@ const User = sequelize.define('user',
 				(this as any).setDataValue('pwd', hash);
 			}
 		},
+		email: {
+			type: Sequelize.STRING(64),
+			allowNull: true,
+			unique: 'email cannot be repeated',
+			validate: {
+				isEmail: true
+			}
+		},
 		createdAt: {
 			type: Sequelize.DATE,
 			defaultValue: Sequelize.NOW,

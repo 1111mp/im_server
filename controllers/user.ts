@@ -31,8 +31,8 @@ const register = async (ctx) => {
 	} catch (err) {
 		const msg = err.errors[0]
 		ctx.body = {
-			code: 300,
-			data: msg.value + msg.message
+			code: 400,
+			data: `${msg.value} ${msg.message}`
 		}
 	}
 }
