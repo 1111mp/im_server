@@ -1,7 +1,8 @@
 const Sequelize = require('sequelize/lib/sequelize')
 const moment = require('moment')
 const bcrypt = require('bcrypt')
-const sequelize = require('../sequelize')
+const sequelize = require('../../sequelize')
+const Dynamic = require('./dynamic')
 
 /** https://juejin.im/post/5d81d4906fb9a06aeb10f378 */
 /** https://juejin.im/post/5b6baf9a5188251aa0166d82 */
@@ -17,7 +18,8 @@ const User = sequelize.define('user',
 		username: {
 			type: Sequelize.STRING(32),
 			// 唯一
-			unique: 'username cannot be repeated'
+			unique: 'username cannot be repeated',
+			comment: '用户名'
 		},
 		pwd: {
 			type: Sequelize.STRING(64),
@@ -26,7 +28,8 @@ const User = sequelize.define('user',
 				// 对密码进行加密
 				const hash = bcrypt.hashSync(val, 10);
 				(this as any).setDataValue('pwd', hash);
-			}
+			},
+			comment: '用户密码'
 		},
 		email: {
 			type: Sequelize.STRING(64),
@@ -34,13 +37,15 @@ const User = sequelize.define('user',
 			unique: 'email cannot be repeated',
 			validate: {
 				isEmail: true
-			}
+			},
+			comment: '用户邮箱'
 		},
 		createdAt: {
 			type: Sequelize.DATE,
 			defaultValue: Sequelize.NOW,
 			get() {
 				// this.getDataValue 获取当前字段value
+				console.log(moment((this as any).getDataValue('createdAt')).format('YYYY-MM-DD HH:mm'))
 				return moment((this as any).getDataValue('createdAt')).format('YYYY-MM-DD HH:mm')
 			}
 		},
@@ -55,9 +60,23 @@ const User = sequelize.define('user',
 	{
 		// sequelize会自动使用传入的模型名（define的第一个参数）的复数做为表名 设置true取消默认设置
 		freezeTableName: true,
-		initialAutoIncrement: 10000
+		initialAutoIncrement: 10000,
+		charset: 'utf8',
+		collate: 'utf8_general_ci'
 	}
 )
+
+// 一对多
+
+/**
+ * User的实例对象将拥有getDynamics、setDynamics、addDynamic、createDynamic、removeDynamic、hasDynamic方法
+ */
+User.hasMany(Dynamic)
+
+/** 
+ * Dynamic的实例对象将拥有getUser、setUser、createUser方法
+ */
+Dynamic.belongsTo(User)
 
 module.exports = User
 

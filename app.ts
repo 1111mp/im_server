@@ -8,11 +8,12 @@ const compose = require('koa-compose')
 const staticServ = require('koa-static')
 require('./sequelize')
 
-const redis = require('./middlewares/redis')
-const Auth = require('./middlewares/auth')
-const { createLogger, logs } = require('./middlewares/logger')
+const redis = require('./common/middlewares/redis')
+const Auth = require('./common/middlewares/auth')
+const { createLogger, logs } = require('./common/middlewares/logger')
 const index = require('./routes/index')
 const users = require('./routes/users')
+const dynamic = require('./routes/dynamic')
 const { unlessPaths } = require('./config')
 
 // error handler
@@ -56,6 +57,7 @@ app.use(compose(middlewares))
 // routes
 app.use(index.routes(), index.allowedMethods())
 app.use(users.routes(), users.allowedMethods())
+app.use(dynamic.routes(), dynamic.allowedMethods())
 
 // error-handling
 app.on('error', (err, ctx) => {

@@ -2,7 +2,7 @@ const router = require('koa-router')()
 const jwt = require('jsonwebtoken')
 const { v4 } = require('uuid')
 const bcrypt = require('bcrypt')
-const User = require('../models/user')
+const User = require('../common/models/user')
 const { Op } = require('sequelize/lib/sequelize')
 const { secretOrPrivateKey, tokenExp } = require('../config')
 
@@ -20,7 +20,6 @@ router.get('/', async (ctx, next) => {
  */
 router.post('/login', async (ctx, next) => {
   const { username, pwd } = ctx.request.body
-  console.log(ctx.request.body)
 
   if (!username || !pwd) {
     ctx.body = {
@@ -30,7 +29,7 @@ router.post('/login', async (ctx, next) => {
     return
   }
 
-  const user = await User.findOne({
+  let user = await User.findOne({
     where: {
       username: {
         [Op.eq]: `${username}`
@@ -46,16 +45,19 @@ router.post('/login', async (ctx, next) => {
     return
   }
 
-  const { dataValues } = user
-  const isPwd = bcrypt.compareSync(pwd, dataValues.pwd)
+  user = user.toJSON()
+
+  const isPwd = bcrypt.compareSync(pwd, user.pwd)
   if (isPwd) {
     // 密码正确 生成token和key 将token存在redis的key中 并将key返回给前端
     const key = v4()
-    const token = jwt.sign(dataValues, secretOrPrivateKey)
+    const token = jwt.sign(user, secretOrPrivateKey)
     ctx.redis.set(key, token, tokenExp)
+    delete user['pwd']
     ctx.body = {
       code: 200,
-      data: key
+      token: key,
+      data: user
     }
   } else {
     // 密码错误

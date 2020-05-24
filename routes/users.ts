@@ -1,5 +1,5 @@
 const router = require('koa-router')()
-const User = require('../controllers/user')
+const User = require('../common/controllers/user')
 
 router.prefix('/users')
 

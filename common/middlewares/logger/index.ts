@@ -1,6 +1,6 @@
 const log4js = require('koa-log4')
 const ip = require('./ip')
-const config = require('../../config')
+const config = require('../../../config')
 const env = process.env
 const { NODE_ENV } = env
 
