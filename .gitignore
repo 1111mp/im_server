@@ -1,5 +1,4 @@
 node_modules
-logs
-logs/*
-
-yarn.lock
+/logs
+/logs/*
+/yarn.lock
