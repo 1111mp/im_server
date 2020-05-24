@@ -4,7 +4,13 @@ const Dynamic = require('../common/models/dynamic')
 
 router.prefix('/dynamic')
 
-
+/**
+ * @description: 查询用户发表的所有动态
+ * @param {number} userId 用户id
+ * @param {number} pageNo 页码
+ * @param {number} pageSize 分页大小
+ * @return: 
+ */
 router.post('/queryUserAll', async (ctx, next) => {
   const { userId, pageNo, pageSize } = ctx.request.body
 
