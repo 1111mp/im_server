@@ -12,13 +12,11 @@ router.prefix('/dynamic')
  * @return: 
  */
 router.post('/queryUserAll', async (ctx, next) => {
-  const { userId, pageNo, pageSize } = ctx.request.body
+  const { pageNo, pageSize } = ctx.request.body
+  const { userId } = ctx
 
   if (!userId) {
-    ctx.body = {
-      code: 400,
-      msg: 'userId cannot be emptyed!'
-    }
+    ctx.throw(401, 'Authentication Error')
     return false
   }
 
@@ -60,13 +58,18 @@ router.post('/queryUserAll', async (ctx, next) => {
 
 /**
  * @description: 发布动态
- * @param {number} userId 用户id
  * @param {string} content 动态的内容
  * @param {strin[]} images 图片url
  * @return: 
  */
 router.post('/publish', async (ctx, next) => {
   const params = ctx.request.body
+  params.userId = ctx.userId
+
+  if (!params.userId) {
+    ctx.throw(401, 'Authentication Error')
+    return false
+  }
 
   if (!params.content) {
     ctx.body = {
@@ -86,19 +89,18 @@ router.post('/publish', async (ctx, next) => {
     }
 
   } catch (err) {
-    console.log(err)
-    // const msg = err.errors[0]
-    // ctx.body = {
-    //   code: 400,
-    //   data: `${msg.value} ${msg.message}`
-    // }
+    
+    const msg = err.errors[0]
+    ctx.body = {
+      code: 400,
+      data: `${msg.value} ${msg.message}`
+    }
 
   }
 })
 
 /**
  * @description: 点赞
- * @param {number} userId 用户id 
  * @param {number} dynamicId 动态id 
  * @return: 
  */
