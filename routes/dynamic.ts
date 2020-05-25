@@ -62,6 +62,7 @@ router.post('/queryUserAll', async (ctx, next) => {
  * @description: 发布动态
  * @param {number} userId 用户id
  * @param {string} content 动态的内容
+ * @param {strin[]} images 图片url
  * @return: 
  */
 router.post('/publish', async (ctx, next) => {
@@ -93,6 +94,25 @@ router.post('/publish', async (ctx, next) => {
     }
 
   }
+})
+
+/**
+ * @description: 点赞
+ * @param {dynamicId} 动态id 
+ * @return: 
+ */
+router.post('/star', async (ctx, next) => {
+  const { dynamicId } = ctx.request.body
+
+  if (!dynamicId) {
+    ctx.body = {
+      code: 400,
+      msg: 'dynamicId cannot be emptyed!'
+    }
+    return false
+  }
+
+  
 })
 
 module.exports = router

@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "cross-env NODE_ENV=dev ts-node -r tsconfig-paths/register bin/run.ts",
-    "start:watch": "nodemon --watch models/* --watch controllers/* --watch middlewares/* -e ts,js,json --exec cross-env NODE_ENV=dev ts-node -r tsconfig-paths/register bin/run.ts",
+    "start:watch": "nodemon --watch **/* -e ts,js,json --exec cross-env NODE_ENV=dev ts-node -r tsconfig-paths/register bin/run.ts",
     "dev": "./node_modules/.bin/nodemon bin/run.ts",
     "prod": "cross-env NODE_ENV=prod pm2 --no-daemon start ./pm2.config.js",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -37,6 +37,7 @@
   },
   "devDependencies": {
     "koa-unless": "^1.0.7",
+    "sequelize-cli": "^5.5.1",
     "ts-node": "^8.10.1",
     "tsconfig-paths": "^3.9.0"
   }

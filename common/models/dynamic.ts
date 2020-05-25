@@ -2,6 +2,7 @@ const Sequelize = require('sequelize/lib/sequelize')
 const moment = require('moment')
 const sequelize = require('../../sequelize')
 const Comment = require('./comment')
+const Star = require('./star')
 
 /** 动态 */
 const Dynamic = sequelize.define('dynamic',
@@ -65,6 +66,9 @@ Dynamic.hasMany(Comment)
  * Comment的实例对象将拥有getDynamic、setDynamic、createDynamic方法
  */
 Comment.belongsTo(Dynamic)
+
+Dynamic.hasMany(Star)
+Star.belongsTo(Dynamic)
 
 module.exports = Dynamic
 
