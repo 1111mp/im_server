@@ -1,50 +1,53 @@
-const Sequelize = require('sequelize/lib/sequelize')
-const moment = require('moment')
-const sequelize = require('../../sequelize')
+'use strict';
 
-/** 点赞 */
-const Star = sequelize.define('star',
-	{
+const moment = require('moment')
+
+module.exports = (sequelize, DataTypes) => {
+	const Star = sequelize.define('Star', {
 		id: {
-			type: Sequelize.INTEGER(11),
+			type: DataTypes.INTEGER(11),
 			primaryKey: true,
 			autoIncrement: true,
 			unique: true
 		},
 		dynamicId: {
-			type: Sequelize.INTEGER(11),
+			type: DataTypes.INTEGER(11),
 			field: 'dynamic_id',
 			unique: true,
 			comment: '动态id'
 		},
 		userId: {
-			type: Sequelize.INTEGER(11),
+			type: DataTypes.INTEGER(11),
 			field: 'user_id',
 			unique: true,
 			comment: '用户id'
 		},
 		createdAt: {
-			type: Sequelize.DATE,
-			defaultValue: Sequelize.NOW,
+			type: DataTypes.DATE,
+			defaultValue: DataTypes.NOW,
 			get() {
 				return moment((this as any).getDataValue('createdAt')).format('YYYY-MM-DD HH:mm')
 			}
 		},
 		updatedAt: {
-			type: Sequelize.DATE,
-			defaultValue: Sequelize.NOW,
+			type: DataTypes.DATE,
+			defaultValue: DataTypes.NOW,
 			get() {
 				return moment((this as any).getDataValue('updatedAt')).format('YYYY-MM-DD HH:mm')
 			}
 		}
-	},
-	{
-		freezeTableName: true,
-		charset: 'utf8',
-		collate: 'utf8_general_ci'
-	}
-)
+	}, {
 
-module.exports = Star
+	});
+
+	Star.associate = function (models) {
+		// associations can be defined here
+		Star.belongsTo(models.Dynamic, { foreignKey: 'dynamicId', targetKey: 'id' })
+
+		Star.belongsTo(models.User, { foreignKey: 'userId', targetKey: 'id' })
+	};
+
+	return Star;
+};
 
 export { }

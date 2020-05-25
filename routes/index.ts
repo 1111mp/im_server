@@ -2,7 +2,7 @@ const router = require('koa-router')()
 const jwt = require('jsonwebtoken')
 const { v4 } = require('uuid')
 const bcrypt = require('bcrypt')
-const User = require('../common/models/user')
+const { User } = require('../common/models')
 const { Op } = require('sequelize/lib/sequelize')
 const { secretOrPrivateKey, tokenExp } = require('../config')
 

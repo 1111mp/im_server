@@ -1,6 +1,6 @@
 const router = require('koa-router')()
 const { Op } = require('sequelize/lib/sequelize')
-const Dynamic = require('../common/models/dynamic')
+const { Dynamic } = require('../common/models')
 
 router.prefix('/dynamic')
 
@@ -86,19 +86,20 @@ router.post('/publish', async (ctx, next) => {
     }
 
   } catch (err) {
-
-    const msg = err.errors[0]
-    ctx.body = {
-      code: 400,
-      data: `${msg.value} ${msg.message}`
-    }
+    console.log(err)
+    // const msg = err.errors[0]
+    // ctx.body = {
+    //   code: 400,
+    //   data: `${msg.value} ${msg.message}`
+    // }
 
   }
 })
 
 /**
  * @description: 点赞
- * @param {dynamicId} 动态id 
+ * @param {number} userId 用户id 
+ * @param {number} dynamicId 动态id 
  * @return: 
  */
 router.post('/star', async (ctx, next) => {
@@ -112,7 +113,7 @@ router.post('/star', async (ctx, next) => {
     return false
   }
 
-  
+
 })
 
 module.exports = router

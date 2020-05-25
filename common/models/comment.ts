@@ -1,57 +1,56 @@
-const Sequelize = require('sequelize/lib/sequelize')
-const moment = require('moment')
-const sequelize = require('../../sequelize')
+'use strict';
 
-/** 评论 */
-const Comment = sequelize.define('comment',
-  {
+const moment = require('moment')
+
+module.exports = (sequelize, DataTypes) => {
+  const Comment = sequelize.define('Comment', {
     id: {
-      type: Sequelize.INTEGER(11),
+      type: DataTypes.INTEGER(11),
       primaryKey: true,
       autoIncrement: true,
       unique: true
     },
     /** 外键 */
     dynamicId: {
-      type: Sequelize.INTEGER(11),
+      type: DataTypes.INTEGER(11),
       field: 'dynamic_id',
       unique: true,
       comment: '动态的id'
     },
+    userId: {
+      type: DataTypes.INTEGER(11),
+      field: 'user_id',
+      unique: true,
+      comment: '用户id'
+    },
     content: {
-      type: Sequelize.STRING(200),
+      type: DataTypes.STRING(200),
       allowNull: false,
       comment: '评论内容'
     },
     createdAt: {
-      type: Sequelize.DATE,
-      defaultValue: Sequelize.NOW,
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
       get() {
         return moment((this as any).getDataValue('createdAt')).format('YYYY-MM-DD HH:mm')
       }
     },
     updatedAt: {
-      type: Sequelize.DATE,
-      defaultValue: Sequelize.NOW,
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
       get() {
         return moment((this as any).getDataValue('updatedAt')).format('YYYY-MM-DD HH:mm')
       }
     }
-  },
-  {
-    freezeTableName: true,
-    charset: 'utf8',
-    collate: 'utf8_general_ci',
-    indexes: [
-      {
-        name: 'comment_dynamicId',
-        method: 'BTREE',
-        fields: ['dynamic_id']
-      }
-    ]
-  }
-)
+  });
 
-module.exports = Comment
+  Comment.associate = function (models) {
+    // associations can be defined here
+    Comment.belongsTo(models.User, { foreignKey: 'userId', targetKey: 'id' })
+    Comment.belongsTo(models.Dynamic, { foreignKey: 'dynamicId', targetKey: 'id' })
+  };
+
+  return Comment;
+};
 
 export { }

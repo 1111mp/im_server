@@ -6,7 +6,6 @@ const onerror = require('koa-onerror')
 const bodyparser = require('koa-bodyparser')
 const compose = require('koa-compose')
 const staticServ = require('koa-static')
-require('./sequelize')
 
 const redis = require('./common/middlewares/redis')
 const Auth = require('./common/middlewares/auth')
@@ -15,6 +14,7 @@ const index = require('./routes/index')
 const users = require('./routes/users')
 const dynamic = require('./routes/dynamic')
 const { unlessPaths } = require('./config')
+require('./common/models')
 
 // error handler
 onerror(app)
