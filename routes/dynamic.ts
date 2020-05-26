@@ -1,5 +1,6 @@
 const router = require('koa-router')()
 const { Op } = require('sequelize/lib/sequelize')
+const db = require('../common/models')
 const { Dynamic } = require('../common/models')
 
 router.prefix('/dynamic')
@@ -89,7 +90,7 @@ router.post('/publish', async (ctx, next) => {
     }
 
   } catch (err) {
-    
+
     const msg = err.errors[0]
     ctx.body = {
       code: 400,
@@ -114,6 +115,10 @@ router.post('/star', async (ctx, next) => {
     }
     return false
   }
+
+  db.sequelize.transaction(async (t) => {
+    
+  })
 
 
 })

@@ -14,6 +14,12 @@ module.exports = (sequelize, DataTypes) => {
 			// 自增
 			autoIncrement: true
 		},
+		userId: {
+			type: DataTypes.UUID,
+			unique: true,
+			defaultValue: DataTypes.UUIDV4,
+			comment: '用户id'
+		},
 		username: {
 			type: DataTypes.STRING(32),
 			// 唯一
