@@ -5,10 +5,8 @@ const bcrypt = require('bcrypt')
 const { User } = require('../common/models')
 const { Op } = require('sequelize/lib/sequelize')
 const { secretOrPrivateKey, tokenExp } = require('../config')
-const { getSnowflakeId } = require('../common/utils')
 
 router.get('/', async (ctx, next) => {
-  console.log(typeof getSnowflakeId())
   await ctx.render('index', {
     title: 'Hello Koa 2ss!'
   })

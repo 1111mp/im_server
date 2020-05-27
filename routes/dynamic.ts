@@ -1,9 +1,32 @@
 const router = require('koa-router')()
+const AsyncLock = require('async-lock')
 const { Op } = require('sequelize/lib/sequelize')
-const db = require('../common/models')
-const { Dynamic } = require('../common/models')
+// const db = require('../common/models')
+const { Dynamic, Star } = require('../common/models')
+const { STARREDISKEY, STARRCOUNTKEY, STARLOCK } = require('../common/const')
+
+const lock = new AsyncLock()
 
 router.prefix('/dynamic')
+
+/** 从缓存或数据库中获取动态的点赞总数 优先缓存 */
+async function getStarCount(ctx, dynamicId) {
+  let count
+  let redisCount = await ctx.redis.redis.hmget('starCounts', [dynamicId])
+  if (redisCount[0] === null) {
+    count = await Star.count({
+      where: {
+        dynamicId: {
+          [Op.eq]: dynamicId
+        }
+      }
+    })
+    await ctx.redis.redis.hmset('starCounts', new Map([[dynamicId, count]]))
+  } else {
+    count = redisCount[0]
+  }
+  return Number(count)
+}
 
 /**
  * @description: 查询用户发表的所有动态
@@ -12,7 +35,7 @@ router.prefix('/dynamic')
  * @param {number} pageSize 分页大小
  * @return: 
  */
-router.post('/queryUserAll', async (ctx, next) => {
+router.post('/queryUserAllDynamic', async (ctx, next) => {
   const { pageNo, pageSize } = ctx.request.body
   const { userId } = ctx
 
@@ -43,6 +66,13 @@ router.post('/queryUserAll', async (ctx, next) => {
       ]
     })
 
+    dynamics = await Promise.all(dynamics.map(async dynamic => {
+      /** 先序列化 再操作 */
+      dynamic = dynamic.toJSON()
+      dynamic['starCount'] = await getStarCount(ctx, dynamic.id)
+      return dynamic
+    }))
+
     ctx.body = {
       code: 200,
       totalCount,
@@ -51,7 +81,7 @@ router.post('/queryUserAll', async (ctx, next) => {
 
   } catch (err) {
 
-    ctx.throw(500, err)
+    ctx.throw(400, err)
 
   }
 
@@ -103,23 +133,60 @@ router.post('/publish', async (ctx, next) => {
 /**
  * @description: 点赞
  * @param {number} dynamicId 动态id 
+ * @param {0 | 1} status 动态id 
  * @return: 
  */
+// https://blog.csdn.net/solocoder/article/details/83713626?utm_medium=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-1.nonecase&depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-1.nonecase
 router.post('/star', async (ctx, next) => {
-  const { dynamicId } = ctx.request.body
+  const params = ctx.request.body
+  const userId = ctx.userId
 
-  if (!dynamicId) {
+  if (!params.dynamicId || !params.status) {
     ctx.body = {
       code: 400,
-      msg: 'dynamicId cannot be emptyed!'
+      msg: 'dynamicId or status cannot be emptyed!'
     }
     return false
   }
 
-  db.sequelize.transaction(async (t) => {
-    
-  })
+  try {
+    lock.acquire(STARLOCK, async (done) => {
+      const key = `${userId}::${params.dynamicId}`
 
+      const redisCount = await ctx.redis.redis.hmget(STARRCOUNTKEY, [params.dynamicId])
+      let count = redisCount[0]
+      if (count === null) {
+        count = await Star.count({
+          where: {
+            dynamicId: {
+              [Op.eq]: params.dynamicId
+            }
+          }
+        })
+      }
+      count = Number(count)
+      params.status === 1 ? count++ : (count < 1 ? 0 : count--)
+
+      ctx.redis.redis.multi()
+        .hmset(STARREDISKEY, new Map([[key, params.status]]))
+        .hmget(STARRCOUNTKEY, new Map([[params.dynamicId, count]]))
+        .exec((err, results) => {
+          if (err) {
+            ctx.throw(400, err)
+          }
+          ctx.body = {
+            code: 200,
+            msg: params.status === 1 ? 'like successed' : 'cancel likes successed'
+          }
+          done()
+        })
+    }, (err, ret) => {
+
+    })
+
+  } catch (err) {
+    ctx.throw(400, err)
+  }
 
 })
 

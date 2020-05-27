@@ -22,6 +22,13 @@ module.exports = (sequelize, DataTypes) => {
 			unique: true,
 			comment: '用户id'
 		},
+		status: {
+			type: DataTypes.INTEGER,
+			validate: {
+				isIn: [[0, 1]]
+			},
+			comment: '点赞状态 0取消 1点赞'
+		},
 		createdAt: {
 			type: DataTypes.DATE,
 			defaultValue: DataTypes.NOW,

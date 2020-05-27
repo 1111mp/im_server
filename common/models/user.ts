@@ -4,6 +4,10 @@ const moment = require('moment')
 const bcrypt = require('bcrypt')
 
 /** https://stackoverflow.com/questions/46357533/how-to-add-delete-new-columns-in-sequelize-cli/46357631 */
+/**
+ * 解决生成海量的索引的错误
+ * https://www.chaoswork.cn/1064.html
+ */
 module.exports = (sequelize, DataTypes) => {
 
 	const User = sequelize.define('User', {
@@ -14,16 +18,10 @@ module.exports = (sequelize, DataTypes) => {
 			// 自增
 			autoIncrement: true
 		},
-		userId: {
-			type: DataTypes.UUID,
-			unique: true,
-			defaultValue: DataTypes.UUIDV4,
-			comment: '用户id'
-		},
 		username: {
 			type: DataTypes.STRING(32),
 			// 唯一
-			unique: true,
+			unique: 'username',
 			comment: '用户名'
 		},
 		pwd: {
@@ -39,7 +37,7 @@ module.exports = (sequelize, DataTypes) => {
 		email: {
 			type: DataTypes.STRING(64),
 			allowNull: true,
-			unique: true,
+			unique: 'email',
 			validate: {
 				isEmail: true
 			},

@@ -19,6 +19,14 @@ const log = {
 		const logger = log4js.getLogger('console')
 		logger.debug(str)
 	},
+	conlog(ctx, log = {}) {
+		try {
+			const logger = log4js.getLogger('conlog')
+			logger.info(JSON.stringify(Object.assign({}, log)))
+		} catch (e) {
+			console.error(e)
+		}
+	},
 	apiAccess(ctx, log = {}) {
 		try {
 			const logger = log4js.getLogger('api-access')

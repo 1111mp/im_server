@@ -3,6 +3,15 @@
 		"console": {
 			"type": "console"
 		},
+		"conlog": {
+			"type": "dateFile",
+			"filename": "logs/conlog/access.log",
+			"encoding": "utf-8",
+			"maxLogSize": 100000000,
+			"alwaysIncludePattern": true,
+			"numBackups": 3,
+			"pattern": "-yyyy-MM-dd-hh.log"
+		},
 		"access": {
 			"type": "dateFile",
 			"filename": "logs/access/access.log",
@@ -60,6 +69,12 @@
 				"console"
 			],
 			"level": "debug"
+		},
+		"conlog": {
+			"appenders": [
+				"conlog"
+			],
+			"level": "info"
 		},
 		"http": {
 			"appenders": [

@@ -18,10 +18,6 @@ module.exports = (sequelize, DataTypes) => {
     content: {
       type: DataTypes.STRING(500)
     },
-    star: {
-      type: DataTypes.INTEGER(11),
-      defaultValue: 0
-    },
     createdAt: {
       allowNull: false,
       type: DataTypes.DATE,
@@ -38,6 +34,8 @@ module.exports = (sequelize, DataTypes) => {
         return moment((this as any).getDataValue('updatedAt')).format('YYYY-MM-DD HH:mm')
       }
     }
+  }, {
+    
   });
 
   Dynamic.associate = function (models) {

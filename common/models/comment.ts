@@ -42,6 +42,8 @@ module.exports = (sequelize, DataTypes) => {
         return moment((this as any).getDataValue('updatedAt')).format('YYYY-MM-DD HH:mm')
       }
     }
+  }, {
+    
   });
 
   Comment.associate = function (models) {

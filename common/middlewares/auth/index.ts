@@ -21,7 +21,7 @@ module.exports = function () {
     } else {
       // 校验token
       try {
-        // @ts-ignore
+        
         let decoded = jwt.verify(realToken, secretOrPrivateKey)
         
         ctx.userId = decoded.id

@@ -9,6 +9,7 @@ const staticServ = require('koa-static')
 
 const redis = require('./common/middlewares/redis')
 const Auth = require('./common/middlewares/auth')
+const timerTask = require('./common/middlewares/timerTask')
 const { createLogger, logs } = require('./common/middlewares/logger')
 const index = require('./routes/index')
 const users = require('./routes/users')
@@ -58,6 +59,9 @@ app.use(compose(middlewares))
 app.use(index.routes(), index.allowedMethods())
 app.use(users.routes(), users.allowedMethods())
 app.use(dynamic.routes(), dynamic.allowedMethods())
+
+/** 定时任务 */
+app.use(timerTask())
 
 // error-handling
 app.on('error', (err, ctx) => {
