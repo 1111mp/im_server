@@ -9,12 +9,13 @@ const staticServ = require('koa-static')
 
 const redis = require('./common/middlewares/redis')
 const Auth = require('./common/middlewares/auth')
-const timerTask = require('./common/middlewares/timerTask')
+const timerTask = require('./common/utils/timerTask')
 const { createLogger, logs } = require('./common/middlewares/logger')
 const index = require('./routes/index')
 const users = require('./routes/users')
 const dynamic = require('./routes/dynamic')
 const { unlessPaths } = require('./config')
+const asycStarData = require('./common/utils/syncStarData')
 require('./common/models')
 
 // error handler
@@ -61,7 +62,7 @@ app.use(users.routes(), users.allowedMethods())
 app.use(dynamic.routes(), dynamic.allowedMethods())
 
 /** 定时任务 */
-app.use(timerTask())
+timerTask(asycStarData)
 
 // error-handling
 app.on('error', (err, ctx) => {

@@ -1,11 +1,12 @@
 const router = require('koa-router')()
-const AsyncLock = require('async-lock')
+// const AsyncLock = require('async-lock')
 const { Op } = require('sequelize/lib/sequelize')
 // const db = require('../common/models')
-const { Dynamic, Star } = require('../common/models')
+const { Dynamic } = require('../common/models')
 const { STARREDISKEY, STARRCOUNTKEY, STARLOCK } = require('../common/const')
+const { getCount } = require('../common/controllers/star')
 
-const lock = new AsyncLock()
+// const lock = new AsyncLock()
 
 router.prefix('/dynamic')
 
@@ -14,13 +15,7 @@ async function getStarCount(ctx, dynamicId) {
   let count
   let redisCount = await ctx.redis.redis.hmget('starCounts', [dynamicId])
   if (redisCount[0] === null) {
-    count = await Star.count({
-      where: {
-        dynamicId: {
-          [Op.eq]: dynamicId
-        }
-      }
-    })
+    count = getCount(dynamicId)
     await ctx.redis.redis.hmset('starCounts', new Map([[dynamicId, count]]))
   } else {
     count = redisCount[0]
@@ -141,7 +136,7 @@ router.post('/star', async (ctx, next) => {
   const params = ctx.request.body
   const userId = ctx.userId
 
-  if (!params.dynamicId || !params.status) {
+  if (!params.dynamicId || (params.status !== 0 && !params.status)) {
     ctx.body = {
       code: 400,
       msg: 'dynamicId or status cannot be emptyed!'
@@ -149,40 +144,50 @@ router.post('/star', async (ctx, next) => {
     return false
   }
 
+  if (params.status !== 0 && params.status !== 1) {
+    ctx.body = {
+      code: 400,
+      msg: 'the value of status must be 0 or 1!'
+    }
+    return false
+  }
+
   try {
-    lock.acquire(STARLOCK, async (done) => {
-      const key = `${userId}::${params.dynamicId}`
 
-      const redisCount = await ctx.redis.redis.hmget(STARRCOUNTKEY, [params.dynamicId])
-      let count = redisCount[0]
-      if (count === null) {
-        count = await Star.count({
-          where: {
-            dynamicId: {
-              [Op.eq]: params.dynamicId
-            }
-          }
-        })
-      }
-      count = Number(count)
+    const lock = await ctx.redis.redlock.lock(STARLOCK, 1000)
+
+    const key = `${userId}::${params.dynamicId}`
+
+    const redisCount = await ctx.redis.redis.hmget(STARRCOUNTKEY, [params.dynamicId])
+    const starData = await ctx.redis.redis.hmget(STARREDISKEY, [key])
+
+    let count = redisCount[0]
+    if (count === null) {
+      count = getCount(params.dynamicId)
+    }
+    count = Number(count)
+    if (starData[0] === null && Number(starData[0]) !== params.status) {
       params.status === 1 ? count++ : (count < 1 ? 0 : count--)
-
-      ctx.redis.redis.multi()
+    }
+    
+    try {
+      await ctx.redis.redis.multi()
         .hmset(STARREDISKEY, new Map([[key, params.status]]))
-        .hmget(STARRCOUNTKEY, new Map([[params.dynamicId, count]]))
+        .hmset(STARRCOUNTKEY, new Map([[params.dynamicId, count]]))
         .exec((err, results) => {
           if (err) {
             ctx.throw(400, err)
           }
-          ctx.body = {
-            code: 200,
-            msg: params.status === 1 ? 'like successed' : 'cancel likes successed'
-          }
-          done()
         })
-    }, (err, ret) => {
-
-    })
+      ctx.body = {
+        code: 200,
+        msg: params.status === 1 ? 'like successed' : 'cancel likes successed'
+      }
+      lock.unlock()
+    } catch (err) {
+      lock.unlock()
+      throw err
+    }
 
   } catch (err) {
     ctx.throw(400, err)

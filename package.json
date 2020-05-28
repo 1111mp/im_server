@@ -34,6 +34,7 @@
     "nodejs-snowflake": "^1.4.1",
     "nodemon": "^2.0.4",
     "pug": "^2.0.3",
+    "redlock": "^4.1.0",
     "sequelize": "^5.21.9",
     "snowflake-id": "^1.1.0",
     "typescript": "^3.9.2",

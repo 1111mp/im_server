@@ -10,17 +10,15 @@ module.exports = (sequelize, DataTypes) => {
 			autoIncrement: true,
 			unique: true
 		},
-		dynamicId: {
-			type: DataTypes.INTEGER(11),
-			field: 'dynamic_id',
-			unique: true,
-			comment: '动态id'
-		},
 		userId: {
 			type: DataTypes.INTEGER(11),
 			field: 'user_id',
-			unique: true,
 			comment: '用户id'
+		},
+		dynamicId: {
+			type: DataTypes.INTEGER(11),
+			field: 'dynamic_id',
+			comment: '动态id'
 		},
 		status: {
 			type: DataTypes.INTEGER,

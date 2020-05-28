@@ -19,7 +19,7 @@ const log = {
 		const logger = log4js.getLogger('console')
 		logger.debug(str)
 	},
-	conlog(ctx, log = {}) {
+	conlog(log = {}) {
 		try {
 			const logger = log4js.getLogger('conlog')
 			logger.info(JSON.stringify(Object.assign({}, log)))

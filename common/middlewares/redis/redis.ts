@@ -1,6 +1,7 @@
 const Redis = require("ioredis")
-const { Op } = require('sequelize/lib/sequelize')
-const { Star } = require('../../models')
+const Redlock = require('redlock')
+// const { Op } = require('sequelize/lib/sequelize')
+// const { Star } = require('../../models')
 const { STARREDISKEY, STARRCOUNTKEY } = require('../../const')
 // const { v4 } = require('uuid')
 
@@ -15,6 +16,7 @@ const redisConfig = {
 class RedisStore {
 	static _instance: RedisStore
 	redis: any
+	redlock: any
 	// keyPrefix: any
 
 	static getInstance(): RedisStore {
@@ -27,6 +29,12 @@ class RedisStore {
 	constructor() {
 		this.redis = new Redis(redisConfig)
 		// this.keyPrefix = v4()
+		this.redlock = new Redlock([this.redis],
+			{
+				retryDelay: 200, // time in ms
+				retryCount: 5
+			}
+		)
 	}
 
 	async get(key) {
