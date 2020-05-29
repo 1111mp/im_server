@@ -41,59 +41,72 @@ router.post('/chunkFile', async (ctx, next) => {
 
 	if (type === 'merge') {
 
-		const { index, hash, total, name } = ctx.request.body
-		const chunksPath = path.join(uploadPath, hash, '/')
-		const filePath = path.join(uploadPath, name)
+		try {
+			const { index, hash, total, name } = ctx.request.body
+			const chunksPath = path.join(uploadPath, hash, '/')
+			const filePath = path.join(uploadPath, name)
 
-		// 读取所有的chunks 文件名存放在数组中
-		const chunks = fs.readdirSync(chunksPath)
-		// 创建存储文件
-		fs.writeFileSync(filePath, '')
+			// 读取所有的chunks 文件名存放在数组中
+			const chunks = fs.readdirSync(chunksPath)
+			// 创建存储文件
+			fs.writeFileSync(filePath, '')
 
-		if (chunks.length !== total || chunks.length === 0) {
+			if (chunks.length !== total || chunks.length === 0) {
+				ctx.body = {
+					code: 400,
+					msg: '切片文件数量不符合'
+				}
+				return false
+			}
+
+			for (let i = 0; i < total; i++) {
+				// 追加写入到文件中
+				fs.appendFileSync(filePath, fs.readFileSync(chunksPath + hash + '-' + i));
+				// 删除本次使用的chunk    
+				fs.unlinkSync(chunksPath + hash + '-' + i);
+			}
+
+			fs.rmdirSync(chunksPath)
+
+			// 文件合并成功，可以把文件信息进行入库
+			ctx.body = {
+				code: 200,
+				msg: 'successed',
+				data: `http://localhost:3000/upload/${name}`
+			}
+		} catch (err) {
 			ctx.body = {
 				code: 400,
-				msg: '切片文件数量不符合'
+				msg: 'merge error'
 			}
-			return false
-		}
-
-		for (let i = 0; i < total; i++) {
-			// 追加写入到文件中
-			fs.appendFileSync(filePath, fs.readFileSync(chunksPath + hash + '-' + i));
-			// 删除本次使用的chunk    
-			fs.unlinkSync(chunksPath + hash + '-' + i);
-		}
-
-		fs.rmdirSync(chunksPath)
-
-		// 文件合并成功，可以把文件信息进行入库
-		ctx.body = {
-			code: 200,
-			msg: 'successed',
-			data: `http://localhost:3000/upload/${name}`
 		}
 
 	} else if (type === 'upload') {
 
-
-
 		const { index, hash } = ctx.request.body
-		const { file } = ctx.request.files
-		const chunksPath = path.join(uploadPath, hash, '/')
-		console.log(chunksPath)
 
-		if (!fs.existsSync(path.join(uploadPath, hash, '/', hash + '-' + index))) {
-			if (!fs.existsSync(chunksPath)) mkdirsSync(chunksPath)
+		try {
+			const { file } = ctx.request.files
+			const chunksPath = path.join(uploadPath, hash, '/')
+			console.log(chunksPath)
 
-			console.log(file)
+			if (!fs.existsSync(path.join(uploadPath, hash, '/', hash + '-' + index))) {
+				if (!fs.existsSync(chunksPath)) mkdirsSync(chunksPath)
 
-			fs.renameSync(file.path, chunksPath + hash + '-' + index)
-		}
+				console.log(file)
 
-		ctx.body = {
-			code: 200,
-			msg: 'successed'
+				fs.renameSync(file.path, chunksPath + hash + '-' + index)
+			}
+
+			ctx.body = {
+				code: 200,
+				msg: 'successed'
+			}
+		} catch (err) {
+			ctx.body = {
+				code: 400,
+				msg: `hash: ${hash} index: ${index} upload error`
+			}
 		}
 
 	} else {
