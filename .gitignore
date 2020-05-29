@@ -1,4 +1,7 @@
 node_modules
 /logs
 /logs/*
+
+/public/upload
+
 /yarn.lock

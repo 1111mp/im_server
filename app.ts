@@ -3,18 +3,17 @@ const app = new Koa()
 const views = require('koa-views')
 const json = require('koa-json')
 const onerror = require('koa-onerror')
-const bodyparser = require('koa-bodyparser')
+const koaBody = require('koa-body')
 const compose = require('koa-compose')
 const staticServ = require('koa-static')
+const path = require('path')
 
 const redis = require('./common/middlewares/redis')
 const Auth = require('./common/middlewares/auth')
 const timerTask = require('./common/utils/timerTask')
 const { createLogger, logs } = require('./common/middlewares/logger')
-const index = require('./routes/index')
-const users = require('./routes/users')
-const dynamic = require('./routes/dynamic')
-const { unlessPaths } = require('./config')
+const routes = require('./routes')
+const { unlessPaths, uploadPath } = require('./config')
 const asycStarData = require('./common/utils/syncStarData')
 require('./common/models')
 
@@ -42,8 +41,19 @@ const middlewares = [
     })
   },
   redis(),
-  bodyparser({
-    enableTypes: ['json', 'form', 'text']
+  /** http://www.ptbird.cn/koa-body.html */
+  koaBody({
+    multipart: true,
+    // encoding: 'gzip',
+    formidable: {
+      uploadDir: uploadPath,
+      keepExtensions: true,
+      maxFieldsSize: 2 * 1024 * 1024,
+      onFileBegin: (name, file) => {
+        // console.log(`name: ${name}`)
+        // console.log(`file: ${file}`)
+      }
+    }
   }),
   json(),
   Auth().unless({ path: unlessPaths }),
@@ -57,9 +67,10 @@ const middlewares = [
 app.use(compose(middlewares))
 
 // routes
-app.use(index.routes(), index.allowedMethods())
-app.use(users.routes(), users.allowedMethods())
-app.use(dynamic.routes(), dynamic.allowedMethods())
+Object.keys(routes).map(route => {
+  app.use(routes[route].routes(), routes[route].allowedMethods())
+})
+
 
 /** 定时任务 */
 timerTask(asycStarData)

@@ -168,25 +168,33 @@ router.post('/star', async (ctx, next) => {
     count = Number(count)
     if (starData[0] === null && Number(starData[0]) !== params.status) {
       params.status === 1 ? count++ : (count < 1 ? 0 : count--)
-    }
-    
-    try {
-      await ctx.redis.redis.multi()
-        .hmset(STARREDISKEY, new Map([[key, params.status]]))
-        .hmset(STARRCOUNTKEY, new Map([[params.dynamicId, count]]))
-        .exec((err, results) => {
-          if (err) {
-            ctx.throw(400, err)
-          }
-        })
-      ctx.body = {
-        code: 200,
-        msg: params.status === 1 ? 'like successed' : 'cancel likes successed'
+
+      try {
+        await ctx.redis.redis.multi()
+          .hmset(STARREDISKEY, new Map([[key, params.status]]))
+          .hmset(STARRCOUNTKEY, new Map([[params.dynamicId, count]]))
+          .exec((err, results) => {
+            if (err) {
+              ctx.throw(400, err)
+            }
+          })
+        ctx.body = {
+          code: 200,
+          msg: params.status === 1 ? 'like successed' : 'cancel likes successed'
+        }
+        lock.unlock()
+      } catch (err) {
+        lock.unlock()
+        throw err
       }
-      lock.unlock()
-    } catch (err) {
-      lock.unlock()
-      throw err
+
+    } else {
+
+      ctx.body = {
+        code: 400,
+        msg: 'please dont submit again'
+      }
+
     }
 
   } catch (err) {
