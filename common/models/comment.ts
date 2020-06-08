@@ -43,7 +43,7 @@ module.exports = (sequelize, DataTypes) => {
       }
     }
   }, {
-    
+
   });
 
   Comment.associate = function (models) {

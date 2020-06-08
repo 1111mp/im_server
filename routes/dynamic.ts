@@ -1,10 +1,13 @@
 const router = require('koa-router')()
 // const AsyncLock = require('async-lock')
 const { Op } = require('sequelize/lib/sequelize')
-// const db = require('../common/models')
-const { Dynamic } = require('../common/models')
+const db = require('../common/models')
+const { Dynamic, DynaSource } = require('../common/models')
 const { STARREDISKEY, STARRCOUNTKEY, STARLOCK } = require('../common/const')
 const { getCount } = require('../common/controllers/star')
+const { getFileUrl } = require('common/utils')
+const { getDynaSources } = require('common/controllers/dynaSource')
+const { createOne, getAll } = require('common/controllers/comment')
 
 // const lock = new AsyncLock()
 
@@ -49,6 +52,7 @@ router.post('/queryUserAllDynamic', async (ctx, next) => {
 
   try {
     let { rows: dynamics, count: totalCount } = await Dynamic.findAndCountAll({
+      attributes: { exclude: ['updatedAt'] },
       where: {
         userId: {
           [Op.eq]: userId
@@ -64,7 +68,9 @@ router.post('/queryUserAllDynamic', async (ctx, next) => {
     dynamics = await Promise.all(dynamics.map(async dynamic => {
       /** 先序列化 再操作 */
       dynamic = dynamic.toJSON()
+      dynamic['comments'] = await getAll({ userId, dynamicId: dynamic.id })
       dynamic['starCount'] = await getStarCount(ctx, dynamic.id)
+      dynamic['images'] = await getDynaSources({ userId, dynamicId: dynamic.id })
       return dynamic
     }))
 
@@ -92,26 +98,40 @@ router.post('/publish', async (ctx, next) => {
   const params = ctx.request.body
   params.userId = ctx.userId
 
+  /** 上传成功之后的files对象 */
+  let { files } = ctx.request.files
+
   if (!params.userId) {
     ctx.throw(401, 'Authentication Error')
     return false
   }
 
-  if (!params.content) {
+  if (!params.content && !files) {
     ctx.body = {
       code: 400,
-      msg: 'content cannot be emptyed!'
+      msg: 'content and files cannot both be emptyed!'
     }
     return false
   }
 
+  let urlArr = files ? getFileUrl(files) : []
   try {
 
-    await Dynamic.create(params)
+    await db.sequelize.transaction(t => {
+      return Dynamic.create(params, { transaction: t })
+        .then(dynamic => {
+          return Promise.all(
+            urlArr.map(url => {
+              return DynaSource.create({ userId: ctx.userId, dynamicId: dynamic.id, url }, { transaction: t })
+            })
+          )
+        })
+    })
 
     ctx.body = {
       code: 200,
-      data: 'publish dynamic successed'
+      data: urlArr,
+      msg: 'publish dynamic successed'
     }
 
   } catch (err) {
@@ -123,6 +143,43 @@ router.post('/publish', async (ctx, next) => {
     }
 
   }
+})
+
+/**
+ * @description: 评论
+ * @param {number} dynamicId  动态id
+ * @param {string} content  内容
+ * @return: 
+ */
+router.post('/comment', async (ctx, next) => {
+  const params = ctx.request.body
+  const userId = ctx.userId
+  params['userId'] = userId
+
+  if (!params.dynamicId || !params.content) {
+    ctx.body = {
+      code: 400,
+      msg: 'dynamicId or content cannot be emptyed!'
+    }
+    return false
+  }
+
+  try {
+
+    await createOne(params)
+
+    ctx.body = {
+      code: 200,
+      msg: 'successed'
+    }
+
+  } catch (err) {
+    ctx.body = {
+      code: 400,
+      msg: 'error'
+    }
+  }
+
 })
 
 /**

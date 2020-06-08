@@ -2,33 +2,29 @@ const path = require('path')
 const fs = require('fs-extra')
 const router = require('koa-router')()
 const { uploadPath } = require('../config')
+const { getFileUrl } = require('config')
 
 router.prefix('/upload')
 
 router.post('/', async (ctx, next) => {
-	/** 上传成功之后的files对象 */
-	let { files } = ctx.request.files
-	let urlArr: any[] = []
-	files.forEach(file => {
-		let path = file.path
-		let filename = path.substring(path.lastIndexOf("\\") + 1, path.length)
-		urlArr.push(`http://localhost:3000/upload/${filename}`)
-	})
-	ctx.body = {
-		code: 200,
-		data: urlArr
-	}
+  /** 上传成功之后的files对象 */
+  let { files } = ctx.request.files
+  let urlArr: any[] = getFileUrl(files)
+  ctx.body = {
+    code: 200,
+    data: urlArr
+  }
 })
 
 const mkdirsSync = (dirname) => {
-	if (fs.existsSync(dirname)) {
-		return true;
-	} else {
-		if (mkdirsSync(path.dirname(dirname))) {
-			fs.mkdirSync(dirname);
-			return true;
-		}
-	}
+  if (fs.existsSync(dirname)) {
+    return true;
+  } else {
+    if (mkdirsSync(path.dirname(dirname))) {
+      fs.mkdirSync(dirname);
+      return true;
+    }
+  }
 }
 
 /**
@@ -37,84 +33,81 @@ const mkdirsSync = (dirname) => {
  * @return: 
  */
 router.post('/chunkFile', async (ctx, next) => {
-	const { type } = ctx.request.body
+  const { type } = ctx.request.body
 
-	if (type === 'merge') {
+  if (type === 'merge') {
 
-		try {
-			const { index, hash, total, name } = ctx.request.body
-			const chunksPath = path.join(uploadPath, hash, '/')
-			const filePath = path.join(uploadPath, name)
+    try {
+      const { index, hash, total, name } = ctx.request.body
+      const chunksPath = path.join(uploadPath, hash, '/')
+      const filePath = path.join(uploadPath, name)
 
-			// 读取所有的chunks 文件名存放在数组中
-			const chunks = fs.readdirSync(chunksPath)
-			// 创建存储文件
-			fs.writeFileSync(filePath, '')
+      // 读取所有的chunks 文件名存放在数组中
+      const chunks = fs.readdirSync(chunksPath)
+      // 创建存储文件
+      fs.writeFileSync(filePath, '')
 
-			if (chunks.length !== total || chunks.length === 0) {
-				ctx.body = {
-					code: 400,
-					msg: '切片文件数量不符合'
-				}
-				return false
-			}
+      if (chunks.length !== total || chunks.length === 0) {
+        ctx.body = {
+          code: 400,
+          msg: '切片文件数量不符合'
+        }
+        return false
+      }
 
-			for (let i = 0; i < total; i++) {
-				// 追加写入到文件中
-				fs.appendFileSync(filePath, fs.readFileSync(chunksPath + hash + '-' + i));
-				// 删除本次使用的chunk    
-				fs.unlinkSync(chunksPath + hash + '-' + i);
-			}
+      for (let i = 0; i < total; i++) {
+        // 追加写入到文件中
+        fs.appendFileSync(filePath, fs.readFileSync(chunksPath + hash + '-' + i));
+        // 删除本次使用的chunk    
+        fs.unlinkSync(chunksPath + hash + '-' + i);
+      }
 
-			fs.rmdirSync(chunksPath)
+      fs.rmdirSync(chunksPath)
 
-			// 文件合并成功，可以把文件信息进行入库
-			ctx.body = {
-				code: 200,
-				msg: 'successed',
-				data: `http://localhost:3000/upload/${name}`
-			}
-		} catch (err) {
-			ctx.body = {
-				code: 400,
-				msg: 'merge error'
-			}
-		}
+      // 文件合并成功，可以把文件信息进行入库
+      ctx.body = {
+        code: 200,
+        msg: 'successed',
+        data: `http://localhost:3000/upload/${name}`
+      }
+    } catch (err) {
+      ctx.body = {
+        code: 400,
+        msg: 'merge error'
+      }
+    }
 
-	} else if (type === 'upload') {
+  } else if (type === 'upload') {
 
-		const { index, hash } = ctx.request.body
+    const { index, hash } = ctx.request.body
 
-		try {
-			const { file } = ctx.request.files
-			const chunksPath = path.join(uploadPath, hash, '/')
-			console.log(chunksPath)
+    try {
+      const { file } = ctx.request.files
+      const chunksPath = path.join(uploadPath, hash, '/')
 
-			if (!fs.existsSync(path.join(uploadPath, hash, '/', hash + '-' + index))) {
-				if (!fs.existsSync(chunksPath)) mkdirsSync(chunksPath)
+      if (!fs.existsSync(path.join(uploadPath, hash, '/', hash + '-' + index))) {
+        if (!fs.existsSync(chunksPath)) mkdirsSync(chunksPath)
 
-				console.log(file)
+        fs.renameSync(file.path, chunksPath + hash + '-' + index)
+      }
 
-				fs.renameSync(file.path, chunksPath + hash + '-' + index)
-			}
+      ctx.body = {
+        code: 200,
+        msg: 'successed'
+      }
+    } catch (err) {
+      ctx.body = {
+        code: 400,
+        msg: `hash: ${hash} index: ${index} upload error`
+      }
+    }
 
-			ctx.body = {
-				code: 200,
-				msg: 'successed'
-			}
-		} catch (err) {
-			ctx.body = {
-				code: 400,
-				msg: `hash: ${hash} index: ${index} upload error`
-			}
-		}
-
-	} else {
-		ctx.body = {
-			code: 400,
-			msg: 'unkown type'
-		}
-	}
+  } else {
+    ctx.body = {
+      code: 400,
+      msg: 'unkown type'
+    }
+  }
 })
 
 module.exports = router

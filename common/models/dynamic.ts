@@ -35,13 +35,14 @@ module.exports = (sequelize, DataTypes) => {
       }
     }
   }, {
-    
+
   });
 
   Dynamic.associate = function (models) {
     // associations can be defined here
     Dynamic.hasMany(models.Comment, { foreignKey: 'dynamicId', sourceKey: 'id' })
     Dynamic.hasMany(models.Star, { foreignKey: 'dynamicId', sourceKey: 'id' })
+    Dynamic.hasMany(models.DynaSource, { name: 'dynasource_dynamicid', foreignKey: 'dynamicId', sourceKey: 'id', onDelete: 'CASCADE' })
 
     Dynamic.belongsTo(models.User, { foreignKey: 'userId', targetKey: 'id' })
   };

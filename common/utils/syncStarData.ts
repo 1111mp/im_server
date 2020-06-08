@@ -34,9 +34,6 @@ async function syncStarFromRedisTodb() {
 				const userId = Number(keyArr[0])
 				const dynamicId = Number(keyArr[1])
 				const status = Number(starRedisData[key])
-				console.log(userId)
-				console.log(dynamicId)
-				console.log(status)
 
 				const flag = await starIsinDb(userId, dynamicId)
 

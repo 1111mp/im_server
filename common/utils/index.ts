@@ -14,8 +14,21 @@ function getSnowflakeId() {
   // return snowflake.generate()
 }
 
+function getFileUrl(files: any[]) {
+  let urlArr: any[] = []
+
+  files.forEach(file => {
+    let path = file.path
+    let filename = path.substring(path.lastIndexOf("\\") + 1, path.length)
+    urlArr.push(`http://localhost:3000/upload/${filename}`)
+  })
+
+  return urlArr
+}
+
 module.exports = {
-  getSnowflakeId
+  getSnowflakeId,
+  getFileUrl
 }
 
 export { }
