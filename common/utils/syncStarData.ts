@@ -76,7 +76,7 @@ async function syncStarCountToDb() {
 				const lock = await RedisStore.redlock.lock(`dynamicId_${key}`, ttl)
 
 				const dynamicId = Number(key)
-				const redisCount = Number(starRedisCounts[key] || 0)
+				const redisCount = starRedisCounts[key] ? Number(starRedisCounts[key]) : 0
 
 				const dbCount = await getCount(dynamicId)
 
