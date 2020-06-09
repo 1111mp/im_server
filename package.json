@@ -3,14 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "cross-env NODE_ENV=development ts-node -r tsconfig-paths/register bin/run.ts",
-    "start:watch": "nodemon --watch **/* -e ts,js,json --exec cross-env NODE_ENV=development ts-node -r tsconfig-paths/register bin/run.ts",
+    "start": "cross-env NODE_ENV=development ts-node --project tsconfig.json -r tsconfig-paths/register bin/run.ts",
+    "start:watch": "nodemon --watch **/* -e ts,js,json --exec cross-env NODE_ENV=development ts-node --project tsconfig.json -r tsconfig-paths/register bin/run.ts",
     "dev": "./node_modules/.bin/nodemon bin/run.ts",
     "prod": "cross-env NODE_ENV=prod pm2 --no-daemon start ./pm2.config.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "@types/node": "^14.0.1",
+    "@types/socket.io": "^2.1.8",
     "async-lock": "^1.2.4",
     "bcrypt": "^4.0.1",
     "cross-env": "^7.0.2",
@@ -38,6 +39,7 @@
     "redlock": "^4.1.0",
     "sequelize": "^5.21.9",
     "snowflake-id": "^1.1.0",
+    "socket.io": "^2.3.0",
     "typescript": "^3.9.2",
     "uuid": "^8.0.0"
   },

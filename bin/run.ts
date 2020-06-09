@@ -4,10 +4,11 @@
  * Module dependencies.
  */
 
- // @ts-ignore
+// @ts-ignore
 var app = require('../app');
 var debug = require('debug')('demo:server');
 var http = require('http');
+const initChat = require('common/chat')
 
 /**
  * Get port from environment and store in Express.
@@ -21,6 +22,8 @@ var port = normalizePort(process.env.PORT || '3000');
  */
 
 var server = http.createServer(app.callback());
+
+initChat(server)
 
 /**
  * Listen on provided port, on all network interfaces.
