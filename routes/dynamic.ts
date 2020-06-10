@@ -18,7 +18,7 @@ async function getStarCount(ctx, dynamicId) {
   let count
   let redisCount = await ctx.redis.redis.hmget('starCounts', [dynamicId])
   if (redisCount[0] === null) {
-    count = getCount(dynamicId)
+    count = await getCount(dynamicId)
     await ctx.redis.redis.hmset('starCounts', new Map([[dynamicId, count]]))
   } else {
     count = redisCount[0]
