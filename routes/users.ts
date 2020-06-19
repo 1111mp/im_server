@@ -3,7 +3,7 @@ const User = require('../common/controllers/user')
 
 router.prefix('/users')
 
-router.get('/', function (ctx, next) {
+router.get('/', async function (ctx, next) {
   ctx.body = 'this is a users response!'
 })
 

@@ -2,6 +2,7 @@ const { secretOrPrivateKey } = require('config')
 const jwt = require('jsonwebtoken')
 const RedisStore = require('../middlewares/redis/redis')
 const _ = require('lodash')
+const { getMsgList, pushOnlineMsg, pushOfflineMsg, delRedisKey } = require('./utils')
 
 const METHODS: string[] = [
 	'invoke',
@@ -28,11 +29,12 @@ interface Message {
 	status: 0 | 1 | 2 | 3 | 4; // 0 离线消息 1 服务端收到并转发出消息 2 接收者收到消息 未读 3 接收者收到消息 并已读 4 已删除
 	sender: {
 		userId: number;
-		avatarUrl: string;
-		nickName: string;
+		avatarUrl?: string;
+		nickName?: string;
 	};
-	reciver: number; //接收者userId
-	groupId?: number;
+	reciver: number; //接收者 userId or groupId
+	// groupId?: number;
+	ext?: string; // 预留字段 json格式
 }
 
 class Chat {
@@ -99,8 +101,8 @@ class Chat {
 		}
 	}
 
-	login = (socket: any, data: any, callback: any) => {
-		const { token, args } = data
+	login = async (socket: any, data: any, callback: any) => {
+		const { args } = data
 		const { userId, socketId } = args
 
 		this.userList[userId] = socketId
@@ -108,36 +110,62 @@ class Chat {
 		callback({ code: 200, msg: 'login success' })
 
 		/** 用户登录成功之后 将该用户的所有离线消息都推送过去 */
+		let offlineMsgs = await getMsgList(true, userId)
+
+		if (offlineMsgs && offlineMsgs.length) {
+			/** 有离线消息 一次性推送给客户端 */
+			await socket.emit('offlineMsgs', offlineMsgs, data => {
+				if (data && data.code === 200) {
+					// delRedisKey(`offline::${userId}`)
+				}
+			})
+		}
 	}
 
 	sendMsg = async (socket: any, data: any, callback: any) => {
 		const args: Message = data.args
-		const { reciver, sessionType } = args
+		const { sessionType } = args
 		if (sessionType === 0) {
+			const { reciver, sender } = args
+			let msg: Message = {
+				...args,
+				time: new Date().getTime()
+			}
+
 			/** 单聊 reciver为接收者的userId */
 			if (this.userList[reciver]) {
 				/** 接收者在线 */
 				try {
-					const msg: Message = {
-						...args,
-						time: new Date().getTime(),
+					msg = {
+						...msg,
 						status: 1
 					}
+					await socket.to(this.userList[reciver]).emit('receiveMsg', msg)
 					callback({ code: 200, msg: 'success' })
-					socket.to(this.userList[reciver]).emit('receiveMsg', msg)
-					// await 
+					/** 将msg push到redis消息列表中 */
+					pushOnlineMsg(sender.userId, reciver, msg)
+
 				} catch (err) {
 					callback({ code: 400, msg: 'error' })
 				}
 
 			} else {
 				/** 接收者离线 将消息放入该用户的离线消息list中 */
-				const msg: Message = {
-					...args,
-					time: new Date().getTime(),
+				msg = {
+					...msg,
 					status: 0
 				}
 
+				/** 将离线消息push到user的离线消息列表中去 */
+				// pushMsgToredisList(sender.userId, reciver, msg)
+				console.log(reciver)
+				let res = await pushOfflineMsg(sender.userId, reciver, msg)
+				console.log(res)
+				if (res === 'successed') {
+					callback({ code: 200, msg: 'success' })
+				} else {
+					callback({ code: 500, msg: 'push msg to redis error' })
+				}
 			}
 
 		} else if (sessionType === 1) {
@@ -149,6 +177,7 @@ class Chat {
 	disconnect = (socket: any) => {
 		/** 断开连接之后 将用户从在线user列表移除 */
 		this.userList = _.omitBy(this.userList, (val) => val === socket.id)
+		console.log(this.userList)
 	}
 
 

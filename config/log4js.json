@@ -5,7 +5,7 @@
 		},
 		"conlog": {
 			"type": "dateFile",
-			"filename": "logs/conlog/access.log",
+			"filename": "logs/conlog/access-",
 			"encoding": "utf-8",
 			"maxLogSize": 100000000,
 			"alwaysIncludePattern": true,
@@ -14,7 +14,7 @@
 		},
 		"access": {
 			"type": "dateFile",
-			"filename": "logs/access/access.log",
+			"filename": "logs/access/access-",
 			"encoding": "utf-8",
 			"maxLogSize": 100000000,
 			"alwaysIncludePattern": true,
@@ -23,7 +23,7 @@
 		},
 		"api-access": {
 			"type": "dateFile",
-			"filename": "logs/api/access/access.log",
+			"filename": "logs/api/access/access-",
 			"encoding": "utf-8",
 			"maxLogSize": 100000000,
 			"alwaysIncludePattern": true,
@@ -36,7 +36,7 @@
 		},
 		"api-error": {
 			"type": "dateFile",
-			"filename": "logs/api/error/error.log",
+			"filename": "logs/api/error/error-",
 			"encoding": "utf-8",
 			"maxLogSize": 100000000,
 			"alwaysIncludePattern": true,
@@ -49,7 +49,7 @@
 		},
 		"error": {
 			"type": "dateFile",
-			"filename": "logs/error/error.log",
+			"filename": "logs/error/error-",
 			"encoding": "utf-8",
 			"maxLogSize": 100000000,
 			"alwaysIncludePattern": true,

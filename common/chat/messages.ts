@@ -19,17 +19,17 @@ class Message {
 	msgList: any[]
 	redis: any;
 
-	static getInstance(userId) {
+	static getInstance() {
 		if (!this._instance) {
-			this._instance = new Message(userId)
+			this._instance = new Message()
 		}
 		return this._instance
 	}
 
-	constructor(userId) {
-		this.key = `msgs::${userId}`
+	constructor() {
+		// this.key = `msgs::${userId}`
 		this.redis = RedisStore.redis
-		this.initMsg()
+		// this.initMsg()
 	}
 
 	/** 初始化 读取redis中的消息列表 减少redis读取操作 */
@@ -38,8 +38,8 @@ class Message {
 		console.log(this.msgList)
 	}
 
-	/** 将一条消息push到消息list中 */
-	pushMsg = (msg) => {
+	/** 将一条消息push到redis消息list中 */
+	pushMsgtoRedis = (msg) => {
 		this.msgList.push(msg)
 	}
 
@@ -50,8 +50,6 @@ class Message {
 
 }
 
-module.exports = function (userId) {
-	return Message.getInstance(userId)
-}
+module.exports = Message.getInstance()
 
 export { }
