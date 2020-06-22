@@ -5,7 +5,7 @@ const moment = require('moment')
 module.exports = (sequelize, DataTypes) => {
 	const GroupMember = sequelize.define('GroupMember', {
 		id: {
-			type: DataTypes.INTEGER(11),
+			type: DataTypes.INTEGER,
 			primaryKey: true,
 			autoIncrement: true,
 			unique: true

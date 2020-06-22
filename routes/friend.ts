@@ -11,7 +11,7 @@ router.prefix('/friend')
  */
 router.post('/addFriend', async (ctx, next) => {
 
-	const { type } = ctx.request.body
+	const { type, friendId } = ctx.request.body
 
 	if (!type) {
 		ctx.body = {
@@ -21,24 +21,35 @@ router.post('/addFriend', async (ctx, next) => {
 		return false
 	}
 
+	console.log(type)
+	console.log(friendId)
+
 	switch (type) {
-		case 0:
-			await addFriend(ctx, next)
-			return
 		case 1:
+			// await addFriend(ctx, next)
+			const notify = {
+				type: 5,
+				sender: {
+					userId: ctx.userId
+				},
+				reciver: friendId
+			};
+			(global as any).ChatInstance.sendNotify(friendId, notify)
+			return
+		case 2:
 			await delFriend(ctx, next)
 			return
 	}
 
 })
 
-/**
- * @description: 获取好友列表
- * @param {type} 
- * @return: 
- */
-/
-router.post('/getAll', getAll)
+	/**
+	 * @description: 获取好友列表
+	 * @param {type} 
+	 * @return: 
+	 */
+	/
+	router.post('/getAll', getAll)
 
 module.exports = router
 

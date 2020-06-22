@@ -1,4 +1,5 @@
-const db, { Friend, User, FriSetting } = require('../models')
+const db = require('../models')
+const { Friend, User, FriSetting } = require('../models')
 const { Op } = require('sequelize/lib/sequelize')
 
 /**

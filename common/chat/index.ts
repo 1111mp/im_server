@@ -21,7 +21,7 @@ declare type Callback = (res: any) => {}
 
 interface Message {
 	msgId: string;
-	type: 0 | 1 | 2 | 3; // 0 text 1 image 2 video 3 audio 
+	type: 0 | 1 | 2 | 3 | 4; // 0 text 1 image 2 video 3 audio 4 notify
 	sessionType: 0 | 1; // 0 单聊 1 群聊
 	content?: string;
 	time?: any;
@@ -105,7 +105,11 @@ class Chat {
 		const { args } = data
 		const { userId, socketId } = args
 
-		this.userList[userId] = socketId
+		this.userList[userId] = {
+			...this.userList[userId],
+			socketId,
+			socket
+		}
 
 		callback({ code: 200, msg: 'login success' })
 
@@ -140,7 +144,9 @@ class Chat {
 						...msg,
 						status: 1
 					}
-					await socket.to(this.userList[reciver]).emit('receiveMsg', msg)
+					await this.userList[reciver].socket.emit('receiveMsg', msg, data => {
+						console.log(data)
+					})
 					callback({ code: 200, msg: 'success' })
 					/** 将msg push到redis消息列表中 */
 					pushOnlineMsg(sender.userId, reciver, msg)
@@ -174,16 +180,29 @@ class Chat {
 		}
 	}
 
+	sendNotify = (userId, notify: IAnyObject) => {
+		if (this.userList[userId]) {
+			/** 在线 */
+			this.userList[userId].socket.emit('notify', notify, data => {
+				console.log(data)
+			})
+		} else {
+			/** 离线 */
+		}
+
+	}
+
 	disconnect = (socket: any) => {
 		/** 断开连接之后 将用户从在线user列表移除 */
-		this.userList = _.omitBy(this.userList, (val) => val === socket.id)
-		console.log(this.userList)
+		this.userList = _.omitBy(this.userList, (val) => val.socketId === socket.id)
 	}
 
 
 }
 
 
-module.exports = Chat.getInstance
+module.exports = function (server) {
+	(global as any).ChatInstance = Chat.getInstance(server)
+}
 
 export { }

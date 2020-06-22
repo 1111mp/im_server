@@ -5,7 +5,7 @@ const moment = require('moment')
 module.exports = (sequelize, DataTypes) => {
 	const ChatGroup = sequelize.define('ChatGroup', {
 		id: {
-			type: DataTypes.INTEGER(11),
+			type: DataTypes.INTEGER,
 			primaryKey: true,
 			autoIncrement: true,
 			unique: true
@@ -54,7 +54,7 @@ module.exports = (sequelize, DataTypes) => {
 			}
 		}
 	}, {
-
+		initialAutoIncrement: 10000
 	})
 
 	ChatGroup.associate = function (models: any) {
