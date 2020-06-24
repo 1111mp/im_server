@@ -1,18 +1,16 @@
-import { S_IFIFO } from "constants"
-
 const RedisStore = require('../middlewares/redis/redis')
 
-async function delRedisKey(key) {
+export async function delRedisKey(key) {
 	await RedisStore.redis.del(key)
 }
 
 /** 判断key 在redis中是否存在 键存在，返回1，否则返回0 */
-async function exists(key) {
+export async function exists(key) {
 	return await RedisStore.redis.exists(key)
 }
 
 /** key有两种可能 `${sender}::${reciver}` or `${reciver}::${sender}` 所以需要进行处理 */
-async function getMsgList(offline = false, sender, reciver) {
+export async function getMsgList(offline = false, sender, reciver?: any) {
 	let res: any[]
 
 	/** 获取离线消息列表 */
@@ -33,7 +31,7 @@ async function getMsgList(offline = false, sender, reciver) {
 }
 
 /** 在线时的消息 push到 redis的list中去 a和b共同的msgList */
-async function pushOnlineMsg(sender, reciver, msg) {
+export async function pushOnlineMsg(sender, reciver, msg) {
 
 	if (await exists(`${sender}::${reciver}`)) {
 
@@ -55,7 +53,7 @@ async function pushOnlineMsg(sender, reciver, msg) {
  * 将用户的离线消息push到该用户的离线消息列表中去 key ===> `offline::${reciver}`
  * 同时也push到 a和b共同的msgList中去
  */
-async function pushOfflineMsg(sender, reciver, msg) {
+export async function pushOfflineMsg(sender, reciver, msg) {
 
 	return new Promise(async (resolve, reject) => {
 		let key
@@ -80,11 +78,17 @@ async function pushOfflineMsg(sender, reciver, msg) {
 
 }
 
-module.exports = {
-	getMsgList,
-	pushOnlineMsg,
-	pushOfflineMsg,
-	delRedisKey
+export function updateMsgStatus() {
+
 }
 
-export { }
+export function pushRedisRace(promise, timer = 1000) {
+
+	let timeout = new Promise((resolve, reject) => {
+		setTimeout(() => {
+			resolve({ code: 408 })
+		}, timer)
+	})
+
+	return Promise.race([promise, timeout])
+}

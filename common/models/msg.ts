@@ -27,6 +27,10 @@ module.exports = (sequelize, DataTypes) => {
 			},
 			comment: '会话类型 0 单聊 1 群聊'
 		},
+		customType: {
+			type: DataTypes.INTEGER,
+			comment: '自定义通知类型'
+		},
 		content: {
 			type: DataTypes.STRING,
 			defaultValue: '',

@@ -24,6 +24,9 @@ async function addFriend(ctx, next) {
 				.then(friend => {
 					return FriSetting.create({ userId: ctx.userId, friendId }, { transaction: t })
 				})
+				.then(res => {
+					return FriSetting.create({ userId: friendId, friendId: ctx.userId }, { transaction: t })
+				})
 		})
 
 		ctx.body = {

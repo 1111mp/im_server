@@ -1,6 +1,9 @@
 const router = require('koa-router')()
+const { v4 } = require('uuid')
 const { Friend } = require('common/models')
 const { addFriend, delFriend, getAll } = require('common/controllers/friend')
+const { getUserInfo } = require('common/controllers/user')
+import { Message } from 'common/const/interface'
 
 router.prefix('/friend')
 
@@ -21,18 +24,24 @@ router.post('/addFriend', async (ctx, next) => {
 		return false
 	}
 
-	console.log(type)
-	console.log(friendId)
-
 	switch (type) {
 		case 1:
+			const userInfo = getUserInfo(ctx, ctx.userId)
+			console.log(userInfo)
+			const { userName, avatar } = userInfo
 			// await addFriend(ctx, next)
-			const notify = {
+			const notify: Message = {
+				msgId: v4(),
 				type: 5,
 				sender: {
-					userId: ctx.userId
+					userId: ctx.userId,
+					avatarUrl: avatar,
+					userName: userName
 				},
-				reciver: friendId
+				reciver: friendId,
+				status: 1,
+				time: new Date().getTime(),
+				ext: ''
 			};
 			(global as any).ChatInstance.sendNotify(friendId, notify)
 			return

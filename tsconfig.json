@@ -4,6 +4,7 @@
 		"target": "es5",
 		"allowJs": true,
 		// "strict": true,
+		"declaration": true,
 		"baseUrl": ".",
 		"rootDir": "./",
 		"noImplicitAny": false,
@@ -19,8 +20,15 @@
 		"lib": [
 			"es6",
 			"dom"
+		],
+		"typeRoots": [
+			"types",
+			"node_modules/@types"
 		]
 	},
+	"include": [
+		"types/**/*.ts"
+	],
 	"exclude": [
 		"node_modules",
 		"pm2.config.*"

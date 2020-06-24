@@ -2,40 +2,14 @@ const { secretOrPrivateKey } = require('config')
 const jwt = require('jsonwebtoken')
 const RedisStore = require('../middlewares/redis/redis')
 const _ = require('lodash')
-const { getMsgList, pushOnlineMsg, pushOfflineMsg, delRedisKey } = require('./utils')
+
+import { Message, IAnyObject, InvokeData } from 'common/const/interface'
+import { getMsgList, pushOnlineMsg, pushOfflineMsg, delRedisKey, pushRedisRace } from './utils'
 
 const METHODS: string[] = [
 	'invoke',
 	'disconnect'
 ]
-
-declare type IAnyObject = Record<string, any>;
-
-interface InvokeData {
-	type: string;
-	token: string;
-	args: IAnyObject;
-}
-
-declare type Callback = (res: any) => {}
-
-interface Message {
-	msgId: string;
-	type: 0 | 1 | 2 | 3 | 4; // 0 text 1 image 2 video 3 audio 4 notify
-	sessionType: 0 | 1; // 0 单聊 1 群聊
-	content?: string;
-	time?: any;
-	resPath?: string;
-	status: 0 | 1 | 2 | 3 | 4; // 0 离线消息 1 服务端收到并转发出消息 2 接收者收到消息 未读 3 接收者收到消息 并已读 4 已删除
-	sender: {
-		userId: number;
-		avatarUrl?: string;
-		nickName?: string;
-	};
-	reciver: number; //接收者 userId or groupId
-	// groupId?: number;
-	ext?: string; // 预留字段 json格式
-}
 
 class Chat {
 	static _instance: Chat
@@ -119,6 +93,7 @@ class Chat {
 		if (offlineMsgs && offlineMsgs.length) {
 			/** 有离线消息 一次性推送给客户端 */
 			await socket.emit('offlineMsgs', offlineMsgs, data => {
+				console.log(data.lastMsgId)
 				if (data && data.code === 200) {
 					// delRedisKey(`offline::${userId}`)
 				}
@@ -139,20 +114,34 @@ class Chat {
 			/** 单聊 reciver为接收者的userId */
 			if (this.userList[reciver]) {
 				/** 接收者在线 */
+				callback({ code: 200, msg: 'success' })
 				try {
 					msg = {
 						...msg,
 						status: 1
 					}
-					await this.userList[reciver].socket.emit('receiveMsg', msg, data => {
-						console.log(data)
+
+					let promise = new Promise((resolve, reject) => {
+						this.userList[reciver].socket.emit('receiveMsg', msg, data => {
+							resolve(data)
+						})
 					})
-					callback({ code: 200, msg: 'success' })
-					/** 将msg push到redis消息列表中 */
-					pushOnlineMsg(sender.userId, reciver, msg)
+					let res = await pushRedisRace(promise)
+
+					if (res.code === 200) {
+						msg = {
+							...msg,
+							status: 2
+						}
+						/** 将msg push到redis消息列表中 */
+						await pushOnlineMsg(sender.userId, reciver, msg)
+					} else {
+						/** 将msg push到redis消息列表中 */
+						await pushOnlineMsg(sender.userId, reciver, msg)
+					}
 
 				} catch (err) {
-					callback({ code: 400, msg: 'error' })
+					console.log(err)
 				}
 
 			} else {
