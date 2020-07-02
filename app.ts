@@ -42,6 +42,7 @@ const middlewares = [
   },
   redis(),
   /** http://www.ptbird.cn/koa-body.html */
+  json(),
   koaBody({
     multipart: true,
     // encoding: 'gzip',
@@ -55,7 +56,6 @@ const middlewares = [
       }
     }
   }),
-  json(),
   Auth().unless({ path: unlessPaths }),
   createLogger(),
   staticServ(__dirname + '/public'),
