@@ -72,7 +72,7 @@ module.exports = (sequelize, DataTypes) => {
 		User.hasMany(models.Dynamic, { foreignKey: 'userId', sourceKey: 'id' })
 		User.hasMany(models.Comment, { foreignKey: 'userId', sourceKey: 'id' })
 		User.hasMany(models.Star, { foreignKey: 'userId', sourceKey: 'id' })
-		User.hasMany(models.GroupMember, { foreignKey: 'userId', sourceKey: 'id' })
+		// User.hasMany(models.GroupMember, { foreignKey: 'userId', sourceKey: 'id' })
 		User.hasMany(models.DynaSource, { name: 'dynasource_userid', foreignKey: 'userId', sourceKey: 'id', onDelete: 'CASCADE' })
 	};
 

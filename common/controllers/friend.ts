@@ -101,10 +101,32 @@ async function delFriend(ctx, next) {
 	}
 }
 
+/** 判断是否是好友 */
 async function friendOrNot(params: { userId: number; friendId: number; }) {
-
-
-
+	let res: any = await Friend.findOne({
+		where: {
+			[Op.or]: [
+				{
+					userId: {
+						[Op.eq]: params.userId
+					},
+					friendId: {
+						[Op.eq]: params.friendId
+					}
+				},
+				{
+					userId: {
+						[Op.eq]: params.friendId
+					},
+					friendId: {
+						[Op.eq]: params.userId
+					}
+				}
+			]
+		}
+	})
+	if (!res) return false
+	return true
 }
 
 async function getAll(ctx, next) {
@@ -197,7 +219,8 @@ async function getAll(ctx, next) {
 module.exports = {
 	addFriend,
 	delFriend,
-	getAll
+	getAll,
+	friendOrNot
 }
 
 export { }

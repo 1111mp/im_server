@@ -41,7 +41,7 @@ module.exports = (sequelize, DataTypes) => {
 	GroupMember.associate = function (models: any) {
 
 		GroupMember.belongsTo(models.ChatGroup, { foreignKey: 'groupId', targetKey: 'id' })
-		GroupMember.belongsTo(models.User, { foreignKey: 'userId', targetKey: 'id' })
+		// GroupMember.belongsTo(models.User, { foreignKey: 'userId', targetKey: 'id' })
 
 	}
 

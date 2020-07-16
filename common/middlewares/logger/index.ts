@@ -63,6 +63,7 @@ const log = {
 	}
 }
 
+// https://github.com/log4js-node/log4js-example
 module.exports = {
 	logs: log,
 

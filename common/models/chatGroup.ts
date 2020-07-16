@@ -13,11 +13,13 @@ module.exports = (sequelize, DataTypes) => {
 		groupName: {
 			type: DataTypes.STRING,
 			field: 'group_name',
+			defaultValue: 'null',
 			comment: '群组名称'
 		},
 		groupAvatar: {
 			type: DataTypes.STRING,
 			field: 'group_avatar',
+			defaultValue: 'null',
 			comment: '群组头像'
 		},
 		groupType: {

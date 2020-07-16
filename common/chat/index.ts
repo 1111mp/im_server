@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken')
 const RedisStore = require('../middlewares/redis/redis')
 const _ = require('lodash')
 
-import { Message, IAnyObject, InvokeData } from 'common/const/interface'
+import { Message, IAnyObject, InvokeData } from '../const/interface'
 import { getMsgList, pushOnlineMsg, pushOfflineMsg, delRedisKey, pushRedisRace } from './utils'
 
 const METHODS: string[] = [

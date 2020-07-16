@@ -1,9 +1,9 @@
 const router = require('koa-router')()
 const { v4 } = require('uuid')
 const { Friend } = require('common/models')
-const { addFriend, delFriend, getAll } = require('common/controllers/friend')
+const { addFriend, delFriend, getAll, friendOrNot } = require('common/controllers/friend')
 const { getUserInfo } = require('common/controllers/user')
-import { Message } from 'common/const/interface'
+import { Message } from '../common/const/interface'
 
 router.prefix('/friend')
 
@@ -12,7 +12,7 @@ router.prefix('/friend')
  * @param {1|2|3} type	好友操作类型	1：添加好友	2：删除好友 3：修改好友相关设置
  * @return: 
  */
-router.post('/addFriend', async (ctx, next) => {
+router.post('/friendHandle', async (ctx, next) => {
 
 	const { type, friendId } = ctx.request.body
 
@@ -26,13 +26,23 @@ router.post('/addFriend', async (ctx, next) => {
 
 	switch (type) {
 		case 1:
-			const userInfo = getUserInfo(ctx, ctx.userId)
+			const isFriend = await friendOrNot({ userId: ctx.userId, friendId });
+			if (isFriend) {
+				/** 已经是好友 */
+				ctx.body = {
+					code: 400,
+					msg: "It's already a good friend relationship, don't repeat submit."
+				}
+				return
+			}
+			const userInfo = await getUserInfo(ctx, ctx.userId)
 			console.log(userInfo)
 			const { userName, avatar } = userInfo
 			// await addFriend(ctx, next)
 			const notify: Message = {
 				msgId: v4(),
-				type: 5,
+				type: 4,
+				customType: 0,
 				sender: {
 					userId: ctx.userId,
 					avatarUrl: avatar,

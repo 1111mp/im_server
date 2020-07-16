@@ -39,6 +39,7 @@
     "pug": "^2.0.3",
     "redlock": "^4.1.0",
     "sequelize": "^5.21.9",
+    "sharp": "^0.25.4",
     "snowflake-id": "^1.1.0",
     "socket.io": "^2.3.0",
     "typescript": "^3.9.2",

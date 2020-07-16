@@ -1,6 +1,5 @@
 const fs = require('fs')
-// const path = require('path')
-import * as path from 'path'
+const path = require('path')
 
 const basename = path.basename(__filename)
 const routes = {}
