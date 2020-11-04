@@ -91,7 +91,7 @@ class Chat {
 		let offlineMsgs = await getMsgList(true, userId)
 
 		if (offlineMsgs && offlineMsgs.length) {
-			/** 有离线消息 一次性推送给客户端 */
+			/** 有离线消息 一次性推送给客户端 可做性能优化 分页拉取 */
 			await socket.emit('offlineMsgs', offlineMsgs, data => {
 				console.log(data.lastMsgId)
 				if (data && data.code === 200) {
