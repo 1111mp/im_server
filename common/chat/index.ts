@@ -50,6 +50,7 @@ class Chat {
 	}
 
 	connection = (socket: any) => {
+		console.log(socket)
 		METHODS.forEach(method => {
 			socket.on(method, (data: any, callback: any) => {
 				(this[method])(socket, data, callback)
