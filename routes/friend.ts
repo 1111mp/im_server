@@ -1,8 +1,8 @@
 const router = require('koa-router')()
 const { v4 } = require('uuid')
-const { Friend } = require('common/models')
-const { addFriend, delFriend, getAll, friendOrNot } = require('common/controllers/friend')
-const { getUserInfo } = require('common/controllers/user')
+const { Friend } = require('../common/models')
+const { addFriend, delFriend, getAll, friendOrNot } = require('../common/controllers/friend')
+const { getUserInfo } = require('../common/controllers/user')
 import { Message } from '../common/const/interface'
 
 router.prefix('/friend')

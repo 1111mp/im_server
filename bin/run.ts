@@ -8,7 +8,7 @@
 var app = require('../app');
 var debug = require('debug')('demo:server');
 var http = require('http');
-const initChat = require('common/chat')
+const initChat = require('../common/chat')
 
 /**
  * Get port from environment and store in Express.

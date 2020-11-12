@@ -2,7 +2,7 @@ const path = require('path')
 const fs = require('fs-extra')
 const router = require('koa-router')()
 const { uploadPath } = require('../config')
-const { getFileUrl } = require('config')
+const { getFileUrl } = require('../config')
 
 router.prefix('/upload')
 

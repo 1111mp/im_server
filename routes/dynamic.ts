@@ -5,9 +5,9 @@ const db = require('../common/models')
 const { Dynamic, DynaSource } = require('../common/models')
 const { STARREDISKEY, STARRCOUNTKEY, STARLOCK } = require('../common/const')
 const { getCount } = require('../common/controllers/star')
-const { getFileUrl } = require('common/utils')
-const { getDynaSources } = require('common/controllers/dynaSource')
-const { createOne, getAll } = require('common/controllers/comment')
+const { getFileUrl } = require('../common/utils')
+const { getDynaSources } = require('../common/controllers/dynaSource')
+const { createOne, getAll } = require('../common/controllers/comment')
 
 // const lock = new AsyncLock()
 
