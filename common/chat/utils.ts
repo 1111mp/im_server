@@ -47,77 +47,42 @@ export async function exists(key) {
 // }
 
 /** 在线时的消息 push到 redis的list中去 a和b共同的msgList */
-export async function onlineMsgToRedis(reciver, msg) {
-  await RedisStore.redis.rpush(`to::${reciver}`, JSON.stringify(msg));
+export async function msgToRedis(reciver, msg) {
+  try {
+    await RedisStore.redis.rpush(`to::${reciver}`, JSON.stringify(msg));
+  } catch (error) {
+    throw new Error("push msg to redis error");
+  }
 }
 
 /**
  * @description: 将用户的离线消息push到该用户的离线消息列表中去
  *  redis 的 key ===> `offline::${reciver}`
- *  hash 类型储存 对应的发送者 userId 为 key, msgList为value
+ *  list 类型储存
  * @param {*} sender  发送者 userId
  * @param {*} reciver 接受者 userId
  * @param {*} msg 消息
  * @return {*}
  */
 export async function offlineMsgToRedis(sender, reciver, msg) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const key = `offline::${reciver}`;
-
-      let offlineMsgs;
-
-      if (await RedisStore.redis.hexists(key, `${sender}`)) {
-        /** 存在 */
-        let msgInfo = await RedisStore.redis.hget(key, `${sender}`);
-        const { count, msgs } = JSON.parse(msgInfo);
-        offlineMsgs = {
-          count: ++(count as number),
-          msgs: [...msgs, { ...msg }],
-        };
-      } else {
-        /** 不存在 */
-        offlineMsgs = { count: 1, msgs: [{ ...msg }] };
-      }
-
-      RedisStore.redis.hset(key, `${sender}`, JSON.stringify(offlineMsgs));
-
-      resolve(200);
-    } catch (error) {
-      reject("push msg to redis error");
-    }
-  });
+  try {
+    await RedisStore.redis.lpush(`offline::${reciver}`, JSON.stringify(msg));
+  } catch (error) {
+    throw new Error("push msg to redis error");
+  }
 }
 
 /**
  * @description: 获取指定用户的离线消息的数量信息
  * @param {number} userId 用户 userId
  * @return {*}
- *  {
- *    userId1: 3,
- *    userId2: 1,
- *    userId3: 99,
- *    group1: 33,
- *    ...
- *  }
  */
 export async function unReadCountsFromRedis(userId: number) {
-  const keys: string[] = await RedisStore.redis.hkeys(`offline::${userId}`);
-
-  if (keys && keys.length) {
-    return keys.reduce(async (acc: any, cur: string, idx: number) => {
-      let msgInfo: any = await RedisStore.redis.hget(`offline::${userId}`, cur);
-      const { count, msgs } = JSON.parse(msgInfo);
-      return {
-        ...acc,
-        [Number(cur)]: {
-          count,
-          msg: { ...msgs[(msgs as any[]).length - 1] },
-        },
-      };
-    }, {});
+  try {
+    return await RedisStore.redis.llen(`offline::${userId}`);
+  } catch (error) {
+    return 0;
   }
-  return null;
 }
 
 export async function offlineMsgsFromRedis({

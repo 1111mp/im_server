@@ -7,7 +7,7 @@ import { Message, IAnyObject, InvokeData } from "../const/interface";
 import {
   racePromise,
   unReadCountsFromRedis,
-  onlineMsgToRedis,
+  msgToRedis,
   offlineMsgToRedis,
   delRedisKey,
   pushRedisRace,
@@ -81,22 +81,25 @@ class Chat {
     };
 
     /** 连接（相当于登录成功）之后，推送离线消息、通知等。。。 */
-    const msgsInfo = await unReadCountsFromRedis(userId);
+    try {
+      const counts = await unReadCountsFromRedis(userId);
 
-    console.log(msgsInfo);
+      console.log(counts);
 
-    if (msgsInfo) {
       const promise = new Promise((resolve) => {
-        socket.emit("offline-msgs-counts", msgsInfo, (result) => {
+        socket.emit("offline-msg-counts", counts, (result) => {
           resolve(result);
         });
       });
       const result = await racePromise(promise);
+
       if (result === 200) {
         /** 发送成功 */
       } else {
         /** 发送失败 */
       }
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -120,32 +123,6 @@ class Chat {
         return;
     }
   };
-
-  // login = async (socket: any, data: any, callback: any) => {
-  //   const { args } = data;
-  //   const { userId, socketId } = args;
-
-  //   this.userList[userId] = {
-  //     ...this.userList[userId],
-  //     socketId,
-  //     socket,
-  //   };
-
-  //   callback({ code: 200, msg: "login success" });
-
-  //   /** 用户登录成功之后 将该用户的所有离线消息都推送过去 */
-  //   let offlineMsgs = await unReadCountsFromRedis(userId);
-
-  //   if (offlineMsgs && offlineMsgs.length) {
-  //     /** 有离线消息 一次性推送给客户端 可做性能优化 分页拉取 */
-  //     await socket.emit("offlineMsgs", offlineMsgs, (data) => {
-  //       console.log(data.lastMsgId);
-  //       if (data && data.code === 200) {
-  //         // delRedisKey(`offline::${userId}`)
-  //       }
-  //     });
-  //   }
-  // };
 
   sendMsg = async (socket: Socket, data: any, callback: any) => {
     const args: Message = data.args;
@@ -179,21 +156,18 @@ class Chat {
               ...msg,
               status: 2,
             };
-            await onlineMsgToRedis(reciver, msg);
 
-            callback({ code: 200, msg: "success" });
             /** 将msg push到redis消息列表中 */
+            await msgToRedis(reciver, msg);
           } else {
             /** 将msg push到redis 离线消息列表中 */
             offlineMsgToRedis(sender.userId, reciver, msg);
-
-            callback({ code: 403, msg: "error" });
           }
-        } catch (err) {
-          console.log(err);
-          /** 将msg push到redis 离线消息列表中 */
-          offlineMsgToRedis(sender.userId, reciver, msg);
-          callback({ code: 403, msg: "error" });
+
+          callback({ code: 200, msg: "success" });
+        } catch (error) {
+          const err = error.errors[0];
+          callback({ code: 500, msg: `${err.value} ${err.message}` });
         }
       } else {
         /** 接收者离线 将消息放入该用户的离线消息list中 */
@@ -202,13 +176,13 @@ class Chat {
           status: 0,
         };
 
-        console.log(reciver);
-        let res = await offlineMsgToRedis(sender.userId, reciver, msg);
-        console.log(res);
-        if (res === 200) {
+        try {
+          await offlineMsgToRedis(sender.userId, reciver, msg);
+
           callback({ code: 200, msg: "success" });
-        } else {
-          callback({ code: 500, msg: res });
+        } catch (error) {
+          const err = error.errors[0];
+          callback({ code: 500, msg: `${err.value} ${err.message}` });
         }
       }
     } else if (sessionType === 1) {
@@ -230,9 +204,7 @@ class Chat {
   /** 获取离线消息 分页 */
   getOfflineMsgs = (socket: Socket, data: any, callback: any) => {
     console.log(data);
-		const { pageNo, pageSize } = data.args;
-		
-		
+    const { pageNo, pageSize } = data.args;
 
     callback({ code: 200 });
   };

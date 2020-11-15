@@ -1,0 +1,10 @@
+package messagepackage;
+
+syntax = "proto3";
+
+message Message {
+  required string msg_id = 1;
+  required int32 type = 2;
+  optional string content = 3 [default = ""];
+  required int64 timestamp = 4;
+}
