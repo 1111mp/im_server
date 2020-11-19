@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<script type="text/javascript" src="./libsignal-protocol.js"></script>
+</head>
+
+<body>
+	<script>
+		var KeyHelper = libsignal.KeyHelper;
+		console.log(KeyHelper);
+
+		// Store registrationId somewhere durable and safe.
+		var registrationId = KeyHelper.generateRegistrationId();
+
+		// is keyId == registrationId?
+		var keyId = registrationId;
+
+		var data = {};
+		data.registrationId = registrationId;
+
+		KeyHelper.generateIdentityKeyPair().then(function (identityKeyPair) {
+			// keyPair -> { pubKey: ArrayBuffer, privKey: ArrayBuffer }
+			// Store identityKeyPair somewhere durable and safe.
+			data.identityKeyPair = identityKeyPair;
+			return data;
+		}).then(function (data) {
+			return KeyHelper.generatePreKey(keyId);
+		}).then(function (preKey) {
+			//store.storePreKey(preKey.keyId, preKey.keyPair);
+			data.preKey = preKey;
+			return data;
+		}).then(function (data) {
+			return KeyHelper.generateSignedPreKey(data.identityKeyPair, keyId);
+		}).then(function (signedPreKey) {
+			//store.storeSignedPreKey(signedPreKey.keyId, signedPreKey.keyPair);
+			data.signedPreKey = signedPreKey;
+
+			// Register preKeys and signedPreKey with the server
+			console.log(data.registrationId);
+			console.log(data.identityKeyPair);
+			console.log(data.preKey);
+			console.log(data.signedPreKey);
+		});
+	</script>
+
+</body>
+
+</html>

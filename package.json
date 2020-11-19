@@ -10,6 +10,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "@throneless/libsignal-service": "^1.2.1",
     "@types/node": "^14.0.1",
     "@types/socket.io": "^2.1.8",
     "async-lock": "^1.2.4",

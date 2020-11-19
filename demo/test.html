@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<title>SaltIM</title>
+	<script type="text/javascript" src="./libsignal-protocol.js"></script>
+	<script type="text/javascript" src="./store.js"></script>
+	<script type="text/javascript">
+		const KeyHelper = libsignal.KeyHelper;
+		const store = new SignalProtocolStore();
+
+		const keyId = 709222;
+
+		// Store registrationId somewhere durable and safe.
+		// 将 registrationId 存储在持久且安全的地方。这玩意儿应该就是客户端 加解密消息 关键的 密钥
+		const registrationId = KeyHelper.generateRegistrationId();
+		console.log('registrationId:', registrationId);
+
+		async function init() {
+			const identityKeyPair = await KeyHelper.generateIdentityKeyPair();
+			// keyPair -> { pubKey: ArrayBuffer, privKey: ArrayBuffer }
+			// Store identityKeyPair somewhere durable and safe.
+			// 将 identityKeyPair 存储在坚固耐用的地方。安全保存。 这玩意儿干嘛的？？？
+			console.log('identityKeyPair:', identityKeyPair);
+
+			const signedPreKey = await KeyHelper.generateSignedPreKey(identityKeyPair, keyId);
+			console.log('signedPreKey:', signedPreKey);
+
+			await store.storeSignedPreKey(signedPreKey.keyId, signedPreKey.keyPair);
+
+			const preKey = await KeyHelper.generatePreKey(keyId);
+			console.log('preKey:', preKey);
+
+			await store.storePreKey(preKey.keyId, preKey.keyPair);
+
+			// 向服务器注册 preKeys 和 signedPreKey
+
+			// 收件人 id 和 设备 id    自己生成？？？
+			const recipientId = 17601254993;
+			const deviceId = '01';
+
+			const address = new libsignal.SignalProtocolAddress(recipientId, deviceId);
+			console.log('address:', address);
+
+			// await store.saveIdentity(address.toString(), identityKeyPair)
+
+			// Instantiate a SessionBuilder for a remote recipientId + deviceId tuple.
+			// 实例化一个SessionBuilder来获取一个远程的receiveId + deviceId元组
+			const sessionBuilder = new libsignal.SessionBuilder(store, address);
+			console.log('sessionBuilder:', sessionBuilder);
+
+			// Process a prekey fetched from the server. Returns a promise that resolves
+			// once a session is created and saved in the store, or rejects if the
+			// identityKey differs from a previously seen identity for this address.
+			// 处理从服务器获取的预密钥。 返回解决的承诺
+			// 一旦创建会话并将其保存在商店中，或者如果 identityKey 与该地址先前看到的身份不同，则拒绝该会话。
+			const promise = sessionBuilder.processPreKey({
+				registrationId,
+				identityKey: identityKeyPair.pubKey,
+				signedPreKey: {
+					...signedPreKey,
+					publicKey: signedPreKey.keyPair.pubKey
+				},
+				preKey: {
+					...preKey,
+					publicKey: preKey.keyPair.pubKey
+				}
+			});
+
+			promise.then(function onsuccess() {
+				// encrypt messages
+				// 加密 messages
+				console.log(111111111)
+			});
+
+			promise.catch(function onerror(error) {
+				// handle identity key conflict
+				// 处理身份密钥冲突
+				console.log(2222222222)
+				console.log(error)
+			});
+
+			// 使用地址建立会话后，就可以使用SessionCipher加密消息
+			const plaintext = "Hello world";
+			const sessionCipher = new libsignal.SessionCipher(store, address);
+			console.log(sessionCipher)
+			sessionCipher.encrypt(plaintext).then(function (ciphertext) {
+				// ciphertext -> { type: <Number>, body: <string> }
+				console.log('ciphertext:', ciphertext)
+				// handle(ciphertext.type, ciphertext.body);
+			});
+
+			// 密文有两种形式：WhisperMessage和PreKeyWhisperMessage。
+			const address = new SignalProtocolAddress(recipientId, deviceId);
+			const sessionCipher = new SessionCipher(store, address);
+
+			// Decrypt a PreKeyWhisperMessage by first establishing a new session.
+			// Returns a promise that resolves when the message is decrypted or
+			// rejects if the identityKey differs from a previously seen identity for this
+			// address.
+			// 首先建立一个新的会话来解密PreKeyWhisperMessage。
+			// 返回一个承诺，该承诺将在消息解密时解析，或者如果identityKey与该地址先前看到的身份不同，则拒绝。
+			sessionCipher.decryptPreKeyWhisperMessage(ciphertext).then(function (plaintext) {
+				// handle plaintext ArrayBuffer
+				// 处理纯文本ArrayBuffer
+			}).catch(function (error) {
+				// handle identity key conflict
+				// 处理身份密钥冲突
+			});
+
+			// // Decrypt a normal message using an existing session
+			// // 使用现有会话解密普通 message
+			const sessionCipher = new SessionCipher(store, address);
+			sessionCipher.decryptWhisperMessage(ciphertext).then(function (plaintext) {
+				// handle plaintext ArrayBuffer
+				// 处理纯文本ArrayBuffer
+			});
+		}
+
+		init();
+
+	</script>
+</head>
+
+<body>
+	<a>Test libsignal</a>
+</body>
+
+</html>

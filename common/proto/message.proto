@@ -5,6 +5,7 @@ syntax = "proto3";
 message Message {
   required string msg_id = 1;
   required int32 type = 2;
-  optional string content = 3 [default = ""];
+  optional string content = 3;
   required int64 timestamp = 4;
+  // required string data = 1;
 }

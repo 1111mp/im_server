@@ -58,19 +58,6 @@ class Chat {
   }
 
   connection = (socket: Socket) => {
-    /** 事件的初始化 */
-    METHODS.forEach((method) => {
-      socket.on(method, (data: any, callback: any) => {
-        this[method](socket, data, callback);
-      });
-    });
-
-    /** 连接成功之后的一系列操作。。。推送离线消息等 */
-    this.initOperate(socket);
-  };
-
-  initOperate = async (socket: Socket) => {
-    console.log(socket.decoded);
     const { userId } = socket.decoded;
 
     /** 在线用户 记录 */
@@ -80,6 +67,18 @@ class Chat {
       socket,
     };
 
+    /** 事件的初始化 */
+    METHODS.forEach((method) => {
+      socket.on(method, (data: any, callback: any) => {
+        this[method](socket, data, callback);
+      });
+    });
+
+    /** 连接成功之后的一系列操作。。。推送离线消息等 */
+    this.initOperate(socket, userId);
+  };
+
+  initOperate = async (socket: Socket, userId: number) => {
     /** 连接（相当于登录成功）之后，推送离线消息、通知等。。。 */
     try {
       const counts = await unReadCountsFromRedis(userId);
