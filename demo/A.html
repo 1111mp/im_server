@@ -15,9 +15,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.1.0/uuidv4.min.js"></script>
   <script>
-    let socket = io("ws://192.168.0.7:3000", {
+    let socket = io("ws://192.168.80.208:3000", {
       transports: ["websocket"],
-      query: { token: "5fc6f557-a2af-4730-a7dc-4e0be278834c" },
+      query: { token: "7307e906-c307-4918-b38f-0b00583f23e4" },
       reconnectionAttempts: 20,
     });
 
@@ -62,7 +62,7 @@
         sender: {
           userId: 10000,
         },
-        reciver: 10001,
+        reciver: 10002,
       };
       console.log(msg);
       invoke("send-msg", msg).then((res) => {

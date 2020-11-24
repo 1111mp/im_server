@@ -46,7 +46,7 @@ router.post("/friendHandle", async (ctx, next) => {
       const notify: Message = {
         msgId: v4(),
         type: 4,
-        customType: 0,
+        // customType: 0,
         sender: {
           userId: ctx.userId,
           avatarUrl: avatar,
