@@ -39,61 +39,61 @@ console.log(bobSecret.toString("hex"));
  * protobuf 只是做序列化 是压缩技术？？ 会影响加密解密的安全性问题吗？？？
  */
 
-// protobuf.load("./common/proto/message.proto", function (err, root) {
-//   if (err) throw err;
+protobuf.load("./common/proto/message.proto", function (err, root) {
+  if (err) throw err;
 
-//   // Obtain a message type
-//   var AwesomeMessage = root.lookupType("messagepackage.Message");
+  // Obtain a message type
+  var AwesomeMessage = root.lookupType("messagepackage.Message");
 
-//   // Exemplary payload
-//   var payload = {
-//     msgId: "1",
-//     type: 0,
-//     content: "ssss",
-//     timestamp: new Date().getTime(),
-//   };
+  // Exemplary payload
+  var payload = {
+    msgId: "1",
+    type: 0,
+    content: "ssss",
+    timestamp: new Date().getTime(),
+  };
 
-//   // const algorithm = "aes-192-cbc";
-//   // const password = "zhangyifan";
-//   // const key = crypto.scryptSync(password, "key", 24);
+  // const algorithm = "aes-192-cbc";
+  // const password = "zhangyifan";
+  // const key = crypto.scryptSync(password, "key", 24);
 
-//   // const iv = crypto.randomBytes(16);
-//   // const cipher = crypto.createCipheriv(algorithm, key, iv);
+  // const iv = crypto.randomBytes(16);
+  // const cipher = crypto.createCipheriv(algorithm, key, iv);
 
-//   // let encrypted = cipher.update(JSON.stringify(payload), "utf8", "hex");
-//   // encrypted += cipher.final("hex");
+  // let encrypted = cipher.update(JSON.stringify(payload), "utf8", "hex");
+  // encrypted += cipher.final("hex");
 
-//   // Verify the payload if necessary (i.e. when possibly incomplete or invalid)
-//   var errMsg = AwesomeMessage.verify(payload);
-//   if (errMsg) throw Error(errMsg);
+  // Verify the payload if necessary (i.e. when possibly incomplete or invalid)
+  var errMsg = AwesomeMessage.verify(payload);
+  if (errMsg) throw Error(errMsg);
 
-//   // Create a new message
-//   var message = AwesomeMessage.create(payload); // or use .fromObject if conversion is necessary
+  // Create a new message
+  var message = AwesomeMessage.create(payload); // or use .fromObject if conversion is necessary
 
-//   // Encode a message to an Uint8Array (browser) or Buffer (node)
-//   var buffer = AwesomeMessage.encode(message).finish();
-//   console.log(buffer);
-//   // ... do something with buffer
+  // Encode a message to an Uint8Array (browser) or Buffer (node)
+  var buffer = AwesomeMessage.encode(message).finish();
+  console.log(buffer);
+  // ... do something with buffer
 
-//   // Decode an Uint8Array (browser) or Buffer (node) to a message
-//   var message = AwesomeMessage.decode(buffer);
-//   // console.log(message);
-//   // ... do something with message
+  // Decode an Uint8Array (browser) or Buffer (node) to a message
+  var message = AwesomeMessage.decode(buffer);
+  // console.log(message);
+  // ... do something with message
 
-//   // If the application uses length-delimited buffers, there is also encodeDelimited and decodeDelimited.
+  // If the application uses length-delimited buffers, there is also encodeDelimited and decodeDelimited.
 
-//   // Maybe convert the message back to a plain object
-//   var object = AwesomeMessage.toObject(message, {
-//     longs: String,
-//     enums: String,
-//     bytes: String,
-//     // see ConversionOptions
-//   });
-//   console.log(object);
+  // Maybe convert the message back to a plain object
+  var object = AwesomeMessage.toObject(message, {
+    longs: String,
+    enums: String,
+    bytes: String,
+    // see ConversionOptions
+  });
+  console.log(object);
 
-//   // const decipher = crypto.createDecipheriv(algorithm, key, iv);
+  // const decipher = crypto.createDecipheriv(algorithm, key, iv);
 
-//   // let decrypted = decipher.update(object.data, "hex", "utf8");
-//   // decrypted += decipher.final("utf8");
-//   // console.log(decrypted);
-// });
+  // let decrypted = decipher.update(object.data, "hex", "utf8");
+  // decrypted += decipher.final("utf8");
+  // console.log(decrypted);
+});

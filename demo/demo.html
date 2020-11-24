@@ -90,6 +90,7 @@
 						// ciphertext = ciphertext;
 						// handle(ciphertext.type, ciphertext.body);
 						// localStorage.setItem('encrypt', JSON.stringify(ciphertext))
+						console.log(typeof ciphertext.body)
 						return ciphertext
 					}).then(ciphertext => {
 						// var sessionCipher = new libsignal.SessionCipher(store, address);
@@ -99,13 +100,13 @@
 						// });
 
 						/** 然后 Bob 收到之后 开始对文本解密 */
-						const text = JSON.parse(localStorage.getItem('encrypt'))
-						console.log(45646549879879)
-						console.log(text)
+						// const text = JSON.parse(localStorage.getItem('encrypt'))
+						// console.log(45646549879879)
+						// console.log(text)
 
 						// 首先建立一个新的会话来解密PreKeyWhisperMessage。
 						// 返回一个承诺，该承诺将在消息解密时解析，或者如果identityKey与该地址先前看到的身份不同，则拒绝。
-						bobSessionCipher.decryptPreKeyWhisperMessage(text.body, 'binary').then(function (plaintext) {
+						bobSessionCipher.decryptPreKeyWhisperMessage(ciphertext.body, 'binary').then(function (plaintext) {
 							// handle plaintext ArrayBuffer
 							// 处理纯文本ArrayBuffer
 							console.log(plaintext)

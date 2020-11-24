@@ -1,7 +1,24 @@
 import { count } from "console";
-import { IAnyObject } from "../const/interface";
+import { IAnyObject, Message } from "../const/interface";
 
 const RedisStore = require("../middlewares/redis/redis");
+
+const { messagepackage } = require("../../proto/proto");
+const { Message: ProtoMessage } = messagepackage;
+
+export function setMessageToProto(msg: Message): Buffer {
+  const message = ProtoMessage.create(msg);
+  return ProtoMessage.encode(message).finish();
+}
+
+export function getMessagefromProto(buffer: Buffer): Message {
+  const decodedMessage = ProtoMessage.decode(buffer);
+  return ProtoMessage.toObject(decodedMessage, {
+    longs: String,
+    enums: String,
+    bytes: String,
+  });
+}
 
 export function racePromise(
   promise: Promise<any>,

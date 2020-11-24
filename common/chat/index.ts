@@ -11,6 +11,7 @@ import {
   offlineMsgToRedis,
   delRedisKey,
   pushRedisRace,
+  getMessagefromProto,
 } from "./utils";
 
 export type Socket = {
@@ -90,6 +91,7 @@ class Chat {
           resolve(result);
         });
       });
+
       const result = await racePromise(promise);
 
       if (result === 200) {
@@ -105,7 +107,7 @@ class Chat {
   send() {}
 
   invoke = (socket: any, data: any, callback: any) => {
-    data = JSON.parse(data);
+    // data = JSON.parse(data);
     const { type } = data;
 
     switch (type) {
@@ -116,15 +118,17 @@ class Chat {
         /** 发送消息 */
         this.sendMsg(socket, data, callback);
         return;
-      case "get-offline-msgs":
-        /** 获取离线消息 */
-        this.getOfflineMsgs(socket, data, callback);
-        return;
+      // case "get-offline-msgs":
+      //   /** 获取离线消息 */
+      //   this.getOfflineMsgs(socket, data, callback);
+      //   return;
     }
   };
 
   sendMsg = async (socket: Socket, data: any, callback: any) => {
-    const args: Message = data.args;
+    console.log(data.args);
+    const args: Message = getMessagefromProto(data.args);
+    console.log(args);
     const { sessionType } = args;
     if (sessionType === 0) {
       const { reciver, sender } = args;
@@ -160,7 +164,7 @@ class Chat {
             await msgToRedis(reciver, msg);
           } else {
             /** 将msg push到redis 离线消息列表中 */
-            offlineMsgToRedis(sender.userId, reciver, msg);
+            offlineMsgToRedis(sender, reciver, msg);
           }
 
           callback({ code: 200, msg: "success" });
@@ -176,7 +180,7 @@ class Chat {
         };
 
         try {
-          await offlineMsgToRedis(sender.userId, reciver, msg);
+          await offlineMsgToRedis(sender, reciver, msg);
 
           callback({ code: 200, msg: "success" });
         } catch (error) {
@@ -201,12 +205,12 @@ class Chat {
   };
 
   /** 获取离线消息 分页 */
-  getOfflineMsgs = (socket: Socket, data: any, callback: any) => {
-    console.log(data);
-    const { pageNo, pageSize } = data.args;
+  // getOfflineMsgs = (socket: Socket, data: any, callback: any) => {
+  //   console.log(data);
+  //   const { pageNo, pageSize } = data.args;
 
-    callback({ code: 200 });
-  };
+  //   callback({ code: 200 });
+  // };
 
   disconnect = (socket: any) => {
     /** 断开连接之后 将用户从在线user列表移除 */

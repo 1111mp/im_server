@@ -43,21 +43,17 @@ router.post("/friendHandle", async (ctx, next) => {
       console.log(userInfo);
       const { userName, avatar } = userInfo;
       // await addFriend(ctx, next)
-      const notify: Message = {
-        msgId: v4(),
-        type: 4,
-        customType: 0,
-        sender: {
-          userId: ctx.userId,
-          avatarUrl: avatar,
-          userName: userName,
-        },
-        reciver: friendId,
-        status: 1,
-        time: new Date().getTime(),
-        ext: "",
-      };
-      (global as any).ChatInstance.sendNotify(friendId, notify);
+      // const notify: Message = {
+      //   msgId: v4(),
+      //   type: 4,
+      //   // customType: 0,
+      //   sender: ctx.userId,
+      //   reciver: friendId,
+      //   status: 1,
+      //   time: new Date().getTime(),
+      //   ext: "",
+      // };
+      // (global as any).ChatInstance.sendNotify(friendId, notify);
       return;
     case 2:
       await delFriend(ctx, next);
