@@ -27,7 +27,8 @@ fs.readdirSync(__dirname)
     );
   })
   .forEach((file) => {
-    const model = sequelize["import"](path.join(__dirname, file));
+    /** https://github.com/sequelize/sequelize/issues/12559 */
+    const model = require(path.join(__dirname, file))(sequelize);
     db[model.name] = model;
   });
 
@@ -41,7 +42,7 @@ db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
 // sequelize.sync({ alter: true })
-// sequelize.sync({ force: true })
+// sequelize.sync({ force: true });
 
 module.exports = db;
 

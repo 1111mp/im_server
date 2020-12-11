@@ -1,14 +1,14 @@
-const router = require("koa-router")();
-const { v4 } = require("uuid");
-const { Friend } = require("../common/models");
-const {
+// import { Message } from "../common/const/interface";
+import { getUserInfoByUserId } from "../common/controllers/user";
+import {
   addFriend,
   delFriend,
   getAll,
   friendOrNot,
-} = require("../common/controllers/friend");
-const { getUserInfo } = require("../common/controllers/user");
-import { Message } from "../common/const/interface";
+} from "../common/controllers/friend";
+// import { v4 } from "uuid";
+
+const router = require("koa-router")();
 
 router.prefix("/friend");
 
@@ -39,7 +39,7 @@ router.post("/friendHandle", async (ctx, next) => {
         };
         return;
       }
-      const userInfo = await getUserInfo(ctx, ctx.userId);
+      const userInfo = await getUserInfoByUserId(ctx, ctx.userId);
       console.log(userInfo);
       const { userName, avatar } = userInfo;
       // await addFriend(ctx, next)

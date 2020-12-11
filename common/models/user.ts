@@ -1,5 +1,6 @@
 "use strict";
 
+const { DataTypes } = require("sequelize");
 const moment = require("moment");
 const bcrypt = require("bcrypt");
 
@@ -8,7 +9,7 @@ const bcrypt = require("bcrypt");
  * 解决生成海量的索引的错误
  * https://www.chaoswork.cn/1064.html
  */
-module.exports = (sequelize, DataTypes) => {
+module.exports = (sequelize) => {
   const User = sequelize.define(
     "User",
     {
@@ -19,11 +20,14 @@ module.exports = (sequelize, DataTypes) => {
         // 自增
         autoIncrement: true,
       },
-      username: {
-        type: DataTypes.STRING(32),
+      account: {
+        type: DataTypes.INTEGER,
+        validate: {
+          is: /^1[3-9](\d{9})$/i,
+        },
         // 唯一
-        unique: "username",
-        comment: "用户名",
+        unique: "account",
+        comment: "账号 手机号",
       },
       pwd: {
         type: DataTypes.STRING(64),
@@ -67,25 +71,25 @@ module.exports = (sequelize, DataTypes) => {
           );
         },
       },
-      regisTime: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-        get() {
-          // this.getDataValue 获取当前字段value
-          return moment((this as any).getDataValue("regisTime")).format(
-            "YYYY-MM-DD HH:mm"
-          );
-        },
-      },
-      updateTime: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-        get() {
-          return moment((this as any).getDataValue("updateTime")).format(
-            "YYYY-MM-DD HH:mm"
-          );
-        },
-      },
+      // regisTime: {
+      //   type: DataTypes.DATE,
+      //   defaultValue: DataTypes.NOW,
+      //   get() {
+      //     // this.getDataValue 获取当前字段value
+      //     return moment((this as any).getDataValue("regisTime")).format(
+      //       "YYYY-MM-DD HH:mm"
+      //     );
+      //   },
+      // },
+      // updateTime: {
+      //   type: DataTypes.DATE,
+      //   defaultValue: DataTypes.NOW,
+      //   get() {
+      //     return moment((this as any).getDataValue("updateTime")).format(
+      //       "YYYY-MM-DD HH:mm"
+      //     );
+      //   },
+      // },
     },
     {
       // freezeTableName: true,

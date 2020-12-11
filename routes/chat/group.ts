@@ -2,7 +2,7 @@ const router = require('koa-router')()
 const db = require('../../common/models')
 const { ChatGroup, GroupMember } = require('../../common/models')
 
-router.prefix('/chat')
+router.prefix('/im')
 
 /**
  * @description: 建群

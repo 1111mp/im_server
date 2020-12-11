@@ -1,118 +1,120 @@
-const path = require('path')
-const fs = require('fs-extra')
-const router = require('koa-router')()
-const { uploadPath } = require('../config')
-const { getFileUrl } = require('../config')
+import { dirname as dirnameFun, join } from "path";
+import Config from "../config";
+import { getFileUrl } from "../common/utils";
 
-router.prefix('/upload')
+const fs = require("fs-extra");
+const router = require("koa-router")();
 
-router.post('/', async (ctx, next) => {
+router.prefix("/upload");
+
+router.post("/", async (ctx, next) => {
   /** 上传成功之后的files对象 */
-  let { files } = ctx.request.files
-  let urlArr: any[] = getFileUrl(files)
+  let { files } = ctx.request.files;
+  let urlArr: any[] = getFileUrl(files);
   ctx.body = {
     code: 200,
-    data: urlArr
-  }
-})
+    data: urlArr,
+  };
+});
 
 const mkdirsSync = (dirname) => {
   if (fs.existsSync(dirname)) {
     return true;
   } else {
-    if (mkdirsSync(path.dirname(dirname))) {
+    if (mkdirsSync(dirnameFun(dirname))) {
       fs.mkdirSync(dirname);
       return true;
     }
   }
-}
+};
 
 /**
  * @description: 分片上传 https://www.cnblogs.com/tugenhua0707/p/11246860.html
  * @param {merge|upload} type 请求的类型
- * @return: 
+ * @return:
  */
-router.post('/chunkFile', async (ctx, next) => {
-  const { type } = ctx.request.body
+router.post("/chunkFile", async (ctx, next) => {
+  const { type } = ctx.request.body;
 
-  if (type === 'merge') {
-
+  if (type === "merge") {
     try {
-      const { index, hash, total, name } = ctx.request.body
-      const chunksPath = path.join(uploadPath, hash, '/')
-      const filePath = path.join(uploadPath, name)
+      const { index, hash, total, name } = ctx.request.body;
+      const chunksPath = join(Config.uploadPath, hash, "/");
+      const filePath = join(Config.uploadPath, name);
 
       // 读取所有的chunks 文件名存放在数组中
-      const chunks = fs.readdirSync(chunksPath)
+      const chunks = fs.readdirSync(chunksPath);
       // 创建存储文件
-      fs.writeFileSync(filePath, '')
+      fs.writeFileSync(filePath, "");
 
       if (chunks.length !== total || chunks.length === 0) {
         ctx.body = {
           code: 400,
-          msg: '切片文件数量不符合'
-        }
-        return false
+          msg: "切片文件数量不符合",
+        };
+        return false;
       }
 
       for (let i = 0; i < total; i++) {
         // 追加写入到文件中
-        fs.appendFileSync(filePath, fs.readFileSync(chunksPath + hash + '-' + i));
-        // 删除本次使用的chunk    
-        fs.unlinkSync(chunksPath + hash + '-' + i);
+        fs.appendFileSync(
+          filePath,
+          fs.readFileSync(chunksPath + hash + "-" + i)
+        );
+        // 删除本次使用的chunk
+        fs.unlinkSync(chunksPath + hash + "-" + i);
       }
 
-      fs.rmdirSync(chunksPath)
+      fs.rmdirSync(chunksPath);
 
       // 文件合并成功，可以把文件信息进行入库
       ctx.body = {
         code: 200,
-        msg: 'successed',
-        data: `http://localhost:3000/upload/${name}`
-      }
+        msg: "successed",
+        data: `http://localhost:3000/upload/${name}`,
+      };
     } catch (err) {
       ctx.body = {
         code: 400,
-        msg: 'merge error'
-      }
+        msg: "merge error",
+      };
     }
-
-  } else if (type === 'upload') {
-
-    const { index, hash } = ctx.request.body
+  } else if (type === "upload") {
+    const { index, hash } = ctx.request.body;
 
     try {
-      const { file } = ctx.request.files
-      const chunksPath = path.join(uploadPath, hash, '/')
+      const { file } = ctx.request.files;
+      const chunksPath = join(Config.uploadPath, hash, "/");
 
-      if (!fs.existsSync(path.join(uploadPath, hash, '/', hash + '-' + index))) {
-        if (!fs.existsSync(chunksPath)) mkdirsSync(chunksPath)
+      if (
+        !fs.existsSync(join(Config.uploadPath, hash, "/", hash + "-" + index))
+      ) {
+        if (!fs.existsSync(chunksPath)) mkdirsSync(chunksPath);
 
-        fs.renameSync(file.path, chunksPath + hash + '-' + index)
+        fs.renameSync(file.path, chunksPath + hash + "-" + index);
       }
 
       ctx.body = {
         code: 200,
-        msg: 'successed'
-      }
+        msg: "successed",
+      };
     } catch (err) {
       ctx.body = {
         code: 400,
-        msg: `hash: ${hash} index: ${index} upload error`
-      }
+        msg: `hash: ${hash} index: ${index} upload error`,
+      };
     }
-
   } else {
     ctx.body = {
       code: 400,
-      msg: 'unkown type'
-    }
+      msg: "unkown type",
+    };
   }
-})
+});
 
-module.exports = router
+module.exports = router;
 
-export { }
+export {};
 
 /** 大文件分片上传的前端使用代码 */
 /**

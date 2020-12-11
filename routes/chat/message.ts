@@ -1,6 +1,6 @@
 const router = require("koa-router")();
 
-router.prefix("/chat");
+router.prefix("/im");
 
 router.post("/getOfflineMsgs", async (ctx) => {
   const { pageNo, pageSize, complete } = ctx.request.body;

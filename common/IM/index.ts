@@ -1,9 +1,8 @@
-const { secretOrPrivateKey } = require("../../config");
-const jwt = require("jsonwebtoken");
-const RedisStore = require("../middlewares/redis/redis");
-const _ = require("lodash");
-
+import RedisStore from "../middlewares/redis/redis";
 import { Message, IAnyObject, InvokeData } from "../const/interface";
+import { omitBy } from "lodash";
+import jwt from "jsonwebtoken";
+
 import {
   racePromise,
   unReadCountsFromRedis,
@@ -13,6 +12,7 @@ import {
   pushRedisRace,
   getMessagefromProto,
 } from "./utils";
+import Config from "../../config";
 
 export type Socket = {
   decoded: IAnyObject;
@@ -41,11 +41,15 @@ class Chat {
     this.socket.use(async (socket: Socket, next) => {
       if (socket.handshake.query && socket.handshake.query.token) {
         const realToken = await RedisStore.get(socket.handshake.query.token);
-        jwt.verify(realToken, secretOrPrivateKey, function (err, decoded) {
-          if (err) return next(new Error("Authentication error"));
-          socket.decoded = decoded;
-          next();
-        });
+        jwt.verify(
+          realToken,
+          Config.secretOrPrivateKey,
+          function (err, decoded) {
+            if (err) return next(new Error("Authentication error"));
+            socket.decoded = decoded;
+            next();
+          }
+        );
       } else {
         next(new Error("Authentication error"));
       }
@@ -214,15 +218,10 @@ class Chat {
 
   disconnect = (socket: any) => {
     /** 断开连接之后 将用户从在线user列表移除 */
-    this.userList = _.omitBy(
-      this.userList,
-      (val) => val.socketId === socket.id
-    );
+    this.userList = omitBy(this.userList, (val) => val.socketId === socket.id);
   };
 }
 
-module.exports = function (server) {
+export default function (server) {
   (global as any).ChatInstance = Chat.getInstance(server);
-};
-
-export {};
+}

@@ -1,18 +1,26 @@
-const router = require('koa-router')()
-const User = require('../common/controllers/user')
+import { queryAll, register } from "../common/controllers/user";
 
-router.prefix('/users')
+const router = require("koa-router")();
 
-router.get('/', async function (ctx, next) {
-  ctx.body = 'this is a users response!'
-})
+router.prefix("/users");
+
+router.get("/", async function (ctx, next) {
+  ctx.body = "this is a users response!";
+});
 
 /** 获取所有user */
-router.post('/queryAll', User.queryAll)
+router.post("/queryAll", queryAll);
 
 /** 用户注册 */
-router.post('/register', User.register)
+router.post("/register", register);
 
-module.exports = router
+/**
+ * @description: 通过 account 获取用户信息
+ * @param {number} account  账号 手机号
+ * @return {*}
+ */
+router.post("/getUserByAccount", async (ctx, next) => {});
 
-export { }
+module.exports = router;
+
+export {};

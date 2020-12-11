@@ -1,20 +1,20 @@
-const Koa = require("koa");
-const views = require("koa-views");
-const json = require("koa-json");
-const onerror = require("koa-onerror");
-const koaBody = require("koa-body");
-const compose = require("koa-compose");
-const staticServ = require("koa-static");
-const cors = require("koa2-cors");
-const path = require("path");
+import * as Koa from "koa";
+import * as views from "koa-views";
+import * as json from "koa-json";
+import * as onerror from "koa-onerror";
+import * as koaBody from "koa-body";
+import * as compose from "koa-compose";
+import * as staticServ from "koa-static";
+import * as cors from "koa2-cors";
 
-const redis = require("./common/middlewares/redis");
-const Auth = require("./common/middlewares/auth");
-const timerTask = require("./common/utils/timerTask");
-const { createLogger, logs } = require("./common/middlewares/logger");
+import initRedis from "./common/middlewares/redis";
+import Auth from "./common/middlewares/auth";
+import logs, { createLogger } from "./common/middlewares/logger";
+import timerTask from "./common/utils/timerTask";
+import asycStarData from "./common/utils/syncStarData";
+import Config from "./config";
+
 const routes = require("./routes");
-const { unlessPaths, uploadPath } = require("./config");
-const asycStarData = require("./common/utils/syncStarData");
 require("./common/models");
 
 const app = new Koa();
@@ -44,14 +44,14 @@ const middlewares = [
       }
     });
   },
-  redis(),
+  initRedis(),
   /** http://www.ptbird.cn/koa-body.html */
   json(),
   koaBody({
     multipart: true,
     // encoding: 'gzip',
     formidable: {
-      uploadDir: uploadPath,
+      uploadDir: Config.uploadPath,
       keepExtensions: true,
       maxFieldsSize: 2 * 1024 * 1024,
       onFileBegin: (name, file) => {
@@ -60,7 +60,7 @@ const middlewares = [
       },
     },
   }),
-  Auth().unless({ path: unlessPaths }),
+  Auth().unless({ path: Config.unlessPaths }),
   createLogger(),
   staticServ(__dirname + "/public"),
   views(__dirname + "/views", {
@@ -83,6 +83,4 @@ app.on("error", (err, ctx) => {
   console.error("server error", err, ctx);
 });
 
-module.exports = app;
-
-export {};
+export default app;

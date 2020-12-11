@@ -14,18 +14,18 @@ router.get("/", async (ctx, next) => {
 
 /**
  * @description: 登录接口
- * @param {string} username 用户名
+ * @param {number} account 账号 手机号
  * @param {string} pwd 密码
  * @return:
  */
 router.post("/login", async (ctx, next) => {
   console.log(ctx.request);
-  const { username, pwd } = ctx.request.body;
+  const { account, pwd } = ctx.request.body;
 
-  if (!username || !pwd) {
+  if (!account || !pwd) {
     ctx.body = {
       code: 401,
-      msg: "username or pwd cannot be empty",
+      msg: "account or pwd cannot be empty",
     };
     return;
   }
@@ -33,7 +33,7 @@ router.post("/login", async (ctx, next) => {
   let user = await User.findOne({
     attributes: [
       ["id", "userId"],
-      "username",
+      "account",
       "pwd",
       "avatar",
       "email",
@@ -41,8 +41,8 @@ router.post("/login", async (ctx, next) => {
       ["updatedAt", "updateTime"],
     ],
     where: {
-      username: {
-        [Op.eq]: `${username}`,
+      account: {
+        [Op.eq]: account,
       },
     },
   });

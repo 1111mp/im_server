@@ -1,226 +1,214 @@
-const db = require('../models')
-const { Friend, User, FriSetting } = require('../models')
-const { Op } = require('sequelize/lib/sequelize')
+const db = require("../models");
+const { Friend, User, FriSetting } = require("../models");
+const { Op } = require("sequelize/lib/sequelize");
 
 /**
  * @description: 添加好友
  * @param {number} friendId	好友的userId
- * @return: 
+ * @return:
  */
-async function addFriend(ctx, next) {
-	const { friendId } = ctx.request.body
-	if (!friendId) {
-		ctx.body = {
-			code: 400,
-			msg: 'friendId cannot be emptyed'
-		}
-		return false
-	}
+export async function addFriend(ctx, next) {
+  const { friendId } = ctx.request.body;
+  if (!friendId) {
+    ctx.body = {
+      code: 400,
+      msg: "friendId cannot be emptyed",
+    };
+    return false;
+  }
 
-	try {
+  try {
+    await db.sequelize.transaction((t) => {
+      return Friend.create({ userId: ctx.userId, friendId }, { transaction: t })
+        .then((friend) => {
+          return FriSetting.create(
+            { userId: ctx.userId, friendId },
+            { transaction: t }
+          );
+        })
+        .then((res) => {
+          return FriSetting.create(
+            { userId: friendId, friendId: ctx.userId },
+            { transaction: t }
+          );
+        });
+    });
 
-		await db.sequelize.transaction(t => {
-			return Friend.create({ userId: ctx.userId, friendId }, { transaction: t })
-				.then(friend => {
-					return FriSetting.create({ userId: ctx.userId, friendId }, { transaction: t })
-				})
-				.then(res => {
-					return FriSetting.create({ userId: friendId, friendId: ctx.userId }, { transaction: t })
-				})
-		})
-
-		ctx.body = {
-			code: 200,
-			msg: 'successed'
-		}
-
-	} catch (err) {
-
-		const msg = err.errors[0]
-		ctx.body = {
-			code: 400,
-			data: `${msg.value} ${msg.message}`
-		}
-
-	}
+    ctx.body = {
+      code: 200,
+      msg: "successed",
+    };
+  } catch (err) {
+    const msg = err.errors[0];
+    ctx.body = {
+      code: 400,
+      data: `${msg.value} ${msg.message}`,
+    };
+  }
 }
 
 /**
  * @description: 删除好友
  * @param {number} friendId	好友的userId
- * @return: 
+ * @return:
  */
-async function delFriend(ctx, next) {
-	const { friendId } = ctx.request.body
-	const userId = ctx.userId
+export async function delFriend(ctx, next) {
+  const { friendId } = ctx.request.body;
+  const userId = ctx.userId;
 
-	if (!friendId) {
-		ctx.body = {
-			code: 400,
-			msg: 'friendId cannot be emptyed'
-		}
-		return false
-	}
+  if (!friendId) {
+    ctx.body = {
+      code: 400,
+      msg: "friendId cannot be emptyed",
+    };
+    return false;
+  }
 
-	try {
+  try {
+    await Friend.destroy({
+      where: {
+        [Op.or]: [
+          {
+            userId: {
+              [Op.eq]: userId,
+            },
+            friendId: {
+              [Op.eq]: friendId,
+            },
+          },
+          {
+            userId: {
+              [Op.eq]: friendId,
+            },
+            friendId: {
+              [Op.eq]: userId,
+            },
+          },
+        ],
+      },
+    });
 
-		await Friend.destroy({
-			where: {
-				[Op.or]: [
-					{
-						userId: {
-							[Op.eq]: userId
-						},
-						friendId: {
-							[Op.eq]: friendId
-						}
-					},
-					{
-						userId: {
-							[Op.eq]: friendId
-						},
-						friendId: {
-							[Op.eq]: userId
-						}
-					}
-				]
-			}
-		})
-
-		ctx.body = {
-			code: 200,
-			msg: 'delete success'
-		}
-
-	} catch (err) {
-		const msg = err.errors[0]
-		ctx.body = {
-			code: 400,
-			data: `${msg.value} ${msg.message}`
-		}
-	}
+    ctx.body = {
+      code: 200,
+      msg: "delete success",
+    };
+  } catch (err) {
+    const msg = err.errors[0];
+    ctx.body = {
+      code: 400,
+      data: `${msg.value} ${msg.message}`,
+    };
+  }
 }
 
 /** 判断是否是好友 */
-async function friendOrNot(params: { userId: number; friendId: number; }) {
-	let res: any = await Friend.findOne({
-		where: {
-			[Op.or]: [
-				{
-					userId: {
-						[Op.eq]: params.userId
-					},
-					friendId: {
-						[Op.eq]: params.friendId
-					}
-				},
-				{
-					userId: {
-						[Op.eq]: params.friendId
-					},
-					friendId: {
-						[Op.eq]: params.userId
-					}
-				}
-			]
-		}
-	})
-	if (!res) return false
-	return true
+export async function friendOrNot(params: {
+  userId: number;
+  friendId: number;
+}) {
+  let res: any = await Friend.findOne({
+    where: {
+      [Op.or]: [
+        {
+          userId: {
+            [Op.eq]: params.userId,
+          },
+          friendId: {
+            [Op.eq]: params.friendId,
+          },
+        },
+        {
+          userId: {
+            [Op.eq]: params.friendId,
+          },
+          friendId: {
+            [Op.eq]: params.userId,
+          },
+        },
+      ],
+    },
+  });
+  if (!res) return false;
+  return true;
 }
 
-async function getAll(ctx, next) {
-	const userId = ctx.userId
+export async function getAll(ctx, next) {
+  const userId = ctx.userId;
 
-	try {
+  try {
+    let { rows: friendIds, count: totalCount } = await Friend.findAndCountAll({
+      attributes: ["userId", "friendId"],
+      where: {
+        [Op.or]: [
+          {
+            userId: {
+              [Op.eq]: userId,
+            },
+          },
+          {
+            friendId: {
+              [Op.eq]: userId,
+            },
+          },
+        ],
+      },
+    });
 
-		let { rows: friendIds, count: totalCount } = await Friend.findAndCountAll({
-			attributes: ['userId', 'friendId'],
-			where: {
-				[Op.or]: [
-					{
-						userId: {
-							[Op.eq]: userId
-						}
-					},
-					{
-						friendId: {
-							[Op.eq]: userId
-						}
-					}
-				]
-			}
-		})
+    let friends: any[] = await Promise.all(
+      friendIds.map(async (friend) => {
+        let friendId, friendInfo;
+        friend = friend.toJSON();
 
-		let friends: any[] = await Promise.all(
-			friendIds.map(async (friend) => {
+        if (friend.userId === userId) {
+          friendId = friend.friendId;
+        } else {
+          friendId = friend.userId;
+        }
 
-				let friendId,
-					friendInfo
-				friend = friend.toJSON()
+        let baseInfo = await User.findOne({
+          attributes: { exclude: ["pwd", "updateAt"] },
+          where: {
+            id: {
+              [Op.eq]: friendId,
+            },
+          },
+        }).toJSON();
 
-				if (friend.userId === userId) {
-					friendId = friend.friendId
-				} else {
-					friendId = friend.userId
-				}
+        let settings = await FriSetting.findOne({
+          attributes: {
+            exclude: ["id", "userId", "friendId", , "createdAt", "updateAt"],
+          },
+          where: {
+            userId: {
+              [Op.eq]: userId,
+            },
+            friendId: {
+              [Op.eq]: friendId,
+            },
+          },
+        }).toJSON();
 
-				let baseInfo = await User.findOne({
-					attributes: { exclude: ['pwd', 'updateAt'] },
-					where: {
-						id: {
-							[Op.eq]: friendId
-						}
-					}
-				}).toJSON()
+        friendInfo = {
+          ...baseInfo,
+          ...settings,
+        };
 
-				let settings = await FriSetting.findOne({
-					attributes: { exclude: ['id', 'userId', 'friendId', , 'createdAt', 'updateAt'] },
-					where: {
-						userId: {
-							[Op.eq]: userId
-						},
-						friendId: {
-							[Op.eq]: friendId
-						}
-					}
-				}).toJSON()
+        return friendInfo;
+      })
+    );
 
-				friendInfo = {
-					...baseInfo,
-					...settings
-				}
-
-				return friendInfo
-
-			})
-		)
-
-		ctx.body = {
-			code: 200,
-			data: {
-				totalCount,
-				friends
-			}
-		}
-
-	} catch (err) {
-
-		const msg = err.errors[0]
-		ctx.body = {
-			code: 400,
-			data: `${msg.value} ${msg.message}`
-		}
-
-	}
-
+    ctx.body = {
+      code: 200,
+      data: {
+        totalCount,
+        friends,
+      },
+    };
+  } catch (err) {
+    const msg = err.errors[0];
+    ctx.body = {
+      code: 400,
+      data: `${msg.value} ${msg.message}`,
+    };
+  }
 }
-
-module.exports = {
-	addFriend,
-	delFriend,
-	getAll,
-	friendOrNot
-}
-
-export { }

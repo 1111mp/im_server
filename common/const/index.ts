@@ -1,10 +1,7 @@
-const STARREDISKEY = 'starRedis'
-const STARRCOUNTKEY = 'starCounts'
+export const STARREDISKEY = "starRedis";
 
-const STARLOCK = 'starLock'
+export const STARRCOUNTKEY = "starCounts";
 
-module.exports = {
-	STARREDISKEY,
-	STARRCOUNTKEY,
-	STARLOCK
-}
+export const STARLOCK = "starLock";
+
+export const USERINFOKEY = "user_info";

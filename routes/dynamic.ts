@@ -1,13 +1,14 @@
+import { Op } from "sequelize/lib/sequelize";
+import { STARREDISKEY, STARRCOUNTKEY, STARLOCK } from "../common/const";
+import { getDynaSources } from "../common/controllers/dynaSource";
+import { createOne, getAll } from "../common/controllers/comment";
+import { getCount } from "../common/controllers/star";
+import { getFileUrl } from "../common/utils";
+
 const router = require("koa-router")();
 // const AsyncLock = require('async-lock')
-const { Op } = require("sequelize/lib/sequelize");
 const db = require("../common/models");
 const { Dynamic, DynaSource } = require("../common/models");
-const { STARREDISKEY, STARRCOUNTKEY, STARLOCK } = require("../common/const");
-const { getCount } = require("../common/controllers/star");
-const { getFileUrl } = require("../common/utils");
-const { getDynaSources } = require("../common/controllers/dynaSource");
-const { createOne, getAll } = require("../common/controllers/comment");
 
 // const lock = new AsyncLock()
 
