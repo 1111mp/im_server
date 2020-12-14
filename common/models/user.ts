@@ -1,6 +1,7 @@
 "use strict";
 
-const { DataTypes } = require("sequelize");
+import { DataTypes } from "sequelize";
+
 const moment = require("moment");
 const bcrypt = require("bcrypt");
 
@@ -14,14 +15,14 @@ module.exports = (sequelize) => {
     "User",
     {
       id: {
-        type: DataTypes.INTEGER(11),
+        type: DataTypes.INTEGER,
         // 设为主建
         primaryKey: true,
         // 自增
         autoIncrement: true,
       },
       account: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING(11),
         validate: {
           is: /^1[3-9](\d{9})$/i,
         },
@@ -52,7 +53,7 @@ module.exports = (sequelize) => {
         },
         comment: "用户邮箱",
       },
-      createdAt: {
+      regisTime: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
         get() {
@@ -62,7 +63,7 @@ module.exports = (sequelize) => {
           );
         },
       },
-      updatedAt: {
+      updateTime: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
         get() {
@@ -71,29 +72,12 @@ module.exports = (sequelize) => {
           );
         },
       },
-      // regisTime: {
-      //   type: DataTypes.DATE,
-      //   defaultValue: DataTypes.NOW,
-      //   get() {
-      //     // this.getDataValue 获取当前字段value
-      //     return moment((this as any).getDataValue("regisTime")).format(
-      //       "YYYY-MM-DD HH:mm"
-      //     );
-      //   },
-      // },
-      // updateTime: {
-      //   type: DataTypes.DATE,
-      //   defaultValue: DataTypes.NOW,
-      //   get() {
-      //     return moment((this as any).getDataValue("updateTime")).format(
-      //       "YYYY-MM-DD HH:mm"
-      //     );
-      //   },
-      // },
     },
     {
       // freezeTableName: true,
       initialAutoIncrement: 10000,
+      createdAt: "regisTime",
+      updatedAt: "updateTime",
     }
   );
 

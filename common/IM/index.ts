@@ -1,5 +1,11 @@
 import RedisStore from "../middlewares/redis/redis";
-import { Message, IAnyObject, InvokeData } from "../const/interface";
+import {
+  Message,
+  IAnyObject,
+  InvokeData,
+  Notify,
+  AckResponse,
+} from "../const/interface";
 import { omitBy } from "lodash";
 import jwt from "jsonwebtoken";
 
@@ -11,8 +17,13 @@ import {
   delRedisKey,
   pushRedisRace,
   getMessagefromProto,
+  setNotifyToProto,
+  getAckResponseFromProto,
+  notifyToRedis,
+  offlineNotifyToRedis,
 } from "./utils";
 import Config from "../../config";
+import { IMNOTIFY } from "./constants";
 
 export type Socket = {
   decoded: IAnyObject;
@@ -98,7 +109,7 @@ class Chat {
 
       const result = await racePromise(promise);
 
-      if (result === 200) {
+      if (result.code === 200) {
         /** 发送成功 */
       } else {
         /** 发送失败 */
@@ -197,12 +208,41 @@ class Chat {
     }
   };
 
-  sendNotify = (userId, notify: IAnyObject) => {
-    if (this.userList[userId]) {
+  /** 发送通知消息 */
+  sendNotify = async (
+    reciver,
+    notify: Notify,
+    senderInfo: IAnyObject
+  ): Promise<"successed" | "failed"> => {
+    if (this.userList[reciver]) {
       /** 在线 */
-      this.userList[userId].socket.emit("notify", notify, (data) => {
-        console.log(data);
+      const notifyMsg = {
+        ...notify,
+        senderInfo: JSON.stringify(senderInfo),
+      };
+      // 序列化
+      const buffer = setNotifyToProto(notifyMsg);
+
+      const promise = new Promise((resolve) => {
+        this.userList[reciver].socket.emit(IMNOTIFY, buffer, (data: Buffer) => {
+          const ack: AckResponse = getAckResponseFromProto(data);
+          resolve(ack);
+        });
       });
+
+      const result = await racePromise(promise);
+
+      if (result.code === 200) {
+        // 成功 将通知 存到redis中
+        await notifyToRedis(reciver, notify);
+
+        return "successed";
+      }
+
+      // 失败之后 将通知存到reciver的离线通知redis list中 或其他操作
+      await offlineNotifyToRedis(reciver, notify);
+
+      return "failed";
     } else {
       /** 离线 */
     }

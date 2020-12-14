@@ -10,6 +10,23 @@ export interface Message {
   ext?: string; // 预留字段 json string格式
 }
 
+export type Notify = {
+  msgId: string;
+  type: 1 | 2 | 3; // 1 添加好友 2 删除好友 3 修改好友相关设置
+  status: 0 | 1 | 2 | 3; // 0 初始状态 1 已读 2 同意 3 拒绝
+  sender: number;
+  reciver: number;
+  senderInfo?: string; // 通知发起者的 信息
+  remark?: string;
+  time?: number;
+  ext?: string; // 预留字段 json string格式
+};
+
+export type AckResponse = {
+  code: number;
+  msg: string;
+};
+
 export declare type IAnyObject = Record<string, any>;
 
 export interface InvokeData {

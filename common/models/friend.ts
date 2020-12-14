@@ -1,14 +1,15 @@
 "use strict";
 
-const { DataTypes } = require("sequelize");
-const moment = require("moment");
+import { DataTypes } from "sequelize";
+import moment from "moment";
 
+/** 双向好友关系 */
 module.exports = (sequelize) => {
   const Friend = sequelize.define(
     "Friend",
     {
       id: {
-        type: DataTypes.INTEGER(11),
+        type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
         unique: true,
@@ -68,5 +69,3 @@ module.exports = (sequelize) => {
 
   return Friend;
 };
-
-export {};

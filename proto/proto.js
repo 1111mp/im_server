@@ -396,6 +396,384 @@ $root.messagepackage = (function() {
         return Message;
     })();
 
+    messagepackage.Notify = (function() {
+
+        /**
+         * Properties of a Notify.
+         * @memberof messagepackage
+         * @interface INotify
+         * @property {string} msgId Notify msgId
+         * @property {number} type Notify type
+         * @property {number} status Notify status
+         * @property {number} sender Notify sender
+         * @property {number} reciver Notify reciver
+         * @property {string|null} [remark] Notify remark
+         * @property {string|null} [senderInfo] Notify senderInfo
+         * @property {number|Long|null} [time] Notify time
+         * @property {string|null} [ext] Notify ext
+         */
+
+        /**
+         * Constructs a new Notify.
+         * @memberof messagepackage
+         * @classdesc Represents a Notify.
+         * @implements INotify
+         * @constructor
+         * @param {messagepackage.INotify=} [properties] Properties to set
+         */
+        function Notify(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * Notify msgId.
+         * @member {string} msgId
+         * @memberof messagepackage.Notify
+         * @instance
+         */
+        Notify.prototype.msgId = "";
+
+        /**
+         * Notify type.
+         * @member {number} type
+         * @memberof messagepackage.Notify
+         * @instance
+         */
+        Notify.prototype.type = 0;
+
+        /**
+         * Notify status.
+         * @member {number} status
+         * @memberof messagepackage.Notify
+         * @instance
+         */
+        Notify.prototype.status = 0;
+
+        /**
+         * Notify sender.
+         * @member {number} sender
+         * @memberof messagepackage.Notify
+         * @instance
+         */
+        Notify.prototype.sender = 0;
+
+        /**
+         * Notify reciver.
+         * @member {number} reciver
+         * @memberof messagepackage.Notify
+         * @instance
+         */
+        Notify.prototype.reciver = 0;
+
+        /**
+         * Notify remark.
+         * @member {string} remark
+         * @memberof messagepackage.Notify
+         * @instance
+         */
+        Notify.prototype.remark = "";
+
+        /**
+         * Notify senderInfo.
+         * @member {string} senderInfo
+         * @memberof messagepackage.Notify
+         * @instance
+         */
+        Notify.prototype.senderInfo = "";
+
+        /**
+         * Notify time.
+         * @member {number|Long} time
+         * @memberof messagepackage.Notify
+         * @instance
+         */
+        Notify.prototype.time = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+
+        /**
+         * Notify ext.
+         * @member {string} ext
+         * @memberof messagepackage.Notify
+         * @instance
+         */
+        Notify.prototype.ext = "";
+
+        /**
+         * Creates a new Notify instance using the specified properties.
+         * @function create
+         * @memberof messagepackage.Notify
+         * @static
+         * @param {messagepackage.INotify=} [properties] Properties to set
+         * @returns {messagepackage.Notify} Notify instance
+         */
+        Notify.create = function create(properties) {
+            return new Notify(properties);
+        };
+
+        /**
+         * Encodes the specified Notify message. Does not implicitly {@link messagepackage.Notify.verify|verify} messages.
+         * @function encode
+         * @memberof messagepackage.Notify
+         * @static
+         * @param {messagepackage.INotify} message Notify message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        Notify.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            writer.uint32(/* id 1, wireType 2 =*/10).string(message.msgId);
+            writer.uint32(/* id 2, wireType 0 =*/16).int32(message.type);
+            writer.uint32(/* id 3, wireType 0 =*/24).int32(message.status);
+            writer.uint32(/* id 4, wireType 0 =*/32).int32(message.sender);
+            writer.uint32(/* id 5, wireType 0 =*/40).int32(message.reciver);
+            if (message.remark != null && Object.hasOwnProperty.call(message, "remark"))
+                writer.uint32(/* id 6, wireType 2 =*/50).string(message.remark);
+            if (message.senderInfo != null && Object.hasOwnProperty.call(message, "senderInfo"))
+                writer.uint32(/* id 7, wireType 2 =*/58).string(message.senderInfo);
+            if (message.time != null && Object.hasOwnProperty.call(message, "time"))
+                writer.uint32(/* id 8, wireType 0 =*/64).int64(message.time);
+            if (message.ext != null && Object.hasOwnProperty.call(message, "ext"))
+                writer.uint32(/* id 9, wireType 2 =*/74).string(message.ext);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified Notify message, length delimited. Does not implicitly {@link messagepackage.Notify.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof messagepackage.Notify
+         * @static
+         * @param {messagepackage.INotify} message Notify message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        Notify.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a Notify message from the specified reader or buffer.
+         * @function decode
+         * @memberof messagepackage.Notify
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {messagepackage.Notify} Notify
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        Notify.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.messagepackage.Notify();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                switch (tag >>> 3) {
+                case 1:
+                    message.msgId = reader.string();
+                    break;
+                case 2:
+                    message.type = reader.int32();
+                    break;
+                case 3:
+                    message.status = reader.int32();
+                    break;
+                case 4:
+                    message.sender = reader.int32();
+                    break;
+                case 5:
+                    message.reciver = reader.int32();
+                    break;
+                case 6:
+                    message.remark = reader.string();
+                    break;
+                case 7:
+                    message.senderInfo = reader.string();
+                    break;
+                case 8:
+                    message.time = reader.int64();
+                    break;
+                case 9:
+                    message.ext = reader.string();
+                    break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            if (!message.hasOwnProperty("msgId"))
+                throw $util.ProtocolError("missing required 'msgId'", { instance: message });
+            if (!message.hasOwnProperty("type"))
+                throw $util.ProtocolError("missing required 'type'", { instance: message });
+            if (!message.hasOwnProperty("status"))
+                throw $util.ProtocolError("missing required 'status'", { instance: message });
+            if (!message.hasOwnProperty("sender"))
+                throw $util.ProtocolError("missing required 'sender'", { instance: message });
+            if (!message.hasOwnProperty("reciver"))
+                throw $util.ProtocolError("missing required 'reciver'", { instance: message });
+            return message;
+        };
+
+        /**
+         * Decodes a Notify message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof messagepackage.Notify
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {messagepackage.Notify} Notify
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        Notify.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a Notify message.
+         * @function verify
+         * @memberof messagepackage.Notify
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        Notify.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (!$util.isString(message.msgId))
+                return "msgId: string expected";
+            if (!$util.isInteger(message.type))
+                return "type: integer expected";
+            if (!$util.isInteger(message.status))
+                return "status: integer expected";
+            if (!$util.isInteger(message.sender))
+                return "sender: integer expected";
+            if (!$util.isInteger(message.reciver))
+                return "reciver: integer expected";
+            if (message.remark != null && message.hasOwnProperty("remark"))
+                if (!$util.isString(message.remark))
+                    return "remark: string expected";
+            if (message.senderInfo != null && message.hasOwnProperty("senderInfo"))
+                if (!$util.isString(message.senderInfo))
+                    return "senderInfo: string expected";
+            if (message.time != null && message.hasOwnProperty("time"))
+                if (!$util.isInteger(message.time) && !(message.time && $util.isInteger(message.time.low) && $util.isInteger(message.time.high)))
+                    return "time: integer|Long expected";
+            if (message.ext != null && message.hasOwnProperty("ext"))
+                if (!$util.isString(message.ext))
+                    return "ext: string expected";
+            return null;
+        };
+
+        /**
+         * Creates a Notify message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof messagepackage.Notify
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {messagepackage.Notify} Notify
+         */
+        Notify.fromObject = function fromObject(object) {
+            if (object instanceof $root.messagepackage.Notify)
+                return object;
+            var message = new $root.messagepackage.Notify();
+            if (object.msgId != null)
+                message.msgId = String(object.msgId);
+            if (object.type != null)
+                message.type = object.type | 0;
+            if (object.status != null)
+                message.status = object.status | 0;
+            if (object.sender != null)
+                message.sender = object.sender | 0;
+            if (object.reciver != null)
+                message.reciver = object.reciver | 0;
+            if (object.remark != null)
+                message.remark = String(object.remark);
+            if (object.senderInfo != null)
+                message.senderInfo = String(object.senderInfo);
+            if (object.time != null)
+                if ($util.Long)
+                    (message.time = $util.Long.fromValue(object.time)).unsigned = false;
+                else if (typeof object.time === "string")
+                    message.time = parseInt(object.time, 10);
+                else if (typeof object.time === "number")
+                    message.time = object.time;
+                else if (typeof object.time === "object")
+                    message.time = new $util.LongBits(object.time.low >>> 0, object.time.high >>> 0).toNumber();
+            if (object.ext != null)
+                message.ext = String(object.ext);
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a Notify message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof messagepackage.Notify
+         * @static
+         * @param {messagepackage.Notify} message Notify
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        Notify.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.defaults) {
+                object.msgId = "";
+                object.type = 0;
+                object.status = 0;
+                object.sender = 0;
+                object.reciver = 0;
+                object.remark = "";
+                object.senderInfo = "";
+                if ($util.Long) {
+                    var long = new $util.Long(0, 0, false);
+                    object.time = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                } else
+                    object.time = options.longs === String ? "0" : 0;
+                object.ext = "";
+            }
+            if (message.msgId != null && message.hasOwnProperty("msgId"))
+                object.msgId = message.msgId;
+            if (message.type != null && message.hasOwnProperty("type"))
+                object.type = message.type;
+            if (message.status != null && message.hasOwnProperty("status"))
+                object.status = message.status;
+            if (message.sender != null && message.hasOwnProperty("sender"))
+                object.sender = message.sender;
+            if (message.reciver != null && message.hasOwnProperty("reciver"))
+                object.reciver = message.reciver;
+            if (message.remark != null && message.hasOwnProperty("remark"))
+                object.remark = message.remark;
+            if (message.senderInfo != null && message.hasOwnProperty("senderInfo"))
+                object.senderInfo = message.senderInfo;
+            if (message.time != null && message.hasOwnProperty("time"))
+                if (typeof message.time === "number")
+                    object.time = options.longs === String ? String(message.time) : message.time;
+                else
+                    object.time = options.longs === String ? $util.Long.prototype.toString.call(message.time) : options.longs === Number ? new $util.LongBits(message.time.low >>> 0, message.time.high >>> 0).toNumber() : message.time;
+            if (message.ext != null && message.hasOwnProperty("ext"))
+                object.ext = message.ext;
+            return object;
+        };
+
+        /**
+         * Converts this Notify to JSON.
+         * @function toJSON
+         * @memberof messagepackage.Notify
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        Notify.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        return Notify;
+    })();
+
     messagepackage.AckResponse = (function() {
 
         /**

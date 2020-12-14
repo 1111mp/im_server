@@ -1,11 +1,9 @@
-"use strict";
-
-const { DataTypes } = require("sequelize");
-const moment = require("moment");
+import { DataTypes } from "sequelize";
+import moment from "moment";
 
 module.exports = (sequelize) => {
-  const Msg = sequelize.define(
-    "Msg",
+  const Notify = sequelize.define(
+    "Notify",
     {
       id: {
         type: DataTypes.INTEGER,
@@ -21,39 +19,21 @@ module.exports = (sequelize) => {
       },
       type: {
         type: DataTypes.INTEGER,
-        comment: "消息类型 0 text 1 image 2 video 3 audio",
-      },
-      sessionType: {
-        type: DataTypes.INTEGER,
         validate: {
-          isIn: [[0, 1]],
+          isIn: [[1, 2, 3]],
         },
-        comment: "会话类型 0 单聊 1 群聊",
-      },
-      // customType: {
-      //   type: DataTypes.INTEGER,
-      //   comment: "自定义通知类型",
-      // },
-      content: {
-        type: DataTypes.STRING,
-        defaultValue: "",
-        comment: "文本消息内容",
+        comment: "通知类型",
       },
       time: {
         type: DataTypes.INTEGER,
-        comment: "消息发送时间",
-      },
-      resPath: {
-        type: DataTypes.STRING,
-        defaultValue: "",
-        comment: "资源url",
+        comment: "通知发送时间",
       },
       status: {
         type: DataTypes.INTEGER,
         validate: {
-          isIn: [[0, 1, 2, 3, 4]],
+          isIn: [[0, 1, 2, 3]],
         },
-        comment: "消息状态",
+        comment: "通知状态",
       },
       sender: {
         type: DataTypes.INTEGER,
@@ -61,11 +41,16 @@ module.exports = (sequelize) => {
       },
       reciver: {
         type: DataTypes.INTEGER,
-        comment: "接收者 userId or groupId",
+        comment: "接收者 userId",
+      },
+      remark: {
+        type: DataTypes.STRING,
+        defaultValue: "",
+        comment: "备注",
       },
       ext: {
         type: DataTypes.STRING,
-        allowNull: true,
+        defaultValue: "",
         comment: "预留字段 json",
       },
       createdAt: {
@@ -97,9 +82,7 @@ module.exports = (sequelize) => {
     }
   );
 
-  Msg.associate = function (models: any) {};
+  Notify.associate = function (models: any) {};
 
-  return Msg;
+  return Notify;
 };
-
-export {};

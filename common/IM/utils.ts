@@ -1,10 +1,18 @@
-import { count } from "console";
-import { IAnyObject, Message } from "../const/interface";
-
-const RedisStore = require("../middlewares/redis/redis");
+import RedisStore from "../middlewares/redis/redis";
+import {
+  IAnyObject,
+  Message,
+  Notify,
+  AckResponse as AckResponseType,
+} from "../const/interface";
+import { getNotifyKey } from "../const";
 
 const { messagepackage } = require("../../proto/proto");
-const { Message: ProtoMessage } = messagepackage;
+const {
+  Message: ProtoMessage,
+  Notify: ProtoNotify,
+  AckResponse,
+} = messagepackage;
 
 export function setMessageToProto(msg: Message): Buffer {
   const message = ProtoMessage.create(msg);
@@ -20,13 +28,41 @@ export function getMessagefromProto(buffer: Buffer): Message {
   });
 }
 
+export function setNotifyToProto(notify: Notify): Buffer {
+  const message = ProtoNotify.create(notify);
+  return ProtoNotify.encode(message).finish();
+}
+
+export function getNotifyFromProto(buffer: Buffer): Notify {
+  const decodedMessage = ProtoNotify.decode(buffer);
+  return ProtoNotify.toObject(decodedMessage, {
+    longs: String,
+    enums: String,
+    bytes: String,
+  });
+}
+
+export function setAckResponseToProto(ack: AckResponseType): Buffer {
+  const message = AckResponse.create(ack);
+  return AckResponse.encode(message).finish();
+}
+
+export function getAckResponseFromProto(buffer: Buffer): AckResponseType {
+  const decodedMessage = AckResponse.decode(buffer);
+  return AckResponse.toObject(decodedMessage, {
+    longs: String,
+    enums: String,
+    bytes: String,
+  });
+}
+
 export function racePromise(
   promise: Promise<any>,
   timer: number = 1000
-): Promise<any> {
+): Promise<"timedout" | any> {
   let timeout = new Promise((resolve, reject) => {
     setTimeout(() => {
-      resolve({ code: 408 });
+      resolve("timedout");
     }, timer);
   });
 
@@ -63,7 +99,7 @@ export async function exists(key) {
 //   return res;
 // }
 
-/** 在线时的消息 push到 redis的list中去 a和b共同的msgList */
+/** 在线时的消息 push到 redis的list中去 */
 export async function msgToRedis(reciver, msg) {
   try {
     await RedisStore.redis.rpush(`to::${reciver}`, JSON.stringify(msg));
@@ -87,6 +123,23 @@ export async function offlineMsgToRedis(sender, reciver, msg) {
   } catch (error) {
     throw new Error("push msg to redis error");
   }
+}
+
+/**
+ * @description:  在线时的通知 push到 redis的list中去
+ * @param {number} reciver  接受者userId
+ * @param {Notify} notify 通知消息
+ * @return {*}
+ */
+export async function notifyToRedis(reciver: number, notify: Notify) {
+  await RedisStore.redis.rpush(getNotifyKey(reciver), JSON.stringify(notify));
+}
+
+export async function offlineNotifyToRedis(reciver: number, notify: Notify) {
+  await RedisStore.redis.rpush(
+    getNotifyKey(reciver, true),
+    JSON.stringify(notify)
+  );
 }
 
 /**

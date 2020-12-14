@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken";
+import * as jwt from "jsonwebtoken";
 import * as unless from "koa-unless";
 import Config from "../../../config";
 

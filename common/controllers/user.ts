@@ -1,6 +1,8 @@
+import Redis from "ioredis";
+import { USERINFOKEY } from "../const";
+
 const { User, FriSetting } = require("../models");
 const { Op } = require("sequelize/lib/sequelize");
-import { USERINFOKEY } from "../const";
 
 /** 获取所有用户 */
 export const queryAll = async (ctx) => {
@@ -16,38 +18,35 @@ export async function register(ctx) {
   const params = ctx.request.body;
 
   if (!params.account || !params.pwd) {
-    ctx.body = {
+    return (ctx.body = {
       code: 400,
       msg: "account or pwd cannot be repeated",
-    };
-    return false;
+    });
   }
 
   try {
     await User.create(params);
-    ctx.body = {
+    return (ctx.body = {
       code: 200,
       data: "register successed",
-    };
+    });
   } catch (err) {
-    console.log(err)
-    // const msg = err.errors[0];
-    // ctx.body = {
-    //   code: 500,
-    //   data: `${msg.value} ${msg.message}`,
-    // };
+    return (ctx.body = {
+      code: 500,
+      data: `${err.name}: ${err.message}`,
+    });
   }
 }
 
 /** 获取用户信息
  * 先从redis中获取 再读数据库
  */
-export const getUserInfoByUserId = async (ctx, userId) => {
+export const getUserInfoByUserId = async (redis: Redis.Redis, userId) => {
   let userInfo;
 
-  if (await ctx.redis.redis.hexists(USERINFOKEY, `${userId}`)) {
+  if (await redis.hexists(USERINFOKEY, `${userId}`)) {
     /** redis中存在数据 */
-    userInfo = await ctx.redis.redis.hget(USERINFOKEY, `${userId}`);
+    userInfo = await redis.hget(USERINFOKEY, `${userId}`);
 
     return JSON.parse(userInfo);
   } else {
@@ -59,10 +58,10 @@ export const getUserInfoByUserId = async (ctx, userId) => {
             "account",
             "avatar",
             "email",
-            ["createdAt", "regisTime"],
-            ["updatedAt", "updateTime"],
+            "regisTime",
+            "updateTime",
           ],
-          exclude: ["pwd"],
+          exclude: ["pwd", "id"],
         },
         where: {
           id: {
@@ -71,11 +70,7 @@ export const getUserInfoByUserId = async (ctx, userId) => {
         },
       }).toJSON();
 
-      await ctx.redis.redis.hset(
-        USERINFOKEY,
-        `${userId}`,
-        JSON.stringify(userInfo)
-      );
+      await redis.hset(USERINFOKEY, `${userId}`, JSON.stringify(userInfo));
 
       return userInfo;
     } catch (err) {
@@ -113,25 +108,40 @@ export const getFriendInfo = async (ctx, userId, friendId) => {
   }
 };
 
-export async function getUserInfoByAccount(account) {
-  const userInfo = await User.findOne({
-    attributes: {
-      include: [
-        ["id", "userId"],
-        "account",
-        "avatar",
-        "email",
-        ["createdAt", "regisTime"],
-        ["updatedAt", "updateTime"],
-      ],
-      exclude: ["pwd"],
-    },
-    where: {
-      account: {
-        [Op.eq]: account,
+export async function getUserInfoByAccount(
+  redis: Redis.Redis,
+  account: string
+) {
+  let userInfo;
+
+  if (await redis.hexists(USERINFOKEY, account)) {
+    userInfo = await redis.hget(USERINFOKEY, account);
+
+    userInfo = JSON.parse(userInfo);
+  } else {
+    userInfo = await User.findOne({
+      attributes: {
+        include: [
+          ["id", "userId"],
+          "account",
+          "avatar",
+          "email",
+          "regisTime",
+          "updateTime",
+        ],
+        exclude: ["pwd", "id"],
       },
-    },
-  }).toJSON();
+      where: {
+        account: {
+          [Op.eq]: account,
+        },
+      },
+    });
+
+    userInfo = userInfo.toJSON();
+
+    await redis.hset(USERINFOKEY, account, JSON.stringify(userInfo));
+  }
 
   return userInfo;
 }

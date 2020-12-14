@@ -7,43 +7,30 @@ const { Op } = require("sequelize/lib/sequelize");
  * @param {number} friendId	好友的userId
  * @return:
  */
-export async function addFriend(ctx, next) {
-  const { friendId } = ctx.request.body;
-  if (!friendId) {
-    ctx.body = {
-      code: 400,
-      msg: "friendId cannot be emptyed",
-    };
-    return false;
-  }
-
+export async function addFriend(
+  userId: number,
+  friendId: number
+): Promise<boolean> {
   try {
     await db.sequelize.transaction((t) => {
-      return Friend.create({ userId: ctx.userId, friendId }, { transaction: t })
+      return Friend.create({ userId: userId, friendId }, { transaction: t })
         .then((friend) => {
           return FriSetting.create(
-            { userId: ctx.userId, friendId },
+            { userId: userId, friendId },
             { transaction: t }
           );
         })
         .then((res) => {
           return FriSetting.create(
-            { userId: friendId, friendId: ctx.userId },
+            { userId: friendId, friendId: userId },
             { transaction: t }
           );
         });
     });
 
-    ctx.body = {
-      code: 200,
-      msg: "successed",
-    };
+    return true;
   } catch (err) {
-    const msg = err.errors[0];
-    ctx.body = {
-      code: 400,
-      data: `${msg.value} ${msg.message}`,
-    };
+    return false;
   }
 }
 
@@ -102,11 +89,11 @@ export async function delFriend(ctx, next) {
 }
 
 /** 判断是否是好友 */
-export async function friendOrNot(params: {
+export async function friendShip(params: {
   userId: number;
   friendId: number;
-}) {
-  let res: any = await Friend.findOne({
+}): Promise<boolean> {
+  const count: number = await Friend.count({
     where: {
       [Op.or]: [
         {
@@ -128,7 +115,8 @@ export async function friendOrNot(params: {
       ],
     },
   });
-  if (!res) return false;
+
+  if (count <= 0) return false;
   return true;
 }
 
