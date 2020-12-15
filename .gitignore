@@ -5,3 +5,5 @@ node_modules
 /public/upload
 
 /yarn.lock
+
+*.log
