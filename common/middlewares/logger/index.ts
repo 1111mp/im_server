@@ -87,7 +87,7 @@ const logs = {
 export function createLogger() {
   let logConf = Config.logConfig;
 
-  if (NODE_ENV === "prod") {
+  if (NODE_ENV === "production") {
     logConf["pm2"] = true;
   }
 

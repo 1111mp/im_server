@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "cross-env NODE_ENV=development ts-node --project tsconfig.json -r tsconfig-paths/register bin/run.ts",
-    "start:watch": "nodemon --watch **/* -e ts,js,json --exec cross-env NODE_ENV=development ts-node --project tsconfig.json -r tsconfig-paths/register bin/run.ts",
-    "dev": "./node_modules/.bin/nodemon bin/run.ts",
-    "prod": "cross-env NODE_ENV=prod pm2 --no-daemon start ./pm2.config.js",
+    "start": "cross-env NODE_ENV=development ts-node --project tsconfig.json -r tsconfig-paths/register run/index.ts",
+    "start:watch": "nodemon --watch **/* -e ts,js,json --exec cross-env NODE_ENV=development ts-node --project tsconfig.json -r tsconfig-paths/register run/index.ts",
+    "dev": "./node_modules/.bin/nodemon run/index",
+    "prod": "cross-env NODE_ENV=production pm2 start ./pm2.config.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "proto": "npx pbjs -t static-module -w commonjs -o ./proto/proto.js ./proto/*.proto"
   },
