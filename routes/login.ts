@@ -20,7 +20,6 @@ router.get("/", async (ctx, next) => {
  * @return:
  */
 router.post("/login", async (ctx, next) => {
-  console.log(ctx.request);
   const { account, pwd } = ctx.request.body;
 
   if (!account || !pwd) {

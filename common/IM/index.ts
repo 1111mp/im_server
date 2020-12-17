@@ -101,15 +101,16 @@ class Chat {
 
       console.log(counts);
 
-      const promise = new Promise((resolve) => {
-        socket.emit("offline-msg-counts", counts, (result) => {
-          resolve(result);
+      const promise: Promise<AckResponse> = new Promise((resolve) => {
+        socket.emit("offline-msg-counts", counts, (data: Buffer) => {
+          const ack: AckResponse = getAckResponseFromProto(data);
+          resolve(ack);
         });
       });
 
       const result = await racePromise(promise);
 
-      if (result.code === 200) {
+      if (result !== "timedout" && result.code === 200) {
         /** 发送成功 */
       } else {
         /** 发送失败 */
@@ -161,15 +162,20 @@ class Chat {
             status: 1,
           };
 
-          let promise = new Promise((resolve, reject) => {
-            this.userList[reciver].socket.emit("receiveMsg", msg, (data) => {
-              resolve(data);
-            });
+          let promise: Promise<AckResponse> = new Promise((resolve, reject) => {
+            this.userList[reciver].socket.emit(
+              "receiveMsg",
+              msg,
+              (data: Buffer) => {
+                const ack: AckResponse = getAckResponseFromProto(data);
+                resolve(ack);
+              }
+            );
           });
 
           let res = await racePromise(promise);
 
-          if (res.code === 200) {
+          if (res !== "timedout" && res.code === 200) {
             msg = {
               ...msg,
               status: 2,
@@ -214,37 +220,46 @@ class Chat {
     notify: Notify,
     senderInfo: IAnyObject
   ): Promise<"successed" | "failed"> => {
-    if (this.userList[reciver]) {
-      /** 在线 */
-      const notifyMsg = {
-        ...notify,
-        senderInfo: JSON.stringify(senderInfo),
-      };
-      // 序列化
-      const buffer = setNotifyToProto(notifyMsg);
+    try {
+      if (this.userList[reciver]) {
+        /** 在线 */
+        const notifyMsg = {
+          ...notify,
+          senderInfo: JSON.stringify(senderInfo),
+        };
+        // 序列化
+        const buffer = setNotifyToProto(notifyMsg);
 
-      const promise = new Promise((resolve) => {
-        this.userList[reciver].socket.emit(IMNOTIFY, buffer, (data: Buffer) => {
-          const ack: AckResponse = getAckResponseFromProto(data);
-          resolve(ack);
+        const promise: Promise<AckResponse> = new Promise((resolve) => {
+          this.userList[reciver].socket.emit(
+            IMNOTIFY,
+            buffer,
+            (data: Buffer) => {
+              const ack: AckResponse = getAckResponseFromProto(data);
+              resolve(ack);
+            }
+          );
         });
-      });
 
-      const result = await racePromise(promise);
+        const result = await racePromise(promise, 3000);
 
-      if (result.code === 200) {
-        // 成功 将通知 存到redis中
-        await notifyToRedis(reciver, notify);
+        if (result !== "timedout" && result.code === 200) {
+          // 成功 将通知 存到redis中
+          await notifyToRedis(reciver, notify);
+        } else {
+          // 失败之后 将通知存到reciver的离线通知redis list中 或其他操作
+          await offlineNotifyToRedis(reciver, notify);
+        }
 
         return "successed";
+      } else {
+        /** 离线 */
+        // 保存到该用户的离线通知list
+        await offlineNotifyToRedis(reciver, notify);
+        return "successed";
       }
-
-      // 失败之后 将通知存到reciver的离线通知redis list中 或其他操作
-      await offlineNotifyToRedis(reciver, notify);
-
+    } catch (error) {
       return "failed";
-    } else {
-      /** 离线 */
     }
   };
 

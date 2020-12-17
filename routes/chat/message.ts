@@ -1,3 +1,5 @@
+import { getNotifyKey } from "../../common/const";
+
 const router = require("koa-router")();
 
 router.prefix("/im");
@@ -48,6 +50,44 @@ router.post("/getOfflineMsgs", async (ctx) => {
       code: 500,
       data: `${err.value} ${err.message}`,
     };
+  }
+});
+
+/**
+ * @description:
+ * @param {number} pageNo
+ * @param {number} pageSize
+ * @param {boolean} complete
+ * @return {*}
+ */
+router.post("/getOfflineNotify", async (ctx) => {
+  const { pageNo, pageSize, complete } = ctx.request.body;
+  const key = getNotifyKey(ctx.userId, true);
+  try {
+    if (!complete) {
+      const startIndex = (pageNo - 1) * pageSize,
+        endIndex = pageNo * pageSize - 1;
+
+      const notifys = await ctx.redis.redis.lrange(key, startIndex, endIndex);
+
+      return (ctx.body = {
+        code: 200,
+        data: {
+          // hasMore: length > pageSize,
+          msgs: [...notifys],
+        },
+      });
+    }
+
+    /**　清空　redis离线消息缓存 */
+    // await ctx.redis.redis.ltrim(key, 1, 0);
+
+    return (ctx.body = { code: 200, msg: "successed" });
+  } catch (error) {
+    return (ctx.body = {
+      code: 500,
+      msg: `${error.name}: ${error.message}`,
+    });
   }
 });
 

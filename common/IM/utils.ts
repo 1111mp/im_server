@@ -57,10 +57,10 @@ export function getAckResponseFromProto(buffer: Buffer): AckResponseType {
 }
 
 export function racePromise(
-  promise: Promise<any>,
+  promise: Promise<AckResponseType>,
   timer: number = 1000
-): Promise<"timedout" | any> {
-  let timeout = new Promise((resolve, reject) => {
+): Promise<"timedout" | AckResponseType> {
+  let timeout: Promise<"timedout"> = new Promise((resolve, reject) => {
     setTimeout(() => {
       resolve("timedout");
     }, timer);
@@ -136,7 +136,7 @@ export async function notifyToRedis(reciver: number, notify: Notify) {
 }
 
 export async function offlineNotifyToRedis(reciver: number, notify: Notify) {
-  await RedisStore.redis.rpush(
+  await RedisStore.redis.lpush(
     getNotifyKey(reciver, true),
     JSON.stringify(notify)
   );
@@ -147,7 +147,7 @@ export async function offlineNotifyToRedis(reciver: number, notify: Notify) {
  * @param {number} userId 用户 userId
  * @return {*}
  */
-export async function unReadCountsFromRedis(userId: number) {
+export async function unReadCountsFromRedis(userId: number): Promise<number> {
   try {
     return await RedisStore.redis.llen(`offline::${userId}`);
   } catch (error) {

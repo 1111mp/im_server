@@ -8,6 +8,17 @@ const Redlock = require("redlock");
 // const { Star } = require('../../models')
 // const { v4 } = require('uuid')
 
+/** 对redis获取的结果 进行处理 */
+Redis.Command.setReplyTransformer("lrange", (result) => {
+  return result.map((res) => {
+    try {
+      return JSON.parse(res);
+    } catch (error) {
+      return res;
+    }
+  });
+});
+
 const redisConfig: RedisOptions = {
   host: "localhost",
   port: 6379,

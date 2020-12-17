@@ -14,7 +14,10 @@ router.prefix("/friend");
 
 /**
  * @description: 好友操作
- * @param {1|2|3} type	好友操作类型	1：添加好友	2：删除好友 3：修改好友相关设置
+ * @param {required 1|2|3} type	好友操作类型	1：添加好友	2：删除好友 3：修改好友相关设置
+ * @param {required number} friendId	好友的userId
+ * @param {string} remark 备注
+ * @param {json string} ext 扩展字段
  * @return:
  */
 router.post("/handle", async (ctx, next) => {
@@ -39,7 +42,7 @@ router.post("/handle", async (ctx, next) => {
         });
       }
 
-      const dbRes = await addFriend(ctx, next);
+      const dbRes = await addFriend(ctx.userId, friendId);
 
       if (!dbRes) return (ctx.body = { code: 500, msg: "db error" });
 
