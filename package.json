@@ -1,5 +1,5 @@
 {
-  "name": "koa_app",
+  "name": "im_server",
   "version": "0.1.0",
   "private": true,
   "scripts": {

@@ -1,10 +1,10 @@
-# koa_app
+# im_server
 
 一个 IM 应用的纯后台服务，对应的客户端目前为：[electron_client](https://github.com/1111mp/electron_client)
 
 接口文档可参考 Postman 的地址：[https://www.getpostman.com/collections/9fd613049468a10415ee](https://www.getpostman.com/collections/9fd613049468a10415ee)
 
-Poseman 导入可参考：[https://www.jianshu.com/p/91a5d7fd5fce](https://www.jianshu.com/p/91a5d7fd5fce)
+Postman 导入可参考：[https://www.jianshu.com/p/91a5d7fd5fce](https://www.jianshu.com/p/91a5d7fd5fce)
 
 dev 环境
 
