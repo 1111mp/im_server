@@ -41,7 +41,7 @@
     "nodemon": "^2.0.4",
     "protobufjs": "~6.10.1",
     "pug": "^2.0.3",
-    "redlock": "^4.1.0",
+    "redlock": "^4.2.0",
     "sequelize": "^6.3.5",
     "sharp": "^0.26.2",
     "snowflake-id": "^1.1.0",

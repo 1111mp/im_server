@@ -80,7 +80,7 @@ router.post("/getOfflineNotify", async (ctx) => {
     }
 
     /**　清空　redis离线消息缓存 */
-    // await ctx.redis.redis.ltrim(key, 1, 0);
+    await ctx.redis.redis.ltrim(key, 1, 0);
 
     return (ctx.body = { code: 200, msg: "successed" });
   } catch (error) {
@@ -89,6 +89,22 @@ router.post("/getOfflineNotify", async (ctx) => {
       msg: `${error.name}: ${error.message}`,
     });
   }
+});
+
+/**
+ * @description: 已读 聊天消息或通知
+ * @param {required 1|2} type  1 消息 2 通知
+ * @param {string} msgId  消息/通知 id
+ * @return {*}
+ */
+router.post("/read", async (ctx) => {
+  const { type, msgId } = ctx.request.body;
+
+  if (!type || !msgId)
+    return (ctx.body = {
+      code: 400,
+      msg: "type or msgId cannot be emptyed",
+    });
 });
 
 module.exports = router;

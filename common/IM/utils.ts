@@ -6,6 +6,7 @@ import {
   AckResponse as AckResponseType,
 } from "../const/interface";
 import { getNotifyKey } from "../const";
+import Redis from "ioredis";
 
 const { messagepackage } = require("../../proto/proto");
 const {
@@ -175,4 +176,46 @@ export function pushRedisRace(promise, timer = 1000) {
   });
 
   return Promise.race([promise, timeout]);
+}
+
+/** 查看通知是否已经存在redis缓存中 */
+export async function getNotifyRedisInfo(
+  redis: Redis.Redis,
+  notify: Notify
+): Promise<number> {
+  const { sender, reciver, type } = notify;
+
+  const notifys = await redis.lrange(getNotifyKey(reciver), 0, -1);
+
+  return (notifys as any[]).findIndex(
+    (item: Notify) =>
+      item.reciver === reciver && item.sender === sender && item.type === type
+  );
+}
+
+export async function getNotifyByMsgIdFromRedis(
+  redis: Redis.Redis,
+  userId: number,
+  msgId: string
+): Promise<{ notify: Notify; index: number }> {
+  const notifys = await redis.lrange(getNotifyKey(userId), 0, -1);
+  let index;
+
+  const notify = (notifys as any[]).find((notify, i) => {
+    index = i;
+    return notify.msgId === msgId;
+  });
+
+  return {
+    notify,
+    index,
+  };
+}
+
+export async function delNtyByValue(
+  redis: Redis.Redis,
+  userId: number,
+  notify: string
+) {
+  await redis.lrem(getNotifyKey(userId), 0, notify);
 }

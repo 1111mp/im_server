@@ -9,6 +9,7 @@ import {
 import { omitBy } from "lodash";
 import jwt from "jsonwebtoken";
 
+import { getUserInfoByUserId } from "../controllers/user";
 import {
   racePromise,
   unReadCountsFromRedis,
@@ -214,15 +215,27 @@ class Chat {
     }
   };
 
-  /** 发送通知消息 */
+  /** 发送通知消息
+   * 0 初始状态 1 已读 2 同意 3 拒绝
+   * 通知消息 redis缓存如何入库：
+   * 状态为 status<2 的通知（未同意拒绝的）不会入库 一直存在redis中
+   * 然后在用户操作（同意拒绝）时，改变status 入库 然后从redis中删除该通知
+   */
   sendNotify = async (
+    ctx,
     reciver,
-    notify: Notify,
-    senderInfo: IAnyObject
+    notify: Notify
   ): Promise<"successed" | "failed"> => {
     try {
+      // 判断是否存在此类型通知 比如：A 重复发起添加 B 为好友
+
       if (this.userList[reciver]) {
         /** 在线 */
+        const senderInfo = await getUserInfoByUserId(
+          ctx.redis.redis,
+          ctx.userId
+        );
+
         const notifyMsg = {
           ...notify,
           senderInfo: JSON.stringify(senderInfo),
@@ -243,21 +256,22 @@ class Chat {
 
         const result = await racePromise(promise, 3000);
 
-        if (result !== "timedout" && result.code === 200) {
-          // 成功 将通知 存到redis中
-          await notifyToRedis(reciver, notify);
-        } else {
+        /** 先推送 还是先缓存？？？ */
+
+        if (result === "timedout" || result.code !== 200) {
           // 失败之后 将通知存到reciver的离线通知redis list中 或其他操作
           await offlineNotifyToRedis(reciver, notify);
         }
-
-        return "successed";
       } else {
         /** 离线 */
         // 保存到该用户的离线通知list
         await offlineNotifyToRedis(reciver, notify);
-        return "successed";
       }
+
+      // 将通知 存到redis中
+      await notifyToRedis(reciver, notify);
+
+      return "successed";
     } catch (error) {
       return "failed";
     }

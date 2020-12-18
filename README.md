@@ -6,6 +6,9 @@
 
 Postman 导入可参考：[https://www.jianshu.com/p/91a5d7fd5fce](https://www.jianshu.com/p/91a5d7fd5fce)
 
+数据库：mysql，sequelize 链接 mysql 的配置文件：config/sequelize.json
+redis 配置：common/middlewares/redis
+
 dev 环境
 
 ```
