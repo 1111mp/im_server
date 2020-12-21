@@ -51,29 +51,32 @@ export const getUserInfoByUserId = async (redis: Redis.Redis, userId) => {
     return JSON.parse(userInfo);
   } else {
     try {
-      userInfo = await User.findOne({
-        attributes: {
-          include: [
-            ["id", "userId"],
-            "account",
-            "avatar",
-            "email",
-            "regisTime",
-            "updateTime",
-          ],
-          exclude: ["pwd", "id"],
-        },
-        where: {
-          id: {
-            [Op.eq]: userId,
+      userInfo = (
+        await User.findOne({
+          attributes: {
+            include: [
+              ["id", "userId"],
+              "account",
+              "avatar",
+              "email",
+              "regisTime",
+              "updateTime",
+            ],
+            exclude: ["pwd", "id"],
           },
-        },
-      }).toJSON();
+          where: {
+            id: {
+              [Op.eq]: userId,
+            },
+          },
+        })
+      ).toJSON();
 
       await redis.hset(USERINFOKEY, `${userId}`, JSON.stringify(userInfo));
 
       return userInfo;
     } catch (err) {
+      console.log(err);
       return {};
     }
   }

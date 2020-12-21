@@ -3,7 +3,7 @@ import { Message, Notify } from "../common/const/interface";
 import {
   addFriend,
   delFriend,
-  getAll,
+  queryAll,
   friendShip,
 } from "../common/controllers/friend";
 import { getNotifyByMsgIdFromRedis, delNtyByValue } from "../common/IM/utils";
@@ -87,7 +87,7 @@ router.post("/handle", async (ctx, next) => {
           msg: "msgId cannot be emptyed",
         });
 
-      const { notify: nty, index } = await getNotifyByMsgIdFromRedis(
+      const nty = await getNotifyByMsgIdFromRedis(
         ctx.redis.redis,
         ctx.userId,
         msgId
@@ -105,21 +105,22 @@ router.post("/handle", async (ctx, next) => {
 
       if (!dbRes) return (ctx.body = { code: 500, msg: "db error" });
 
-      // 添加成功
-      ctx.body = {
-        code: 200,
-        msg: "successed",
-      };
-
       // 将缓存中的通知入库 并删除
+      let flag: boolean = false;
       try {
         await NotifyModel.create({ ...nty, status: 2 });
+        flag = true;
       } catch (error) {
-        // 通知入库失败
+        // 通知消息入库失败
       }
 
-      await delNtyByValue(ctx.redis.redis, ctx.userId, JSON.stringify(nty));
-      return;
+      flag &&
+        (await delNtyByValue(ctx.redis.redis, ctx.userId, JSON.stringify(nty)));
+
+      return (ctx.body = {
+        code: 200,
+        msg: "successed",
+      });
   }
 });
 
@@ -130,6 +131,6 @@ router.post("", async () => {});
  * @param {type}
  * @return:
  */
-router.post("/getAll", getAll);
+router.post("/queryAll", queryAll);
 
 module.exports = router;

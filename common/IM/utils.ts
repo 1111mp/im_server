@@ -197,19 +197,10 @@ export async function getNotifyByMsgIdFromRedis(
   redis: Redis.Redis,
   userId: number,
   msgId: string
-): Promise<{ notify: Notify; index: number }> {
+): Promise<Notify> {
   const notifys = await redis.lrange(getNotifyKey(userId), 0, -1);
-  let index;
 
-  const notify = (notifys as any[]).find((notify, i) => {
-    index = i;
-    return notify.msgId === msgId;
-  });
-
-  return {
-    notify,
-    index,
-  };
+  return (notifys as any[]).find((notify, i) => notify.msgId === msgId);
 }
 
 export async function delNtyByValue(

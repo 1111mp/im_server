@@ -1,3 +1,5 @@
+import { getUserInfoByUserId } from "./user";
+
 const db = require("../models");
 const { Friend, User, FriSetting } = require("../models");
 const { Op } = require("sequelize/lib/sequelize");
@@ -120,7 +122,7 @@ export async function friendShip(params: {
   return true;
 }
 
-export async function getAll(ctx, next) {
+export async function queryAll(ctx) {
   const userId = ctx.userId;
 
   try {
@@ -153,28 +155,23 @@ export async function getAll(ctx, next) {
           friendId = friend.userId;
         }
 
-        let baseInfo = await User.findOne({
-          attributes: { exclude: ["pwd", "updateAt"] },
-          where: {
-            id: {
-              [Op.eq]: friendId,
-            },
-          },
-        }).toJSON();
+        let baseInfo = await getUserInfoByUserId(ctx.redis.redis, friendId);
 
-        let settings = await FriSetting.findOne({
-          attributes: {
-            exclude: ["id", "userId", "friendId", , "createdAt", "updateAt"],
-          },
-          where: {
-            userId: {
-              [Op.eq]: userId,
+        let settings = (
+          await FriSetting.findOne({
+            attributes: {
+              exclude: ["id", "userId", "friendId", , "createdAt", "updateAt"],
             },
-            friendId: {
-              [Op.eq]: friendId,
+            where: {
+              userId: {
+                [Op.eq]: userId,
+              },
+              friendId: {
+                [Op.eq]: friendId,
+              },
             },
-          },
-        }).toJSON();
+          })
+        ).toJSON();
 
         friendInfo = {
           ...baseInfo,
@@ -193,10 +190,9 @@ export async function getAll(ctx, next) {
       },
     };
   } catch (err) {
-    const msg = err.errors[0];
     ctx.body = {
-      code: 400,
-      data: `${msg.value} ${msg.message}`,
+      code: 500,
+      data: `${err.name}: ${err.message}`,
     };
   }
 }
