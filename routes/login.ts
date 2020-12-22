@@ -30,22 +30,24 @@ router.post("/login", async (ctx, next) => {
   }
 
   try {
-    let user = await User.findOne({
-      attributes: [
-        ["id", "userId"],
-        "account",
-        "pwd",
-        "avatar",
-        "email",
-        "regisTime",
-        "updateTime",
-      ],
-      where: {
-        account: {
-          [Op.eq]: account,
+    let user = (
+      await User.findOne({
+        attributes: [
+          ["id", "userId"],
+          "account",
+          "pwd",
+          "avatar",
+          "email",
+          "regisTime",
+          "updateTime",
+        ],
+        where: {
+          account: {
+            [Op.eq]: account,
+          },
         },
-      },
-    });
+      })
+    ).toJSON();
 
     if (!user) {
       return (ctx.body = {
@@ -53,8 +55,6 @@ router.post("/login", async (ctx, next) => {
         msg: "please register first",
       });
     }
-
-    user = user.toJSON();
 
     const isPwd = bcrypt.compareSync(pwd, user.pwd);
     if (isPwd) {

@@ -144,20 +144,16 @@ export async function queryAll(ctx) {
       },
     });
 
-    let friends: any[] = await Promise.all(
+    const friends: any[] = await Promise.all(
       friendIds.map(async (friend) => {
-        let friendId, friendInfo;
         friend = friend.toJSON();
 
-        if (friend.userId === userId) {
-          friendId = friend.friendId;
-        } else {
-          friendId = friend.userId;
-        }
+        const friendId =
+          friend.userId === userId ? friend.friendId : friend.userId;
 
-        let baseInfo = await getUserInfoByUserId(ctx.redis.redis, friendId);
+        const baseInfo = await getUserInfoByUserId(ctx.redis.redis, friendId);
 
-        let settings = (
+        const settings = (
           await FriSetting.findOne({
             attributes: {
               exclude: ["id", "userId", "friendId", , "createdAt", "updateAt"],
@@ -173,26 +169,24 @@ export async function queryAll(ctx) {
           })
         ).toJSON();
 
-        friendInfo = {
+        return {
           ...baseInfo,
           ...settings,
         };
-
-        return friendInfo;
       })
     );
 
-    ctx.body = {
+    return (ctx.body = {
       code: 200,
       data: {
         totalCount,
         friends,
       },
-    };
+    });
   } catch (err) {
-    ctx.body = {
+    return (ctx.body = {
       code: 500,
       data: `${err.name}: ${err.message}`,
-    };
+    });
   }
 }

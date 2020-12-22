@@ -224,7 +224,8 @@ class Chat {
   sendNotify = async (
     ctx,
     reciver,
-    notify: Notify
+    notify: Notify,
+    cache: boolean = true
   ): Promise<"successed" | "failed"> => {
     try {
       // 判断是否存在此类型通知 比如：A 重复发起添加 B 为好友
@@ -269,7 +270,7 @@ class Chat {
       }
 
       // 将通知 存到redis中
-      await notifyToRedis(reciver, notify);
+      cache && (await notifyToRedis(reciver, notify));
 
       return "successed";
     } catch (error) {

@@ -1,8 +1,12 @@
 import Redis from "ioredis";
 import { USERINFOKEY } from "../const";
+import Config from "../../config";
 
 const { User, FriSetting } = require("../models");
 const { Op } = require("sequelize/lib/sequelize");
+const jwt = require("jsonwebtoken");
+const { v4 } = require("uuid");
+const bcrypt = require("bcrypt");
 
 /** 获取所有用户 */
 export const queryAll = async (ctx) => {
@@ -25,10 +29,26 @@ export async function register(ctx) {
   }
 
   try {
-    await User.create(params);
+    let user = (await User.create(params)).toJSON();
+
+    console.log(user);
+    user = {
+      ...user,
+      userId: user.id,
+    };
+
+    delete user["id"];
+
+    const key = v4();
+    const token = jwt.sign(user, Config.secretOrPrivateKey);
+    ctx.redis.set(key, token, Config.tokenExp);
+
+    delete user["pwd"];
+
     return (ctx.body = {
       code: 200,
-      data: "register successed",
+      token: key,
+      data: user,
     });
   } catch (err) {
     return (ctx.body = {

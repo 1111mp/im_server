@@ -1,4 +1,5 @@
 import { v4 } from "uuid";
+import { getNotifyKey } from "../common/const";
 import { Message, Notify } from "../common/const/interface";
 import {
   addFriend,
@@ -33,7 +34,7 @@ router.post("/handle", async (ctx, next) => {
   }
 
   switch (type) {
-    case 1:
+    case 1: {
       if (!friendId)
         return (ctx.body = {
           code: 400,
@@ -60,7 +61,7 @@ router.post("/handle", async (ctx, next) => {
         ext,
       };
 
-      const result = (global as any).ChatInstance.sendNotify(
+      const result = await (global as any).ChatInstance.sendNotify(
         ctx,
         friendId,
         notify
@@ -76,10 +77,11 @@ router.post("/handle", async (ctx, next) => {
         code: 200,
         msg: "successed",
       });
+    }
     case 2:
       await delFriend(ctx, next);
       return;
-    case 3:
+    case 3: {
       /** 同意加为好友 */
       if (!msgId)
         return (ctx.body = {
@@ -87,40 +89,98 @@ router.post("/handle", async (ctx, next) => {
           msg: "msgId cannot be emptyed",
         });
 
-      const nty = await getNotifyByMsgIdFromRedis(
+      const { notify } = await getNotifyByMsgIdFromRedis(
         ctx.redis.redis,
         ctx.userId,
         msgId
       );
 
-      if (!nty)
+      if (!notify)
         return (ctx.body = {
           code: 410,
           msg: "The notice has expired",
         });
 
-      const { sender } = nty;
+      const { sender } = notify;
 
       const dbRes = await addFriend(ctx.userId, sender);
 
       if (!dbRes) return (ctx.body = { code: 500, msg: "db error" });
 
+      await (global as any).ChatInstance.sendNotify(
+        ctx,
+        sender,
+        { ...notify, status: 2 },
+        false
+      );
+
       // 将缓存中的通知入库 并删除
       let flag: boolean = false;
       try {
-        await NotifyModel.create({ ...nty, status: 2 });
+        await NotifyModel.create({ ...notify, status: 2 });
         flag = true;
       } catch (error) {
         // 通知消息入库失败
       }
 
       flag &&
-        (await delNtyByValue(ctx.redis.redis, ctx.userId, JSON.stringify(nty)));
+        (await delNtyByValue(
+          ctx.redis.redis,
+          ctx.userId,
+          JSON.stringify(notify)
+        ));
 
       return (ctx.body = {
         code: 200,
         msg: "successed",
       });
+    }
+    case 4: {
+      // 拒绝加好友
+      if (!msgId)
+        return (ctx.body = {
+          code: 400,
+          msg: "msgId cannot be emptyed",
+        });
+
+      const { notify, index } = await getNotifyByMsgIdFromRedis(
+        ctx.redis.redis,
+        ctx.userId,
+        msgId
+      );
+
+      if (!notify)
+        return (ctx.body = {
+          code: 410,
+          msg: "The notice has expired",
+        });
+
+      const { sender } = notify;
+
+      await (global as any).ChatInstance.sendNotify(
+        ctx,
+        sender,
+        { ...notify, status: 3 },
+        false
+      );
+
+      // 将缓存中的通知入库 并删除
+      let succ: boolean = false;
+      try {
+        await NotifyModel.create({ ...notify, status: 3 });
+        succ = true;
+      } catch (error) {
+        // 通知消息入库失败
+      }
+
+      succ &&
+        (await delNtyByValue(
+          ctx.redis.redis,
+          ctx.userId,
+          JSON.stringify(notify)
+        ));
+      return;
+    }
   }
 });
 
