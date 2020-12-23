@@ -4,6 +4,8 @@ export const STARRCOUNTKEY = "starCounts";
 
 export const STARLOCK = "starLock";
 
+export const USERAUTHKEY = "user_auth";
+
 /** 用户信息的key */
 export const USERINFOKEY = "user_info";
 /** 通知消息的key */

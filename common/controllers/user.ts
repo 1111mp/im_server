@@ -1,4 +1,5 @@
 import Redis from "ioredis";
+import { setToken } from "../utils/auth";
 import { USERINFOKEY } from "../const";
 import Config from "../../config";
 
@@ -39,9 +40,9 @@ export async function register(ctx) {
 
     delete user["id"];
 
-    const key = v4();
-    const token = jwt.sign(user, Config.secretOrPrivateKey);
-    ctx.redis.set(key, token, Config.tokenExp);
+    const key = await setToken(ctx.redis.redis, user, Config.tokenExp);
+
+    if (key === "failed") return (ctx.body = { code: 500, msg: "redis error" });
 
     delete user["pwd"];
 

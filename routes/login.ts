@@ -1,8 +1,7 @@
 import Config from "../config";
+import { setToken } from "../common/utils/auth";
 
 const router = require("koa-router")();
-const jwt = require("jsonwebtoken");
-const { v4 } = require("uuid");
 const bcrypt = require("bcrypt");
 const { User } = require("../common/models");
 const { Op } = require("sequelize/lib/sequelize");
@@ -59,9 +58,10 @@ router.post("/login", async (ctx, next) => {
     const isPwd = bcrypt.compareSync(pwd, user.pwd);
     if (isPwd) {
       // 密码正确 生成token和key 将token存在redis的key中 并将key返回给前端
-      const key = v4();
-      const token = jwt.sign(user, Config.secretOrPrivateKey);
-      ctx.redis.set(key, token, Config.tokenExp);
+      const key = await setToken(ctx.redis.redis, user, Config.tokenExp);
+
+      if (key === "failed")
+        return (ctx.body = { code: 500, msg: "redis error" });
 
       delete user["pwd"];
 
