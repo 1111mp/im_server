@@ -72,7 +72,7 @@ app.use(compose(middlewares));
 
 // routes
 Object.keys(routes).map((route) => {
-  app.use(routes[route].routes(), routes[route].allowedMethods());
+  app.use(routes[route].routes()).use(routes[route].allowedMethods());
 });
 
 /** 定时任务 */

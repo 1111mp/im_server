@@ -1,14 +1,24 @@
 import Config from "../config";
 import { setToken } from "../common/utils/auth";
+import { Context } from "koa";
 
 const router = require("koa-router")();
 const bcrypt = require("bcrypt");
 const { User } = require("../common/models");
 const { Op } = require("sequelize/lib/sequelize");
 
-router.get("/", async (ctx, next) => {
-  await ctx.render("index", {
-    title: "Hello Koa 2ss!",
+router.get("/", async (ctx: Context, next) => {
+  // ctx.cookies.set("cid", "hello world", {
+  //   domain: "localhost", // 写cookie所在的域名
+  //   path: "/", // 写cookie所在的路径
+  //   maxAge: 10 * 60 * 1000, // cookie有效时长
+  //   expires: new Date("2017-02-15"), // cookie失效时间
+  //   httpOnly: false, // 是否只用于http请求中获取
+  //   overwrite: false, // 是否允许重写
+  // });
+
+  return ctx.render("index", {
+    title: "Hello Koa 2!",
   });
 });
 
