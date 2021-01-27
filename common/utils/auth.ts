@@ -42,3 +42,8 @@ export function extendToken(
   const auth = `${USERAUTHKEY}::${userId}`;
   redis.expire(auth, maxAge);
 }
+
+export function delToken(redis: Redis.Redis, userId, key) {
+  const auth = `${USERAUTHKEY}::${userId}`;
+  redis.hdel(auth, key);
+}

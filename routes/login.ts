@@ -1,5 +1,5 @@
 import Config from "../config";
-import { setToken } from "../common/utils/auth";
+import { delToken, setToken } from "../common/utils/auth";
 import { Context } from "koa";
 
 const router = require("koa-router")();
@@ -100,7 +100,7 @@ router.post("/logout", async (ctx, next) => {
   const { token } = ctx.headers;
 
   // 清除redis中token的缓存
-  ctx.redis.destroy(token);
+  delToken(ctx.redis.redis, ctx.userId, token);
 });
 
 module.exports = router;
