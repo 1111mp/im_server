@@ -51,8 +51,8 @@ class Chat {
 
     /** https://stackoverflow.com/questions/36788831/authenticating-socket-io-connections-using-jwt */
     this.socket.use(async (socket: Socket, next) => {
-      if (socket.handshake.query && socket.handshake.query.token) {
-        const realToken = await RedisStore.get(socket.handshake.query.token);
+      if (socket.handshake.headers && socket.handshake.headers.token) {
+        const realToken = await RedisStore.get(socket.handshake.headers.token);
         jwt.verify(
           realToken,
           Config.secretOrPrivateKey,

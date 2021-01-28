@@ -19,7 +19,7 @@
 <script>
   let socket = io("http://192.168.0.7:3000", {
     transports: ["websocket"],
-    query: { token: "c38f7d83-8150-4824-a04a-254dda0fa4de" },
+    extraHeaders: { token: "c38f7d83-8150-4824-a04a-254dda0fa4de" },
     reconnectionAttempts: 20,
   });
 
