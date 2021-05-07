@@ -2405,10 +2405,10 @@ negotiator@0.6.2:
   resolved "https://registry.yarnpkg.com/negotiator/-/negotiator-0.6.2.tgz#feacf7ccf525a77ae9634436a64883ffeca346fb"
   integrity sha512-hZXc7K2e+PgeI1eDBe/10Ard4ekbfrrqG8Ep+8Jmf4JID2bNg7NvCPOZN+kfF574pFQI7mum2AUqDidoKqcTOw==
 
-netmask@^2.0.2:
-  version "2.0.2"
-  resolved "https://registry.npm.taobao.org/netmask/download/netmask-2.0.2.tgz?cache=0&sync_timestamp=1617388495055&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fnetmask%2Fdownload%2Fnetmask-2.0.2.tgz#8b01a07644065d536383835823bc52004ebac5e7"
-  integrity sha1-iwGgdkQGXVNjg4NYI7xSAE66xec=
+netmask@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/netmask/-/netmask-1.0.6.tgz#20297e89d86f6f6400f250d9f4f6b4c1945fcd35"
+  integrity sha1-ICl+idhvb2QA8lDZ9Pa0wZRfzTU=
 
 next-tick@~1.0.0:
   version "1.0.0"
@@ -3708,9 +3708,9 @@ undefsafe@^2.0.3:
     debug "^2.2.0"
 
 underscore@^1.9.1:
-  version "1.12.0"
-  resolved "https://registry.yarnpkg.com/underscore/-/underscore-1.12.0.tgz#4814940551fc80587cef7840d1ebb0f16453be97"
-  integrity sha512-21rQzss/XPMjolTiIezSu3JAjgagXKROtNrYFEOWK109qY1Uv2tVjPTZ1ci2HgvQDA16gHYSthQIJfB+XId/rQ==
+  version "1.13.1"
+  resolved "https://registry.yarnpkg.com/underscore/-/underscore-1.13.1.tgz#0c1c6bd2df54b6b69f2314066d65b6cde6fcf9d1"
+  integrity sha512-hzSoAVtJF+3ZtiFX0VgfFPHEDRm7Y/QPjGyNo4TVdnDTdft3tr8hEkD25a1jC+TjTuE7tkHGKkhwCgs9dgBB2g==
 
 unique-string@^2.0.0:
   version "2.0.0"
