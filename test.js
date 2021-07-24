@@ -97,3 +97,53 @@ protobuf.load("./common/proto/message.proto", function (err, root) {
   // decrypted += decipher.final("utf8");
   // console.log(decrypted);
 });
+
+// message AckResponse {
+//   required int32 code = 1;
+// 	required string msg = 2;
+//   repeated Result details = 3;
+// }
+
+// message Result {
+//   required string name = 1;
+//   required int32 age = 2;
+// }
+
+// const { messagepackage } = require("./proto/proto");
+// const {
+//   Message: ProtoMessage,
+//   Notify: ProtoNotify,
+//   AckResponse,
+// } = messagepackage;
+
+// function setAckResponseToProto(ack) {
+//   const message = AckResponse.create(ack);
+//   return AckResponse.encode(message).finish();
+// }
+
+// function getAckResponseFromProto(buffer) {
+//   const decodedMessage = AckResponse.decode(buffer);
+//   return AckResponse.toObject(decodedMessage, {
+//     longs: String,
+//     enums: String,
+//     bytes: String,
+//   });
+// }
+
+// const buf = setAckResponseToProto({
+//   code: 200,
+//   msg: "successed",
+//   details: [
+//     { name: "111", age: 11 },
+//     { name: "222", age: 22 },
+//     { name: "333", age: 33 },
+//   ],
+// });
+
+// console.log(buf);
+
+// const data = getAckResponseFromProto(buf);
+
+// console.log(data);
+// console.log(data.details.length);
+

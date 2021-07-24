@@ -24,13 +24,13 @@ $root.messagepackage = (function() {
          * Properties of a Message.
          * @memberof messagepackage
          * @interface IMessage
-         * @property {string} msgId Message msgId
-         * @property {number} type Message type
-         * @property {number} sessionType Message sessionType
+         * @property {string|null} [msgId] Message msgId
+         * @property {number|null} [type] Message type
+         * @property {number|null} [sessionType] Message sessionType
          * @property {string|null} [content] Message content
-         * @property {number} status Message status
-         * @property {number} sender Message sender
-         * @property {number} reciver Message reciver
+         * @property {number|null} [status] Message status
+         * @property {number|null} [sender] Message sender
+         * @property {number|null} [reciver] Message reciver
          * @property {number|Long|null} [time] Message time
          * @property {string|null} [ext] Message ext
          */
@@ -146,14 +146,20 @@ $root.messagepackage = (function() {
         Message.encode = function encode(message, writer) {
             if (!writer)
                 writer = $Writer.create();
-            writer.uint32(/* id 1, wireType 2 =*/10).string(message.msgId);
-            writer.uint32(/* id 2, wireType 0 =*/16).int32(message.type);
-            writer.uint32(/* id 3, wireType 0 =*/24).int32(message.sessionType);
+            if (message.msgId != null && Object.hasOwnProperty.call(message, "msgId"))
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.msgId);
+            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
+                writer.uint32(/* id 2, wireType 0 =*/16).int32(message.type);
+            if (message.sessionType != null && Object.hasOwnProperty.call(message, "sessionType"))
+                writer.uint32(/* id 3, wireType 0 =*/24).int32(message.sessionType);
             if (message.content != null && Object.hasOwnProperty.call(message, "content"))
                 writer.uint32(/* id 4, wireType 2 =*/34).string(message.content);
-            writer.uint32(/* id 5, wireType 0 =*/40).int32(message.status);
-            writer.uint32(/* id 6, wireType 0 =*/48).int32(message.sender);
-            writer.uint32(/* id 7, wireType 0 =*/56).int32(message.reciver);
+            if (message.status != null && Object.hasOwnProperty.call(message, "status"))
+                writer.uint32(/* id 5, wireType 0 =*/40).int32(message.status);
+            if (message.sender != null && Object.hasOwnProperty.call(message, "sender"))
+                writer.uint32(/* id 6, wireType 0 =*/48).int32(message.sender);
+            if (message.reciver != null && Object.hasOwnProperty.call(message, "reciver"))
+                writer.uint32(/* id 7, wireType 0 =*/56).int32(message.reciver);
             if (message.time != null && Object.hasOwnProperty.call(message, "time"))
                 writer.uint32(/* id 8, wireType 0 =*/64).int64(message.time);
             if (message.ext != null && Object.hasOwnProperty.call(message, "ext"))
@@ -224,18 +230,6 @@ $root.messagepackage = (function() {
                     break;
                 }
             }
-            if (!message.hasOwnProperty("msgId"))
-                throw $util.ProtocolError("missing required 'msgId'", { instance: message });
-            if (!message.hasOwnProperty("type"))
-                throw $util.ProtocolError("missing required 'type'", { instance: message });
-            if (!message.hasOwnProperty("sessionType"))
-                throw $util.ProtocolError("missing required 'sessionType'", { instance: message });
-            if (!message.hasOwnProperty("status"))
-                throw $util.ProtocolError("missing required 'status'", { instance: message });
-            if (!message.hasOwnProperty("sender"))
-                throw $util.ProtocolError("missing required 'sender'", { instance: message });
-            if (!message.hasOwnProperty("reciver"))
-                throw $util.ProtocolError("missing required 'reciver'", { instance: message });
             return message;
         };
 
@@ -266,21 +260,27 @@ $root.messagepackage = (function() {
         Message.verify = function verify(message) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (!$util.isString(message.msgId))
-                return "msgId: string expected";
-            if (!$util.isInteger(message.type))
-                return "type: integer expected";
-            if (!$util.isInteger(message.sessionType))
-                return "sessionType: integer expected";
+            if (message.msgId != null && message.hasOwnProperty("msgId"))
+                if (!$util.isString(message.msgId))
+                    return "msgId: string expected";
+            if (message.type != null && message.hasOwnProperty("type"))
+                if (!$util.isInteger(message.type))
+                    return "type: integer expected";
+            if (message.sessionType != null && message.hasOwnProperty("sessionType"))
+                if (!$util.isInteger(message.sessionType))
+                    return "sessionType: integer expected";
             if (message.content != null && message.hasOwnProperty("content"))
                 if (!$util.isString(message.content))
                     return "content: string expected";
-            if (!$util.isInteger(message.status))
-                return "status: integer expected";
-            if (!$util.isInteger(message.sender))
-                return "sender: integer expected";
-            if (!$util.isInteger(message.reciver))
-                return "reciver: integer expected";
+            if (message.status != null && message.hasOwnProperty("status"))
+                if (!$util.isInteger(message.status))
+                    return "status: integer expected";
+            if (message.sender != null && message.hasOwnProperty("sender"))
+                if (!$util.isInteger(message.sender))
+                    return "sender: integer expected";
+            if (message.reciver != null && message.hasOwnProperty("reciver"))
+                if (!$util.isInteger(message.reciver))
+                    return "reciver: integer expected";
             if (message.time != null && message.hasOwnProperty("time"))
                 if (!$util.isInteger(message.time) && !(message.time && $util.isInteger(message.time.low) && $util.isInteger(message.time.high)))
                     return "time: integer|Long expected";
@@ -402,11 +402,11 @@ $root.messagepackage = (function() {
          * Properties of a Notify.
          * @memberof messagepackage
          * @interface INotify
-         * @property {string} msgId Notify msgId
-         * @property {number} type Notify type
-         * @property {number} status Notify status
-         * @property {number} sender Notify sender
-         * @property {number} reciver Notify reciver
+         * @property {string|null} [msgId] Notify msgId
+         * @property {number|null} [type] Notify type
+         * @property {number|null} [status] Notify status
+         * @property {number|null} [sender] Notify sender
+         * @property {number|null} [reciver] Notify reciver
          * @property {string|null} [remark] Notify remark
          * @property {string|null} [senderInfo] Notify senderInfo
          * @property {number|Long|null} [time] Notify time
@@ -524,11 +524,16 @@ $root.messagepackage = (function() {
         Notify.encode = function encode(message, writer) {
             if (!writer)
                 writer = $Writer.create();
-            writer.uint32(/* id 1, wireType 2 =*/10).string(message.msgId);
-            writer.uint32(/* id 2, wireType 0 =*/16).int32(message.type);
-            writer.uint32(/* id 3, wireType 0 =*/24).int32(message.status);
-            writer.uint32(/* id 4, wireType 0 =*/32).int32(message.sender);
-            writer.uint32(/* id 5, wireType 0 =*/40).int32(message.reciver);
+            if (message.msgId != null && Object.hasOwnProperty.call(message, "msgId"))
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.msgId);
+            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
+                writer.uint32(/* id 2, wireType 0 =*/16).int32(message.type);
+            if (message.status != null && Object.hasOwnProperty.call(message, "status"))
+                writer.uint32(/* id 3, wireType 0 =*/24).int32(message.status);
+            if (message.sender != null && Object.hasOwnProperty.call(message, "sender"))
+                writer.uint32(/* id 4, wireType 0 =*/32).int32(message.sender);
+            if (message.reciver != null && Object.hasOwnProperty.call(message, "reciver"))
+                writer.uint32(/* id 5, wireType 0 =*/40).int32(message.reciver);
             if (message.remark != null && Object.hasOwnProperty.call(message, "remark"))
                 writer.uint32(/* id 6, wireType 2 =*/50).string(message.remark);
             if (message.senderInfo != null && Object.hasOwnProperty.call(message, "senderInfo"))
@@ -603,16 +608,6 @@ $root.messagepackage = (function() {
                     break;
                 }
             }
-            if (!message.hasOwnProperty("msgId"))
-                throw $util.ProtocolError("missing required 'msgId'", { instance: message });
-            if (!message.hasOwnProperty("type"))
-                throw $util.ProtocolError("missing required 'type'", { instance: message });
-            if (!message.hasOwnProperty("status"))
-                throw $util.ProtocolError("missing required 'status'", { instance: message });
-            if (!message.hasOwnProperty("sender"))
-                throw $util.ProtocolError("missing required 'sender'", { instance: message });
-            if (!message.hasOwnProperty("reciver"))
-                throw $util.ProtocolError("missing required 'reciver'", { instance: message });
             return message;
         };
 
@@ -643,16 +638,21 @@ $root.messagepackage = (function() {
         Notify.verify = function verify(message) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (!$util.isString(message.msgId))
-                return "msgId: string expected";
-            if (!$util.isInteger(message.type))
-                return "type: integer expected";
-            if (!$util.isInteger(message.status))
-                return "status: integer expected";
-            if (!$util.isInteger(message.sender))
-                return "sender: integer expected";
-            if (!$util.isInteger(message.reciver))
-                return "reciver: integer expected";
+            if (message.msgId != null && message.hasOwnProperty("msgId"))
+                if (!$util.isString(message.msgId))
+                    return "msgId: string expected";
+            if (message.type != null && message.hasOwnProperty("type"))
+                if (!$util.isInteger(message.type))
+                    return "type: integer expected";
+            if (message.status != null && message.hasOwnProperty("status"))
+                if (!$util.isInteger(message.status))
+                    return "status: integer expected";
+            if (message.sender != null && message.hasOwnProperty("sender"))
+                if (!$util.isInteger(message.sender))
+                    return "sender: integer expected";
+            if (message.reciver != null && message.hasOwnProperty("reciver"))
+                if (!$util.isInteger(message.reciver))
+                    return "reciver: integer expected";
             if (message.remark != null && message.hasOwnProperty("remark"))
                 if (!$util.isString(message.remark))
                     return "remark: string expected";
@@ -780,8 +780,8 @@ $root.messagepackage = (function() {
          * Properties of an AckResponse.
          * @memberof messagepackage
          * @interface IAckResponse
-         * @property {number} code AckResponse code
-         * @property {string} msg AckResponse msg
+         * @property {number|null} [code] AckResponse code
+         * @property {string|null} [msg] AckResponse msg
          */
 
         /**
@@ -839,8 +839,10 @@ $root.messagepackage = (function() {
         AckResponse.encode = function encode(message, writer) {
             if (!writer)
                 writer = $Writer.create();
-            writer.uint32(/* id 1, wireType 0 =*/8).int32(message.code);
-            writer.uint32(/* id 2, wireType 2 =*/18).string(message.msg);
+            if (message.code != null && Object.hasOwnProperty.call(message, "code"))
+                writer.uint32(/* id 1, wireType 0 =*/8).int32(message.code);
+            if (message.msg != null && Object.hasOwnProperty.call(message, "msg"))
+                writer.uint32(/* id 2, wireType 2 =*/18).string(message.msg);
             return writer;
         };
 
@@ -886,10 +888,6 @@ $root.messagepackage = (function() {
                     break;
                 }
             }
-            if (!message.hasOwnProperty("code"))
-                throw $util.ProtocolError("missing required 'code'", { instance: message });
-            if (!message.hasOwnProperty("msg"))
-                throw $util.ProtocolError("missing required 'msg'", { instance: message });
             return message;
         };
 
@@ -920,10 +918,12 @@ $root.messagepackage = (function() {
         AckResponse.verify = function verify(message) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (!$util.isInteger(message.code))
-                return "code: integer expected";
-            if (!$util.isString(message.msg))
-                return "msg: string expected";
+            if (message.code != null && message.hasOwnProperty("code"))
+                if (!$util.isInteger(message.code))
+                    return "code: integer expected";
+            if (message.msg != null && message.hasOwnProperty("msg"))
+                if (!$util.isString(message.msg))
+                    return "msg: string expected";
             return null;
         };
 

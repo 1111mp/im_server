@@ -5,7 +5,7 @@ export default {
   logConfig: resolve(__dirname, "./log4js.json"),
   unlessPaths: [
     "/",
-    "/login",
+    "/users/login",
     "/users/register",
     "/favicon.ico",
     /^\/upload/,

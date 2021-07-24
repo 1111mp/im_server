@@ -19,7 +19,7 @@ export function getFileUrl(files: any[]) {
 
   files.forEach((file) => {
     let path = file.path;
-    let filename = path.substring(path.lastIndexOf("\\") + 1, path.length);
+    let filename = path.substring(path.lastIndexOf("\/") + 1, path.length);
     urlArr.push(`http://localhost:3000/upload/${filename}`);
   });
 

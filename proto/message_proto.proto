@@ -1,25 +1,25 @@
-package messagepackage;
-
 syntax = "proto3";
 
+package messagepackage;
+
 message Message {
-  required string msgId = 1;
-  required int32 type = 2;
-  required int32 sessionType = 3;
+  string msgId = 1;
+  int32 type = 2;
+  int32 sessionType = 3;
   string content = 4;
-  required int32 status = 5;
-  required int32 sender = 6;
-  required int32 reciver = 7;
+  int32 status = 5;
+  int32 sender = 6;
+  int32 reciver = 7;
   int64 time = 8;
   string ext = 9;
 }
 
 message Notify {
-  required string msgId = 1;
-  required int32 type = 2;
-  required int32 status = 3;
-  required int32 sender = 4;
-  required int32 reciver = 5;
+  string msgId = 1;
+  int32 type = 2;
+  int32 status = 3;
+  int32 sender = 4;
+  int32 reciver = 5;
   string remark = 6;
   string senderInfo = 7;
   int64 time = 8;
@@ -27,6 +27,6 @@ message Notify {
 }
 
 message AckResponse {
-  required int32 code = 1;
-	required string msg = 2;
+  int32 code = 1;
+	string msg = 2;
 }

@@ -7,20 +7,22 @@ const bcrypt = require("bcrypt");
 const { User } = require("../common/models");
 const { Op } = require("sequelize/lib/sequelize");
 
-router.get("/", async (ctx: Context, next) => {
-  // ctx.cookies.set("cid", "hello world", {
-  //   domain: "localhost", // 写cookie所在的域名
-  //   path: "/", // 写cookie所在的路径
-  //   maxAge: 10 * 60 * 1000, // cookie有效时长
-  //   expires: new Date("2017-02-15"), // cookie失效时间
-  //   httpOnly: false, // 是否只用于http请求中获取
-  //   overwrite: false, // 是否允许重写
-  // });
+router.prefix("/users");
 
-  return ctx.render("index", {
-    title: "Hello Koa 2!",
-  });
-});
+// router.get("/", async (ctx: Context, next) => {
+//   // ctx.cookies.set("cid", "hello world", {
+//   //   domain: "localhost", // 写cookie所在的域名
+//   //   path: "/", // 写cookie所在的路径
+//   //   maxAge: 10 * 60 * 1000, // cookie有效时长
+//   //   expires: new Date("2017-02-15"), // cookie失效时间
+//   //   httpOnly: false, // 是否只用于http请求中获取
+//   //   overwrite: false, // 是否允许重写
+//   // });
+
+//   return ctx.render("index", {
+//     title: "Hello Koa 2!",
+//   });
+// });
 
 /**
  * @description: 登录接口
@@ -88,6 +90,7 @@ router.post("/login", async (ctx, next) => {
       });
     }
   } catch (error) {
+    console.log(error);
     return (ctx.body = {
       code: 500,
       msg: `${error.name}: ${error.message}`,

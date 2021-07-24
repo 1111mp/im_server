@@ -17,6 +17,29 @@ router.post("/", async (ctx, next) => {
   };
 });
 
+router.post("/app", async (ctx) => {
+  console.log(ctx.request.files);
+  console.log(ctx.request.body);
+  const { files } = ctx.request.files;
+  const { version } = ctx.request.body;
+  const appPath = join(Config.uploadPath, version, "/");
+
+  if (!fs.existsSync(appPath)) mkdirsSync(appPath);
+
+  if (!files.length) {
+    fs.renameSync(files.path, appPath + files.name);
+  } else {
+    for (let file of files) {
+      const { name, path } = file;
+      fs.renameSync(path, appPath + name);
+    }
+  }
+
+  ctx.body = {
+    code: 200,
+  };
+});
+
 const mkdirsSync = (dirname) => {
   if (fs.existsSync(dirname)) {
     return true;
