@@ -1,33 +1,24 @@
 {
-	"compilerOptions": {
-		"module": "commonjs",
-		"target": "es5",
-		"allowJs": true,
-		// "strict": true,
-		"declaration": true,
-		"baseUrl": ".",
-		"rootDir": "./",
-		"noImplicitAny": false,
-		"noUnusedLocals": false,
-		"suppressImplicitAnyIndexErrors": true,
-		"experimentalDecorators": true,
-		"pretty": true,
-		"sourceMap": true,
-		"moduleResolution": "Node",
-		"isolatedModules": false,
-		"resolveJsonModule": true,
-		"allowSyntheticDefaultImports": true,
-		"lib": [
-			"es6",
-			"dom"
-		],
-		"typeRoots": [
-			"types",
-			"node_modules/@types"
-		]
-	},
-	"exclude": [
-		"node_modules",
-		"**/pm2.config.*"
-	]
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es5",
+    "allowJs": true,
+    // "strict": true,
+    "declaration": true,
+    "baseUrl": ".",
+    "rootDir": "./",
+    "noImplicitAny": false,
+    "noUnusedLocals": false,
+    "suppressImplicitAnyIndexErrors": true,
+    "experimentalDecorators": true,
+    "pretty": true,
+    "sourceMap": true,
+    "moduleResolution": "Node",
+    "isolatedModules": false,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "lib": ["es6", "dom"],
+    "typeRoots": ["types", "node_modules/@types"]
+  },
+  "exclude": ["node_modules", "**/pm2.config.*", "demo", "proto"]
 }
