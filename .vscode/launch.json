@@ -8,7 +8,7 @@
       "type": "node",
       "request": "launch",
       "name": "Launch Program",
-      "runtimeArgs": ["-r", "ts-node/register"],
+      "runtimeArgs": ["-r", "@noshot/env", "-r", "ts-node/register"],
       "args": ["${workspaceFolder}/run/index.ts"]
     }
   ]

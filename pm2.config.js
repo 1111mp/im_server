@@ -24,7 +24,7 @@ module.exports = {
       kill_timeout: 10000,
       name: appName,
       script: "./run/index.ts",
-      // args: ".run/index.ts",
+      args: "-r @noshot/env",
       wait_ready: true,
       watch: false,
       // watch: ['server'],

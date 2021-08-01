@@ -35,6 +35,11 @@
     semver "^7.3.4"
     tar "^6.1.0"
 
+"@noshot/env@^2.1.1":
+  version "2.1.1"
+  resolved "https://registry.nlark.com/@noshot/env/download/@noshot/env-2.1.1.tgz#a8b32dc79c81d9ad572ac75030520aa43af81c62"
+  integrity sha1-qLMtx5yB2a1XKsdQMFIKpDr4HGI=
+
 "@protobufjs/aspromise@^1.1.1", "@protobufjs/aspromise@^1.1.2":
   version "1.1.2"
   resolved "https://registry.nlark.com/@protobufjs/aspromise/download/@protobufjs/aspromise-1.1.2.tgz#9b8b0cc663d669a7d8f6f5d0893a14d348f30fbf"
@@ -1118,6 +1123,11 @@ dot-prop@^5.2.0:
   integrity sha1-kMzOcIzZzYLMTcjD3dmr3VWyDog=
   dependencies:
     is-obj "^2.0.0"
+
+dotenv@^10.0.0:
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-10.0.0.tgz#3d4227b8fb95f81096cdd2b66653fb2c7085ba81"
+  integrity sha512-rlBi9d8jpv9Sf1klPjNfFAuWDjKLwTIJJ/VxtoTwIR6hnZxcEOQCZg2oIL3MWBYw5GpUDKOEnND7LXTbIpQ03Q==
 
 dottie@^2.0.0:
   version "2.0.2"
@@ -2441,10 +2451,10 @@ negotiator@0.6.2:
   resolved "https://registry.nlark.com/negotiator/download/negotiator-0.6.2.tgz#feacf7ccf525a77ae9634436a64883ffeca346fb"
   integrity sha1-/qz3zPUlp3rpY0Q2pkiD/+yjRvs=
 
-netmask@^2.0.2:
-  version "2.0.2"
-  resolved "https://registry.npm.taobao.org/netmask/download/netmask-2.0.2.tgz#8b01a07644065d536383835823bc52004ebac5e7"
-  integrity sha1-iwGgdkQGXVNjg4NYI7xSAE66xec=
+netmask@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.npm.taobao.org/netmask/download/netmask-1.0.6.tgz#20297e89d86f6f6400f250d9f4f6b4c1945fcd35"
+  integrity sha1-ICl+idhvb2QA8lDZ9Pa0wZRfzTU=
 
 next-tick@~1.0.0:
   version "1.0.0"
@@ -2657,7 +2667,7 @@ pac-resolver@^3.0.0:
     co "^4.6.0"
     degenerator "^1.0.4"
     ip "^1.1.5"
-    netmask "^2.0.2"
+    netmask "^1.0.6"
     thunkify "^2.1.2"
 
 package-json@^6.3.0:
