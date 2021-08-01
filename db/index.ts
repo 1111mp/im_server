@@ -1,6 +1,8 @@
 import { Sequelize } from "sequelize";
 import Config from "../config/sequelize.json";
 
+// https://github.com/EnetoJara/resume-app/blob/master/src/server/models/index.ts
+
 import { UserFactory, UserStatic } from "./models/user";
 
 export type DB = {
