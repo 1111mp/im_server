@@ -4,6 +4,6 @@ node_modules
 
 /public/upload
 
-/yarn.lock
+yarn.lock
 
 *.log
