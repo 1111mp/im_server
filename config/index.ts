@@ -1,12 +1,12 @@
 import { resolve, join } from "path";
 
-export default {
+export const Config = {
   secretOrPrivateKey: "random str",
   logConfig: resolve(__dirname, "./log4js.json"),
   unlessPaths: [
     "/",
     "/users/login",
-    "/users/register",
+    "/api/register",
     "/favicon.ico",
     /^\/upload/,
     /^\/stylesheets/,

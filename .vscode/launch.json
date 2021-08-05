@@ -9,7 +9,12 @@
       "request": "launch",
       "name": "Launch Program",
       "runtimeArgs": ["-r", "@noshot/env", "-r", "ts-node/register"],
-      "args": ["${workspaceFolder}/run/index.ts"]
+      "env": {
+        "NODE_ENV": "development",
+        "LOAD_CONFIG": "dev"
+      },
+      "program": "${workspaceFolder}/run/index.ts",
+      "resolveSourceMapLocations": ["!**/node_modules/**", "!node:internal/**"]
     }
   ]
 }

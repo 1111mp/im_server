@@ -1,8 +1,8 @@
-import Config from "../config";
+import { Config } from "../config";
 import { delToken, setToken } from "../common/utils/auth";
 import { Context } from "koa";
 
-const router = require("koa-router")();
+const router = require("@koa/router")();
 const bcrypt = require("bcrypt");
 const { User } = require("../common/models");
 const { Op } = require("sequelize/lib/sequelize");

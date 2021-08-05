@@ -1,7 +1,7 @@
 import Redis from "ioredis";
 import { setToken } from "../utils/auth";
 import { USERINFOKEY } from "../const";
-import Config from "../../config";
+import { Config } from "../../config";
 
 const { User, FriSetting } = require("../models");
 const { Op } = require("sequelize/lib/sequelize");

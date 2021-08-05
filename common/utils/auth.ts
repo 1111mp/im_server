@@ -2,7 +2,7 @@ import Redis from "ioredis";
 import { v4 as uuidv4 } from "uuid";
 import * as jwt from "jsonwebtoken";
 import { USERAUTHKEY } from "../const";
-import Config from "../../config";
+import { Config } from "../../config";
 
 export function setToken(
   redis: Redis.Redis,
