@@ -1,6 +1,6 @@
 import { DB } from "../db";
 import { UserModel } from "../db/models/user";
-import { UserRegister } from "../types/types";
+import { UserLogin, UserRegister } from "../types/types";
 
 export class UserService {
   public constructor(private db: DB) {}
@@ -12,7 +12,26 @@ export class UserService {
    * @param {UserRegister} user
    * @returns {UserModel}
    */
-  public save = async (user: UserRegister): Promise<UserModel> => {
-    return await this.db.User.create(user);
+  public save = (user: UserRegister): Promise<UserModel> => {
+    return this.db.User.create(user);
+  };
+
+  public getUserByAccount = ({
+    account,
+  }: Pick<UserLogin, "account">): Promise<UserModel | null> => {
+    return this.db.User.findOne({
+      attributes: [
+        "id",
+        "account",
+        "pwd",
+        "avatar",
+        "email",
+        "regisTime",
+        "updateTime",
+      ],
+      where: {
+        account,
+      },
+    });
   };
 }

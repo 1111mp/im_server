@@ -1,13 +1,14 @@
 import { Optional } from "sequelize";
 import { sign } from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
+import { compareSync } from "bcrypt";
 import { Config } from "../config";
 import { USERAUTHKEY } from "../common/const";
 
 import { ParameterizedContext, Next } from "koa";
 import { UserAttributes } from "../db/models/user";
 import { UserService } from "../services";
-import { UserRegister } from "../types/types";
+import { UserRegister, UserLogin } from "../types/types";
 import { RedisType } from "../redis";
 
 /**
@@ -77,6 +78,58 @@ export class UserController {
           data: `${err.name}: ${err.message}`,
         });
       }
+    }
+  };
+
+  public login = async (ctx: ParameterizedContext, next: Next) => {
+    const { account, pwd } = <UserLogin>ctx.request.body;
+
+    if (!account || !pwd)
+      return (ctx.body = {
+        code: 401,
+        msg: "account or pwd cannot be empty",
+      });
+
+    try {
+      const user = (
+        await this.userService.getUserByAccount({ account })
+      )?.toJSON() as UserAttributes;
+
+      if (!user)
+        return (ctx.body = {
+          code: 403,
+          msg: "please register first",
+        });
+
+      const isPwd = compareSync(pwd, user.pwd);
+
+      if (!isPwd)
+        return (ctx.body = {
+          code: 403,
+          msg: "Incorrect password",
+        });
+
+      // pwd is correct
+      const token = await this.set_token(user, Config.tokenExp);
+
+      if (token === "failed")
+        return (ctx.body = {
+          code: 500,
+          msg: "Unknow error when generating token。",
+        });
+
+      delete (user as Optional<UserAttributes, "pwd">).pwd;
+
+      return (ctx.body = {
+        code: 200,
+        token,
+        data: user,
+      });
+    } catch (err) {
+      return (ctx.body = {
+        code: 500,
+        msg: `${err.name}: ${err.message}`,
+      });
     }
   };
 

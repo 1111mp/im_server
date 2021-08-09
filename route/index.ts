@@ -11,7 +11,10 @@ export function routes(db: DB, redis: RedisType) {
 
   const userController = new UserController(new UserService(db), redis);
 
+  // register user
   api.post("/register", userController.register);
+  // user login
+  api.post("login", userController.login);
 
   return api;
 }
