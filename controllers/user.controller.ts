@@ -81,6 +81,13 @@ export class UserController {
     }
   };
 
+  /**
+   * @Post
+   * @method {login}
+   * @param ctx ParameterizedContext
+   * @param next Next
+   * @returns {Promise<BaseResponse>}
+   */
   public login = async (ctx: ParameterizedContext, next: Next) => {
     const { account, pwd } = <UserLogin>ctx.request.body;
 
@@ -133,7 +140,25 @@ export class UserController {
     }
   };
 
-  public logout = () => {};
+  /**
+   * @Post
+   * @method {logout}
+   * @param ctx ParameterizedContext<{}, { userId: number }>
+   * @param next Next
+   * @returns {Promise<BaseResponse>}
+   */
+  public logout = async (
+    ctx: ParameterizedContext<{}, { userId: number }>,
+    next: Next
+  ) => {
+    const { token } = <{ token: string }>ctx.headers;
+
+    await this.del_token(ctx.userId, token);
+
+    return (ctx.body = {
+      code: 200,
+    });
+  };
 
   /**
    * @description generate token
@@ -164,5 +189,18 @@ export class UserController {
           reslove(key);
         });
     });
+  };
+
+  /**
+   * @description delete token by user
+   * @method {del_token}
+   * @param userId
+   * @param token
+   * @returns Promise<number>
+   */
+  private del_token = (userId: number, token: string) => {
+    const auth = `${USERAUTHKEY}::${userId}`;
+
+    return this.redis.instance.hdel(auth, token);
   };
 }
