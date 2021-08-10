@@ -102,8 +102,12 @@ export function koaApp() {
 
   app.use(compose(middlewares));
 
-  const router = routes(db, redis);
-  app.use(router.routes()).use(router.allowedMethods());
+  // register router
+  const routers = routes(db, redis);
+  Object.keys(routers).forEach((name) => {
+    const router = routers[name];
+    app.use(router.routes()).use(router.allowedMethods());
+  });
 
   // error-handling
   app.on("error", (err, ctx) => {

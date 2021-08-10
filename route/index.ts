@@ -1,20 +1,17 @@
-import * as Router from "@koa/router";
-import { UserController } from "../controllers/user.controller";
+import Router from "@koa/router";
 import { DB } from "../db";
 import { RedisType } from "../redis";
-import { UserService } from "../services";
 
-export function routes(db: DB, redis: RedisType) {
-  const api = new Router();
+import { routes as UserRoutes } from "./user";
 
-  api.prefix("/api");
+export function routes(
+  db: DB,
+  redis: RedisType
+): { [key: string]: Router<any, {}> } {
+  // the router of user
+  const user = UserRoutes(db, redis);
 
-  const userController = new UserController(new UserService(db), redis);
-
-  // register user
-  api.post("/register", userController.register);
-  // user login
-  api.post("login", userController.login);
-
-  return api;
+  return {
+    user,
+  };
 }

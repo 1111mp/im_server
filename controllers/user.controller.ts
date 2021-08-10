@@ -133,6 +133,8 @@ export class UserController {
     }
   };
 
+  public logout = () => {};
+
   /**
    * @description generate token
    * @method {set_token}
