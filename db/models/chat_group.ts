@@ -1,23 +1,43 @@
-import { Sequelize, Model, DataTypes, BuildOptions, Optional } from "sequelize";
+import {
+  Sequelize,
+  Model,
+  DataTypes,
+  BuildOptions,
+  Optional,
+  HasManyGetAssociationsMixin,
+} from "sequelize";
 import * as moment from "moment";
+import { GroupMemberModel } from "./group_member";
 
-export interface ChatGroupAttributes {
+type GroupSizeAttributes =
+  | {
+      type: 1;
+      max: 200;
+    }
+  | {
+      type: 2;
+      max: 2000;
+    };
+
+export type ChatGroupAttributes = GroupSizeAttributes & {
   id: number;
-  type: 1 | 2;
   name: string;
   avatar: string;
   creator: number;
-  max: 200 | 2000;
   createdAt?: Date;
   updatedAt?: Date;
-}
+};
 
 interface ChatGroupCreationAttributes
   extends Optional<ChatGroupAttributes, "id" | "avatar" | "name"> {}
 
-export interface ChatGroupModel
-  extends Model<ChatGroupAttributes, ChatGroupCreationAttributes>,
-    ChatGroupAttributes {}
+export type ChatGroupModel = Model<
+  ChatGroupAttributes,
+  ChatGroupCreationAttributes
+> &
+  ChatGroupAttributes & {
+    getGroup_members: HasManyGetAssociationsMixin<GroupMemberModel>;
+  };
 
 export type ChatGroupStatic = typeof Model & {
   new (values?: object, options?: BuildOptions): ChatGroupModel;

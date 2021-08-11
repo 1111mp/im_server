@@ -7,12 +7,16 @@ import {
   FriendSettingFactory,
   FriendSettingStatic,
 } from "./models/friend_setting";
+import { ChatGroupFactory, ChatGroupStatic } from "./models/chat_group";
+import { GroupMemberFactory, GroupMemberStatic } from "./models/group_member";
 
 export type DB = {
   sequelize: Sequelize;
   User: UserStatic;
   Friend: FriendStatic;
   FriendSetting: FriendSettingStatic;
+  ChatGroup: ChatGroupStatic;
+  GroupMember: GroupMemberStatic;
 };
 
 const sequelize = new Sequelize(
@@ -42,12 +46,18 @@ const sequelize = new Sequelize(
 const User = UserFactory(sequelize);
 const Friend = FriendFactory(sequelize);
 const FriendSetting = FriendSettingFactory(sequelize);
+const ChatGroup = ChatGroupFactory(sequelize);
+const GroupMember = GroupMemberFactory(sequelize);
 
-// User.hasMany()
+ChatGroup.hasMany(GroupMember, { foreignKey: "groupId", sourceKey: "id" });
+GroupMember.belongsTo(ChatGroup, { foreignKey: "groupId", targetKey: "id" });
+GroupMember.belongsTo(User, { foreignKey: "userId", targetKey: "id" });
 
 export const db: DB = {
   sequelize,
   User,
   Friend,
   FriendSetting,
+  ChatGroup,
+  GroupMember,
 };

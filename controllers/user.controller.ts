@@ -143,15 +143,18 @@ export class UserController {
   /**
    * @Post
    * @method {logout}
-   * @param ctx ParameterizedContext<{}, { userId: number }>
+   * @param ctx ParameterizedContext<{}, { userId: number; headers: { token: string } }>
    * @param next Next
    * @returns {Promise<BaseResponse>}
    */
   public logout = async (
-    ctx: ParameterizedContext<{}, { userId: number }>,
+    ctx: ParameterizedContext<
+      {},
+      { userId: number; headers: { token: string } }
+    >,
     next: Next
   ) => {
-    const { token } = <{ token: string }>ctx.headers;
+    const { token } = ctx.headers;
 
     await this.del_token(ctx.userId, token);
 

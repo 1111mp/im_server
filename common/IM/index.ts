@@ -23,7 +23,7 @@ import {
   notifyToRedis,
   offlineNotifyToRedis,
 } from "./utils";
-import Config from "../../config";
+import { Config } from "../../config";
 import { IMNOTIFY } from "./constants";
 
 export type Socket = {

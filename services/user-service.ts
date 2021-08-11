@@ -2,6 +2,11 @@ import { DB } from "../db";
 import { UserModel } from "../db/models/user";
 import { UserLogin, UserRegister } from "../types/types";
 
+/**
+ * @description User Service
+ * @class
+ * @public
+ */
 export class UserService {
   public constructor(private db: DB) {}
 
@@ -16,6 +21,13 @@ export class UserService {
     return this.db.User.create(user);
   };
 
+  /**
+   * @public
+   * @description get user by account
+   * @method {getUserByAccount}
+   * @param account string
+   * @returns	Promise<UserModel | null>
+   */
   public getUserByAccount = ({
     account,
   }: Pick<UserLogin, "account">): Promise<UserModel | null> => {

@@ -5,8 +5,8 @@ export const Config = {
   logConfig: resolve(__dirname, "./log4js.json"),
   unlessPaths: [
     "/",
-    "/users/login",
-    "/api/register",
+    "/api/user/login",
+    "/api/user/register",
     "/favicon.ico",
     /^\/upload/,
     /^\/stylesheets/,

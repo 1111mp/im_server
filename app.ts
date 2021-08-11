@@ -24,7 +24,7 @@ export function koaApp() {
     .authenticate()
     .then(() => {
       console.info("connected to db");
-      // db.sequelize.sync({ alter: true });
+      db.sequelize.sync({ alter: true });
       // db.sequelize.sync({ force: true });
     })
     .catch((error) => {
