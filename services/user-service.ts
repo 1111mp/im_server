@@ -1,6 +1,5 @@
 import { DB } from "../db";
 import { UserModel } from "../db/models/user";
-import { UserLogin, UserRegister } from "../types/types";
 
 /**
  * @description User Service

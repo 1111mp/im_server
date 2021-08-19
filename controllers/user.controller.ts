@@ -8,7 +8,6 @@ import { USERAUTHKEY } from "../common/const";
 import { ParameterizedContext, Next } from "koa";
 import { UserAttributes } from "../db/models/user";
 import { UserService } from "../services";
-import { UserRegister, UserLogin } from "../types/types";
 import { RedisType } from "../redis";
 
 /**

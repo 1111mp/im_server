@@ -1,5 +1,4 @@
 import { Next, ParameterizedContext } from "koa";
-import { GroupCreator } from "../types/types";
 import { IMService } from "../services";
 
 /**
@@ -67,6 +66,7 @@ export class IMController {
    * @returns	{Promise<BaseResponse>}
    */
   public getGroupInfoById = async (ctx: ParameterizedContext, next: Next) => {
+    console.log(ctx.io);
     const { id } = <{ id: string }>ctx.query;
 
     if (!id)

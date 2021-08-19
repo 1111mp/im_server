@@ -1,6 +1,5 @@
 import { DB } from "db";
 import { RedisType } from "redis";
-import { GroupCreator } from "../types/types";
 
 /**
  * @description IM Service

@@ -5,9 +5,8 @@
  */
 import * as http from "http";
 import { koaApp } from "../app";
-// import initChat from "../common/IM";
 
-const app = koaApp();
+const { app, generater } = koaApp();
 
 /**
  * Get port from environment and store in Express.
@@ -22,7 +21,8 @@ const port = normalizePort(process.env.PORT || "3000");
 
 const server = http.createServer(app.callback());
 
-// initChat(server);
+// TODO init IM
+generater(server);
 
 /**
  * Listen on provided port, on all network interfaces.

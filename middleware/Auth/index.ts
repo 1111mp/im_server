@@ -2,7 +2,6 @@ import { BaseContext } from "koa";
 import { verify } from "jsonwebtoken";
 import * as unless from "koa-unless";
 import { RedisType } from "../../redis";
-import { USERAUTHKEY } from "../../common/const";
 import { UserAttributes } from "../../db/models/user";
 
 type Context = BaseContext & {
@@ -19,7 +18,7 @@ export function Auth(redis: RedisType) {
 
     if (!token || !userId) ctx.throw(401, "Authentication Error");
 
-    const auth_key = `${USERAUTHKEY}::${userId}`;
+    const auth_key = `${process.env.USER_AUTH_KEY}::${userId}`;
     const real_token = await redis.instance.hget(auth_key, token);
 
     if (!real_token) {

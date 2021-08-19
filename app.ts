@@ -15,6 +15,8 @@ import { Config } from "./config";
 import { db } from "./db";
 import { redis } from "./redis";
 import { routes } from "./route";
+import { IMInitialization } from "./IM";
+import { Server } from "http";
 
 /** 定时任务 */
 // timerTask(asycStarData);
@@ -114,5 +116,10 @@ export function koaApp() {
     console.error("server error", err, ctx);
   });
 
-  return app;
+  return {
+    app,
+    generater: (http_server: Server) => {
+      app.context.im = IMInitialization(http_server, db, redis);
+    },
+  };
 }

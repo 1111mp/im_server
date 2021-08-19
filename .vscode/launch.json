@@ -10,6 +10,9 @@
       "name": "Launch Program",
       "runtimeArgs": ["-r", "@noshot/env", "-r", "ts-node/register"],
       "env": {
+        // https://github.com/TypeStrong/ts-node#help-my-types-are-missing
+        "TS_NODE_FILES": "true",
+        "TS_NODE_PROJECT": "tsconfig.json",
         "NODE_ENV": "development",
         "LOAD_CONFIG": "dev"
       },
