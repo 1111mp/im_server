@@ -6,7 +6,7 @@
 import * as http from "http";
 import { koaApp } from "../app";
 
-const { app, generater } = koaApp();
+const { app, generator } = koaApp();
 
 /**
  * Get port from environment and store in Express.
@@ -22,7 +22,7 @@ const port = normalizePort(process.env.PORT || "3000");
 const server = http.createServer(app.callback());
 
 // TODO init IM
-generater(server);
+generator(server);
 
 /**
  * Listen on provided port, on all network interfaces.

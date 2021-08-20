@@ -14,3 +14,9 @@ type GroupCreator = {
   name?: string;
   avatar?: string;
 };
+
+type AddFriend = {
+  friendId: number;
+  remark?: string;
+  ext?: string;
+};

@@ -21,10 +21,7 @@ export class IMController {
    * @param next Next
    * @returns {Promise<BaseResponse>}
    */
-  public create_group = async (
-    ctx: ParameterizedContext<{}, { userId: number }>,
-    next: Next
-  ) => {
+  public create_group = async (ctx: ParameterizedContext, next: Next) => {
     const { type, avatar, name, members } = <GroupCreator>ctx.request.body;
 
     if (!type || !(type in [1, 2]) || !members || !members.length)
@@ -66,7 +63,6 @@ export class IMController {
    * @returns	{Promise<BaseResponse>}
    */
   public getGroupInfoById = async (ctx: ParameterizedContext, next: Next) => {
-    console.log(ctx.io);
     const { id } = <{ id: string }>ctx.query;
 
     if (!id)

@@ -1,5 +1,5 @@
-import { DB } from "db";
-import { RedisType } from "redis";
+import { DB } from "../db";
+import { RedisType } from "../redis";
 
 /**
  * @description IM Service

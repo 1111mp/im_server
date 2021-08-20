@@ -4,11 +4,28 @@ import { verify } from "jsonwebtoken";
 import { ExtendedError } from "socket.io/dist/namespace";
 import { DB } from "../db";
 import { RedisType } from "../redis";
-import { SessionSocket } from "../types/im";
 import { UserAttributes } from "../db/models/user";
 
+interface ClientToServerEvents {
+  noArg: () => void;
+  basicEmit: (a: number, b: string, c: number[]) => void;
+}
+
+interface ServerToClientEvents {
+  withAck: (d: string, cb: (e: number) => void) => void;
+}
+
+const io = new Server<ClientToServerEvents, ServerToClientEvents>(3000);
+
+io.on("basicEmit", (a, b, c) => {});
+
+// https://socket.io/docs/v3/migrating-from-3-x-to-4-0/#Typed-events
+io.emit("withAck", "42", (e) => {
+  console.log(e);
+});
+
 export class IM {
-  private io: Server;
+  private io: Server<ClientToServerEvents, ServerToClientEvents>;
 
   /**
    * @description Creates an instance of IM
@@ -22,10 +39,23 @@ export class IM {
     private db: DB,
     private redis: RedisType
   ) {
-    this.io = new Server(http_server, {});
+    this.io = new Server<ClientToServerEvents, ServerToClientEvents>(
+      http_server,
+      {}
+    );
+
+    this.io.on("basicEmit", (a) => {});
 
     // TODO middleware to verify user identity
     this.io.use(this.auth_middleware);
+
+    // event of connection
+    // this.io.on;
+
+    // event of error
+    this.io.on("error", (err) => {
+      console.log(err);
+    });
   }
 
   /**
@@ -36,12 +66,10 @@ export class IM {
    * @returns
    */
   private auth_middleware = async (
-    defaultSocket: Socket,
+    socket: Socket,
     next: (err?: ExtendedError) => void
   ) => {
-    const socket = <SessionSocket>defaultSocket;
-
-    const { token, userid: userId } = <SocketHeaders>socket.handshake.headers;
+    const { token, userid: userId } = socket.handshake.headers;
 
     if (!token || !userId) return next(new Error("Authentication error"));
 

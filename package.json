@@ -14,7 +14,6 @@
     "@noshot/env": "^2.1.1",
     "@throneless/libsignal-service": "^1.2.1",
     "@types/node": "^16.4.12",
-    "@types/socket.io": "^3.0.2",
     "async-lock": "^1.3.0",
     "bcrypt": "^5.0.1",
     "cross-env": "^7.0.3",

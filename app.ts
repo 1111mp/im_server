@@ -118,7 +118,7 @@ export function koaApp() {
 
   return {
     app,
-    generater: (http_server: Server) => {
+    generator: (http_server: Server) => {
       app.context.im = IMInitialization(http_server, db, redis);
     },
   };
