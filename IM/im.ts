@@ -17,12 +17,26 @@ interface ServerToClientEvents {
 
 const io = new Server<ClientToServerEvents, ServerToClientEvents>(3000);
 
-io.on("basicEmit", (a, b, c) => {});
+io.on("connect", (socket) => {
+  socket.on("noArg", () => {
+    // ...
+  });
 
-// https://socket.io/docs/v3/migrating-from-3-x-to-4-0/#Typed-events
-io.emit("withAck", "42", (e) => {
-  console.log(e);
+  socket.on("basicEmit", (a, b, c) => {
+    // ...
+  });
+
+  socket.emit("withAck", "42", (e) => {
+    console.log(e);
+  });
 });
+
+// io.on("basicEmit", (a, b, c) => {});
+
+// // https://socket.io/docs/v3/migrating-from-3-x-to-4-0/#Typed-events
+// io.emit("withAck", "42", (e) => {
+//   console.log(e);
+// });
 
 export class IM {
   private io: Server<ClientToServerEvents, ServerToClientEvents>;
