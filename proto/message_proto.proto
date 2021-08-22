@@ -3,26 +3,35 @@ syntax = "proto3";
 package messagepackage;
 
 message Message {
-  string msgId = 1;
-  int32 type = 2;
-  int32 sessionType = 3;
-  string content = 4;
+  string id = 1;
+  string type = 2;
+  // int32 sessionType = 3;
+  // string content = 4;
   int32 status = 5;
   int32 sender = 6;
-  int32 reciver = 7;
   int64 time = 8;
+  int32 reciver = 7;
   string ext = 9;
 }
 
+message Sender {
+  int32 id = 1;
+  string account = 2;
+  string avatar = 3;
+  string email = 4;
+  string regisTime = 5;
+  string updateTime = 6;
+}
+
 message Notify {
-  string msgId = 1;
+  string id = 1;
   int32 type = 2;
-  int32 status = 3;
-  int32 sender = 4;
+  // int32 status = 3;
+  Sender sender = 4;
   int32 reciver = 5;
-  string remark = 6;
-  string senderInfo = 7;
   int64 time = 8;
+  string remark = 6;
+  // string senderInfo = 7;
   string ext = 9;
 }
 

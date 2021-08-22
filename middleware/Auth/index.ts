@@ -2,7 +2,6 @@ import { BaseContext } from "koa";
 import { verify } from "jsonwebtoken";
 import * as unless from "koa-unless";
 import { RedisType } from "../../redis";
-import { UserAttributes } from "../../db/models/user";
 
 type Context = BaseContext & {
   userId: number;

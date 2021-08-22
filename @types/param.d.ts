@@ -20,3 +20,8 @@ type AddFriend = {
   remark?: string;
   ext?: string;
 };
+
+declare enum StatusCode {
+  Success = 200,
+  Timeout = 408,
+}

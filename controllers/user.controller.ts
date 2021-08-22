@@ -6,7 +6,6 @@ import { Config } from "../config";
 import { USERAUTHKEY } from "../common/const";
 
 import { ParameterizedContext, Next } from "koa";
-import { UserAttributes } from "../db/models/user";
 import { UserService } from "../services";
 import { RedisType } from "../redis";
 

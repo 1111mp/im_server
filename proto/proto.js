@@ -24,14 +24,12 @@ $root.messagepackage = (function() {
          * Properties of a Message.
          * @memberof messagepackage
          * @interface IMessage
-         * @property {string|null} [msgId] Message msgId
-         * @property {number|null} [type] Message type
-         * @property {number|null} [sessionType] Message sessionType
-         * @property {string|null} [content] Message content
+         * @property {string|null} [id] Message id
+         * @property {string|null} [type] Message type
          * @property {number|null} [status] Message status
          * @property {number|null} [sender] Message sender
-         * @property {number|null} [reciver] Message reciver
          * @property {number|Long|null} [time] Message time
+         * @property {number|null} [reciver] Message reciver
          * @property {string|null} [ext] Message ext
          */
 
@@ -51,36 +49,20 @@ $root.messagepackage = (function() {
         }
 
         /**
-         * Message msgId.
-         * @member {string} msgId
+         * Message id.
+         * @member {string} id
          * @memberof messagepackage.Message
          * @instance
          */
-        Message.prototype.msgId = "";
+        Message.prototype.id = "";
 
         /**
          * Message type.
-         * @member {number} type
+         * @member {string} type
          * @memberof messagepackage.Message
          * @instance
          */
-        Message.prototype.type = 0;
-
-        /**
-         * Message sessionType.
-         * @member {number} sessionType
-         * @memberof messagepackage.Message
-         * @instance
-         */
-        Message.prototype.sessionType = 0;
-
-        /**
-         * Message content.
-         * @member {string} content
-         * @memberof messagepackage.Message
-         * @instance
-         */
-        Message.prototype.content = "";
+        Message.prototype.type = "";
 
         /**
          * Message status.
@@ -99,20 +81,20 @@ $root.messagepackage = (function() {
         Message.prototype.sender = 0;
 
         /**
-         * Message reciver.
-         * @member {number} reciver
-         * @memberof messagepackage.Message
-         * @instance
-         */
-        Message.prototype.reciver = 0;
-
-        /**
          * Message time.
          * @member {number|Long} time
          * @memberof messagepackage.Message
          * @instance
          */
         Message.prototype.time = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+
+        /**
+         * Message reciver.
+         * @member {number} reciver
+         * @memberof messagepackage.Message
+         * @instance
+         */
+        Message.prototype.reciver = 0;
 
         /**
          * Message ext.
@@ -146,14 +128,10 @@ $root.messagepackage = (function() {
         Message.encode = function encode(message, writer) {
             if (!writer)
                 writer = $Writer.create();
-            if (message.msgId != null && Object.hasOwnProperty.call(message, "msgId"))
-                writer.uint32(/* id 1, wireType 2 =*/10).string(message.msgId);
+            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.id);
             if (message.type != null && Object.hasOwnProperty.call(message, "type"))
-                writer.uint32(/* id 2, wireType 0 =*/16).int32(message.type);
-            if (message.sessionType != null && Object.hasOwnProperty.call(message, "sessionType"))
-                writer.uint32(/* id 3, wireType 0 =*/24).int32(message.sessionType);
-            if (message.content != null && Object.hasOwnProperty.call(message, "content"))
-                writer.uint32(/* id 4, wireType 2 =*/34).string(message.content);
+                writer.uint32(/* id 2, wireType 2 =*/18).string(message.type);
             if (message.status != null && Object.hasOwnProperty.call(message, "status"))
                 writer.uint32(/* id 5, wireType 0 =*/40).int32(message.status);
             if (message.sender != null && Object.hasOwnProperty.call(message, "sender"))
@@ -199,16 +177,10 @@ $root.messagepackage = (function() {
                 var tag = reader.uint32();
                 switch (tag >>> 3) {
                 case 1:
-                    message.msgId = reader.string();
+                    message.id = reader.string();
                     break;
                 case 2:
-                    message.type = reader.int32();
-                    break;
-                case 3:
-                    message.sessionType = reader.int32();
-                    break;
-                case 4:
-                    message.content = reader.string();
+                    message.type = reader.string();
                     break;
                 case 5:
                     message.status = reader.int32();
@@ -216,11 +188,11 @@ $root.messagepackage = (function() {
                 case 6:
                     message.sender = reader.int32();
                     break;
-                case 7:
-                    message.reciver = reader.int32();
-                    break;
                 case 8:
                     message.time = reader.int64();
+                    break;
+                case 7:
+                    message.reciver = reader.int32();
                     break;
                 case 9:
                     message.ext = reader.string();
@@ -260,30 +232,24 @@ $root.messagepackage = (function() {
         Message.verify = function verify(message) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.msgId != null && message.hasOwnProperty("msgId"))
-                if (!$util.isString(message.msgId))
-                    return "msgId: string expected";
+            if (message.id != null && message.hasOwnProperty("id"))
+                if (!$util.isString(message.id))
+                    return "id: string expected";
             if (message.type != null && message.hasOwnProperty("type"))
-                if (!$util.isInteger(message.type))
-                    return "type: integer expected";
-            if (message.sessionType != null && message.hasOwnProperty("sessionType"))
-                if (!$util.isInteger(message.sessionType))
-                    return "sessionType: integer expected";
-            if (message.content != null && message.hasOwnProperty("content"))
-                if (!$util.isString(message.content))
-                    return "content: string expected";
+                if (!$util.isString(message.type))
+                    return "type: string expected";
             if (message.status != null && message.hasOwnProperty("status"))
                 if (!$util.isInteger(message.status))
                     return "status: integer expected";
             if (message.sender != null && message.hasOwnProperty("sender"))
                 if (!$util.isInteger(message.sender))
                     return "sender: integer expected";
-            if (message.reciver != null && message.hasOwnProperty("reciver"))
-                if (!$util.isInteger(message.reciver))
-                    return "reciver: integer expected";
             if (message.time != null && message.hasOwnProperty("time"))
                 if (!$util.isInteger(message.time) && !(message.time && $util.isInteger(message.time.low) && $util.isInteger(message.time.high)))
                     return "time: integer|Long expected";
+            if (message.reciver != null && message.hasOwnProperty("reciver"))
+                if (!$util.isInteger(message.reciver))
+                    return "reciver: integer expected";
             if (message.ext != null && message.hasOwnProperty("ext"))
                 if (!$util.isString(message.ext))
                     return "ext: string expected";
@@ -302,20 +268,14 @@ $root.messagepackage = (function() {
             if (object instanceof $root.messagepackage.Message)
                 return object;
             var message = new $root.messagepackage.Message();
-            if (object.msgId != null)
-                message.msgId = String(object.msgId);
+            if (object.id != null)
+                message.id = String(object.id);
             if (object.type != null)
-                message.type = object.type | 0;
-            if (object.sessionType != null)
-                message.sessionType = object.sessionType | 0;
-            if (object.content != null)
-                message.content = String(object.content);
+                message.type = String(object.type);
             if (object.status != null)
                 message.status = object.status | 0;
             if (object.sender != null)
                 message.sender = object.sender | 0;
-            if (object.reciver != null)
-                message.reciver = object.reciver | 0;
             if (object.time != null)
                 if ($util.Long)
                     (message.time = $util.Long.fromValue(object.time)).unsigned = false;
@@ -325,6 +285,8 @@ $root.messagepackage = (function() {
                     message.time = object.time;
                 else if (typeof object.time === "object")
                     message.time = new $util.LongBits(object.time.low >>> 0, object.time.high >>> 0).toNumber();
+            if (object.reciver != null)
+                message.reciver = object.reciver | 0;
             if (object.ext != null)
                 message.ext = String(object.ext);
             return message;
@@ -344,10 +306,8 @@ $root.messagepackage = (function() {
                 options = {};
             var object = {};
             if (options.defaults) {
-                object.msgId = "";
-                object.type = 0;
-                object.sessionType = 0;
-                object.content = "";
+                object.id = "";
+                object.type = "";
                 object.status = 0;
                 object.sender = 0;
                 object.reciver = 0;
@@ -358,14 +318,10 @@ $root.messagepackage = (function() {
                     object.time = options.longs === String ? "0" : 0;
                 object.ext = "";
             }
-            if (message.msgId != null && message.hasOwnProperty("msgId"))
-                object.msgId = message.msgId;
+            if (message.id != null && message.hasOwnProperty("id"))
+                object.id = message.id;
             if (message.type != null && message.hasOwnProperty("type"))
                 object.type = message.type;
-            if (message.sessionType != null && message.hasOwnProperty("sessionType"))
-                object.sessionType = message.sessionType;
-            if (message.content != null && message.hasOwnProperty("content"))
-                object.content = message.content;
             if (message.status != null && message.hasOwnProperty("status"))
                 object.status = message.status;
             if (message.sender != null && message.hasOwnProperty("sender"))
@@ -396,20 +352,316 @@ $root.messagepackage = (function() {
         return Message;
     })();
 
+    messagepackage.Sender = (function() {
+
+        /**
+         * Properties of a Sender.
+         * @memberof messagepackage
+         * @interface ISender
+         * @property {number|null} [id] Sender id
+         * @property {string|null} [account] Sender account
+         * @property {string|null} [avatar] Sender avatar
+         * @property {string|null} [email] Sender email
+         * @property {string|null} [regisTime] Sender regisTime
+         * @property {string|null} [updateTime] Sender updateTime
+         */
+
+        /**
+         * Constructs a new Sender.
+         * @memberof messagepackage
+         * @classdesc Represents a Sender.
+         * @implements ISender
+         * @constructor
+         * @param {messagepackage.ISender=} [properties] Properties to set
+         */
+        function Sender(properties) {
+            if (properties)
+                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * Sender id.
+         * @member {number} id
+         * @memberof messagepackage.Sender
+         * @instance
+         */
+        Sender.prototype.id = 0;
+
+        /**
+         * Sender account.
+         * @member {string} account
+         * @memberof messagepackage.Sender
+         * @instance
+         */
+        Sender.prototype.account = "";
+
+        /**
+         * Sender avatar.
+         * @member {string} avatar
+         * @memberof messagepackage.Sender
+         * @instance
+         */
+        Sender.prototype.avatar = "";
+
+        /**
+         * Sender email.
+         * @member {string} email
+         * @memberof messagepackage.Sender
+         * @instance
+         */
+        Sender.prototype.email = "";
+
+        /**
+         * Sender regisTime.
+         * @member {string} regisTime
+         * @memberof messagepackage.Sender
+         * @instance
+         */
+        Sender.prototype.regisTime = "";
+
+        /**
+         * Sender updateTime.
+         * @member {string} updateTime
+         * @memberof messagepackage.Sender
+         * @instance
+         */
+        Sender.prototype.updateTime = "";
+
+        /**
+         * Creates a new Sender instance using the specified properties.
+         * @function create
+         * @memberof messagepackage.Sender
+         * @static
+         * @param {messagepackage.ISender=} [properties] Properties to set
+         * @returns {messagepackage.Sender} Sender instance
+         */
+        Sender.create = function create(properties) {
+            return new Sender(properties);
+        };
+
+        /**
+         * Encodes the specified Sender message. Does not implicitly {@link messagepackage.Sender.verify|verify} messages.
+         * @function encode
+         * @memberof messagepackage.Sender
+         * @static
+         * @param {messagepackage.ISender} message Sender message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        Sender.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
+                writer.uint32(/* id 1, wireType 0 =*/8).int32(message.id);
+            if (message.account != null && Object.hasOwnProperty.call(message, "account"))
+                writer.uint32(/* id 2, wireType 2 =*/18).string(message.account);
+            if (message.avatar != null && Object.hasOwnProperty.call(message, "avatar"))
+                writer.uint32(/* id 3, wireType 2 =*/26).string(message.avatar);
+            if (message.email != null && Object.hasOwnProperty.call(message, "email"))
+                writer.uint32(/* id 4, wireType 2 =*/34).string(message.email);
+            if (message.regisTime != null && Object.hasOwnProperty.call(message, "regisTime"))
+                writer.uint32(/* id 5, wireType 2 =*/42).string(message.regisTime);
+            if (message.updateTime != null && Object.hasOwnProperty.call(message, "updateTime"))
+                writer.uint32(/* id 6, wireType 2 =*/50).string(message.updateTime);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified Sender message, length delimited. Does not implicitly {@link messagepackage.Sender.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof messagepackage.Sender
+         * @static
+         * @param {messagepackage.ISender} message Sender message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        Sender.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a Sender message from the specified reader or buffer.
+         * @function decode
+         * @memberof messagepackage.Sender
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {messagepackage.Sender} Sender
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        Sender.decode = function decode(reader, length) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.messagepackage.Sender();
+            while (reader.pos < end) {
+                var tag = reader.uint32();
+                switch (tag >>> 3) {
+                case 1:
+                    message.id = reader.int32();
+                    break;
+                case 2:
+                    message.account = reader.string();
+                    break;
+                case 3:
+                    message.avatar = reader.string();
+                    break;
+                case 4:
+                    message.email = reader.string();
+                    break;
+                case 5:
+                    message.regisTime = reader.string();
+                    break;
+                case 6:
+                    message.updateTime = reader.string();
+                    break;
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a Sender message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof messagepackage.Sender
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {messagepackage.Sender} Sender
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        Sender.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a Sender message.
+         * @function verify
+         * @memberof messagepackage.Sender
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        Sender.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.id != null && message.hasOwnProperty("id"))
+                if (!$util.isInteger(message.id))
+                    return "id: integer expected";
+            if (message.account != null && message.hasOwnProperty("account"))
+                if (!$util.isString(message.account))
+                    return "account: string expected";
+            if (message.avatar != null && message.hasOwnProperty("avatar"))
+                if (!$util.isString(message.avatar))
+                    return "avatar: string expected";
+            if (message.email != null && message.hasOwnProperty("email"))
+                if (!$util.isString(message.email))
+                    return "email: string expected";
+            if (message.regisTime != null && message.hasOwnProperty("regisTime"))
+                if (!$util.isString(message.regisTime))
+                    return "regisTime: string expected";
+            if (message.updateTime != null && message.hasOwnProperty("updateTime"))
+                if (!$util.isString(message.updateTime))
+                    return "updateTime: string expected";
+            return null;
+        };
+
+        /**
+         * Creates a Sender message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof messagepackage.Sender
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {messagepackage.Sender} Sender
+         */
+        Sender.fromObject = function fromObject(object) {
+            if (object instanceof $root.messagepackage.Sender)
+                return object;
+            var message = new $root.messagepackage.Sender();
+            if (object.id != null)
+                message.id = object.id | 0;
+            if (object.account != null)
+                message.account = String(object.account);
+            if (object.avatar != null)
+                message.avatar = String(object.avatar);
+            if (object.email != null)
+                message.email = String(object.email);
+            if (object.regisTime != null)
+                message.regisTime = String(object.regisTime);
+            if (object.updateTime != null)
+                message.updateTime = String(object.updateTime);
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a Sender message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof messagepackage.Sender
+         * @static
+         * @param {messagepackage.Sender} message Sender
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        Sender.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            var object = {};
+            if (options.defaults) {
+                object.id = 0;
+                object.account = "";
+                object.avatar = "";
+                object.email = "";
+                object.regisTime = "";
+                object.updateTime = "";
+            }
+            if (message.id != null && message.hasOwnProperty("id"))
+                object.id = message.id;
+            if (message.account != null && message.hasOwnProperty("account"))
+                object.account = message.account;
+            if (message.avatar != null && message.hasOwnProperty("avatar"))
+                object.avatar = message.avatar;
+            if (message.email != null && message.hasOwnProperty("email"))
+                object.email = message.email;
+            if (message.regisTime != null && message.hasOwnProperty("regisTime"))
+                object.regisTime = message.regisTime;
+            if (message.updateTime != null && message.hasOwnProperty("updateTime"))
+                object.updateTime = message.updateTime;
+            return object;
+        };
+
+        /**
+         * Converts this Sender to JSON.
+         * @function toJSON
+         * @memberof messagepackage.Sender
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        Sender.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        return Sender;
+    })();
+
     messagepackage.Notify = (function() {
 
         /**
          * Properties of a Notify.
          * @memberof messagepackage
          * @interface INotify
-         * @property {string|null} [msgId] Notify msgId
+         * @property {string|null} [id] Notify id
          * @property {number|null} [type] Notify type
-         * @property {number|null} [status] Notify status
-         * @property {number|null} [sender] Notify sender
+         * @property {messagepackage.ISender|null} [sender] Notify sender
          * @property {number|null} [reciver] Notify reciver
-         * @property {string|null} [remark] Notify remark
-         * @property {string|null} [senderInfo] Notify senderInfo
          * @property {number|Long|null} [time] Notify time
+         * @property {string|null} [remark] Notify remark
          * @property {string|null} [ext] Notify ext
          */
 
@@ -429,12 +681,12 @@ $root.messagepackage = (function() {
         }
 
         /**
-         * Notify msgId.
-         * @member {string} msgId
+         * Notify id.
+         * @member {string} id
          * @memberof messagepackage.Notify
          * @instance
          */
-        Notify.prototype.msgId = "";
+        Notify.prototype.id = "";
 
         /**
          * Notify type.
@@ -445,20 +697,12 @@ $root.messagepackage = (function() {
         Notify.prototype.type = 0;
 
         /**
-         * Notify status.
-         * @member {number} status
-         * @memberof messagepackage.Notify
-         * @instance
-         */
-        Notify.prototype.status = 0;
-
-        /**
          * Notify sender.
-         * @member {number} sender
+         * @member {messagepackage.ISender|null|undefined} sender
          * @memberof messagepackage.Notify
          * @instance
          */
-        Notify.prototype.sender = 0;
+        Notify.prototype.sender = null;
 
         /**
          * Notify reciver.
@@ -469,28 +713,20 @@ $root.messagepackage = (function() {
         Notify.prototype.reciver = 0;
 
         /**
-         * Notify remark.
-         * @member {string} remark
-         * @memberof messagepackage.Notify
-         * @instance
-         */
-        Notify.prototype.remark = "";
-
-        /**
-         * Notify senderInfo.
-         * @member {string} senderInfo
-         * @memberof messagepackage.Notify
-         * @instance
-         */
-        Notify.prototype.senderInfo = "";
-
-        /**
          * Notify time.
          * @member {number|Long} time
          * @memberof messagepackage.Notify
          * @instance
          */
         Notify.prototype.time = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+
+        /**
+         * Notify remark.
+         * @member {string} remark
+         * @memberof messagepackage.Notify
+         * @instance
+         */
+        Notify.prototype.remark = "";
 
         /**
          * Notify ext.
@@ -524,20 +760,16 @@ $root.messagepackage = (function() {
         Notify.encode = function encode(message, writer) {
             if (!writer)
                 writer = $Writer.create();
-            if (message.msgId != null && Object.hasOwnProperty.call(message, "msgId"))
-                writer.uint32(/* id 1, wireType 2 =*/10).string(message.msgId);
+            if (message.id != null && Object.hasOwnProperty.call(message, "id"))
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.id);
             if (message.type != null && Object.hasOwnProperty.call(message, "type"))
                 writer.uint32(/* id 2, wireType 0 =*/16).int32(message.type);
-            if (message.status != null && Object.hasOwnProperty.call(message, "status"))
-                writer.uint32(/* id 3, wireType 0 =*/24).int32(message.status);
             if (message.sender != null && Object.hasOwnProperty.call(message, "sender"))
-                writer.uint32(/* id 4, wireType 0 =*/32).int32(message.sender);
+                $root.messagepackage.Sender.encode(message.sender, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
             if (message.reciver != null && Object.hasOwnProperty.call(message, "reciver"))
                 writer.uint32(/* id 5, wireType 0 =*/40).int32(message.reciver);
             if (message.remark != null && Object.hasOwnProperty.call(message, "remark"))
                 writer.uint32(/* id 6, wireType 2 =*/50).string(message.remark);
-            if (message.senderInfo != null && Object.hasOwnProperty.call(message, "senderInfo"))
-                writer.uint32(/* id 7, wireType 2 =*/58).string(message.senderInfo);
             if (message.time != null && Object.hasOwnProperty.call(message, "time"))
                 writer.uint32(/* id 8, wireType 0 =*/64).int64(message.time);
             if (message.ext != null && Object.hasOwnProperty.call(message, "ext"))
@@ -577,28 +809,22 @@ $root.messagepackage = (function() {
                 var tag = reader.uint32();
                 switch (tag >>> 3) {
                 case 1:
-                    message.msgId = reader.string();
+                    message.id = reader.string();
                     break;
                 case 2:
                     message.type = reader.int32();
                     break;
-                case 3:
-                    message.status = reader.int32();
-                    break;
                 case 4:
-                    message.sender = reader.int32();
+                    message.sender = $root.messagepackage.Sender.decode(reader, reader.uint32());
                     break;
                 case 5:
                     message.reciver = reader.int32();
                     break;
-                case 6:
-                    message.remark = reader.string();
-                    break;
-                case 7:
-                    message.senderInfo = reader.string();
-                    break;
                 case 8:
                     message.time = reader.int64();
+                    break;
+                case 6:
+                    message.remark = reader.string();
                     break;
                 case 9:
                     message.ext = reader.string();
@@ -638,30 +864,26 @@ $root.messagepackage = (function() {
         Notify.verify = function verify(message) {
             if (typeof message !== "object" || message === null)
                 return "object expected";
-            if (message.msgId != null && message.hasOwnProperty("msgId"))
-                if (!$util.isString(message.msgId))
-                    return "msgId: string expected";
+            if (message.id != null && message.hasOwnProperty("id"))
+                if (!$util.isString(message.id))
+                    return "id: string expected";
             if (message.type != null && message.hasOwnProperty("type"))
                 if (!$util.isInteger(message.type))
                     return "type: integer expected";
-            if (message.status != null && message.hasOwnProperty("status"))
-                if (!$util.isInteger(message.status))
-                    return "status: integer expected";
-            if (message.sender != null && message.hasOwnProperty("sender"))
-                if (!$util.isInteger(message.sender))
-                    return "sender: integer expected";
+            if (message.sender != null && message.hasOwnProperty("sender")) {
+                var error = $root.messagepackage.Sender.verify(message.sender);
+                if (error)
+                    return "sender." + error;
+            }
             if (message.reciver != null && message.hasOwnProperty("reciver"))
                 if (!$util.isInteger(message.reciver))
                     return "reciver: integer expected";
-            if (message.remark != null && message.hasOwnProperty("remark"))
-                if (!$util.isString(message.remark))
-                    return "remark: string expected";
-            if (message.senderInfo != null && message.hasOwnProperty("senderInfo"))
-                if (!$util.isString(message.senderInfo))
-                    return "senderInfo: string expected";
             if (message.time != null && message.hasOwnProperty("time"))
                 if (!$util.isInteger(message.time) && !(message.time && $util.isInteger(message.time.low) && $util.isInteger(message.time.high)))
                     return "time: integer|Long expected";
+            if (message.remark != null && message.hasOwnProperty("remark"))
+                if (!$util.isString(message.remark))
+                    return "remark: string expected";
             if (message.ext != null && message.hasOwnProperty("ext"))
                 if (!$util.isString(message.ext))
                     return "ext: string expected";
@@ -680,20 +902,17 @@ $root.messagepackage = (function() {
             if (object instanceof $root.messagepackage.Notify)
                 return object;
             var message = new $root.messagepackage.Notify();
-            if (object.msgId != null)
-                message.msgId = String(object.msgId);
+            if (object.id != null)
+                message.id = String(object.id);
             if (object.type != null)
                 message.type = object.type | 0;
-            if (object.status != null)
-                message.status = object.status | 0;
-            if (object.sender != null)
-                message.sender = object.sender | 0;
+            if (object.sender != null) {
+                if (typeof object.sender !== "object")
+                    throw TypeError(".messagepackage.Notify.sender: object expected");
+                message.sender = $root.messagepackage.Sender.fromObject(object.sender);
+            }
             if (object.reciver != null)
                 message.reciver = object.reciver | 0;
-            if (object.remark != null)
-                message.remark = String(object.remark);
-            if (object.senderInfo != null)
-                message.senderInfo = String(object.senderInfo);
             if (object.time != null)
                 if ($util.Long)
                     (message.time = $util.Long.fromValue(object.time)).unsigned = false;
@@ -703,6 +922,8 @@ $root.messagepackage = (function() {
                     message.time = object.time;
                 else if (typeof object.time === "object")
                     message.time = new $util.LongBits(object.time.low >>> 0, object.time.high >>> 0).toNumber();
+            if (object.remark != null)
+                message.remark = String(object.remark);
             if (object.ext != null)
                 message.ext = String(object.ext);
             return message;
@@ -722,13 +943,11 @@ $root.messagepackage = (function() {
                 options = {};
             var object = {};
             if (options.defaults) {
-                object.msgId = "";
+                object.id = "";
                 object.type = 0;
-                object.status = 0;
-                object.sender = 0;
+                object.sender = null;
                 object.reciver = 0;
                 object.remark = "";
-                object.senderInfo = "";
                 if ($util.Long) {
                     var long = new $util.Long(0, 0, false);
                     object.time = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
@@ -736,20 +955,16 @@ $root.messagepackage = (function() {
                     object.time = options.longs === String ? "0" : 0;
                 object.ext = "";
             }
-            if (message.msgId != null && message.hasOwnProperty("msgId"))
-                object.msgId = message.msgId;
+            if (message.id != null && message.hasOwnProperty("id"))
+                object.id = message.id;
             if (message.type != null && message.hasOwnProperty("type"))
                 object.type = message.type;
-            if (message.status != null && message.hasOwnProperty("status"))
-                object.status = message.status;
             if (message.sender != null && message.hasOwnProperty("sender"))
-                object.sender = message.sender;
+                object.sender = $root.messagepackage.Sender.toObject(message.sender, options);
             if (message.reciver != null && message.hasOwnProperty("reciver"))
                 object.reciver = message.reciver;
             if (message.remark != null && message.hasOwnProperty("remark"))
                 object.remark = message.remark;
-            if (message.senderInfo != null && message.hasOwnProperty("senderInfo"))
-                object.senderInfo = message.senderInfo;
             if (message.time != null && message.hasOwnProperty("time"))
                 if (typeof message.time === "number")
                     object.time = options.longs === String ? String(message.time) : message.time;

@@ -1,5 +1,5 @@
-import { FriendService } from "../services";
 import { ParameterizedContext, Next } from "koa";
+import { FriendService } from "../services";
 
 /**
  * @description friend controller
@@ -14,6 +14,14 @@ export class FriendController {
    */
   public constructor(private friendService: FriendService) {}
 
+  /**
+   * @Post
+   * @description add friend
+   * @method {friend_add}
+   * @param ctx ParameterizedContext
+   * @param next Next
+   * @returns
+   */
   public friend_add = async (ctx: ParameterizedContext, next: Next) => {
     const { friendId, remark, ext } = <AddFriend>ctx.request.body;
 
@@ -23,17 +31,50 @@ export class FriendController {
         msg: "The param of friendId cannot be empty.",
       });
 
-    const is_friend = await this.friendService.is_friend(ctx.userId, friendId);
+    try {
+      const is_friend = await this.friendService.is_friend(
+        ctx.userId,
+        friendId
+      );
 
-    if (is_friend)
-      return (ctx.body = {
-        code: 400,
-        msg: "It's already a good friend relationship, don't repeat submit.",
+      if (is_friend)
+        return (ctx.body = {
+          code: 400,
+          msg: "It's already a friend relationship, don't repeat submit.",
+        });
+
+      const sender = (
+        await this.friendService.get_sender(ctx.userId)
+      )?.toJSON() as UserAttributes;
+
+      // send notify
+      ctx.im.notify_send({
+        type: NotifyType.FriendAdd,
+        sender: sender,
+        reciver: friendId,
+        remark,
+        ext,
       });
 
-    // send notify
+      return (ctx.body = {
+        code: 200,
+        msg: "Added successfully, please wait for confirmation from the other side.",
+      });
+    } catch (err) {
+      return (ctx.body = {
+        code: 500,
+        data: `${err.name}: ${err.message}`,
+      });
+    }
   };
 
+  /**
+   * @Get
+   * @description get all friend for user
+   * @method {get_friends}
+   * @param ctx ParameterizedContext
+   * @param next Next
+   */
   public get_friends = async (ctx: ParameterizedContext, next: Next) => {
     const { rows, count } = await this.friendService.find_and_count_all(
       ctx.userId

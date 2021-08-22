@@ -43,4 +43,15 @@ export class FriendService {
       },
     });
   };
+
+  public get_sender = (sender: number) => {
+    return this.db.User.findOne({
+      attributes: {
+        exclude: ["pwd"],
+      },
+      where: {
+        id: sender,
+      },
+    });
+  };
 }

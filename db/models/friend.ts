@@ -21,7 +21,7 @@ export type FriendStatic = typeof Model & {
 
 export function FriendFactory(sequelize: Sequelize) {
   return <FriendStatic>sequelize.define(
-    "Friend",
+    "friend",
     {
       id: {
         type: DataTypes.INTEGER,

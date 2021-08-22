@@ -3,18 +3,6 @@ import { BuildOptions, DataTypes, Model, Optional, Sequelize } from "sequelize";
 import { hashSync } from "bcrypt";
 import * as moment from "moment";
 
-export interface UserAttributes {
-  id: number;
-  account: string;
-  pwd: string;
-  avatar: string | null;
-  email: string | null;
-  regisTime: Date;
-  updateTime: Date;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-
 // Some fields are optional when calling UserModel.create() or UserModel.build()
 interface UserCreationAttributes
   extends Optional<
@@ -33,7 +21,7 @@ export type UserStatic = typeof Model & {
 
 export function UserFactory(sequelize: Sequelize) {
   return <UserStatic>sequelize.define(
-    "User",
+    "user",
     {
       id: {
         type: DataTypes.INTEGER,
