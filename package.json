@@ -10,7 +10,7 @@
     "proto": "npx pbjs -t static-module -w commonjs -o proto/proto.js proto/*.proto && pbts -o proto/proto.d.ts proto/proto.js"
   },
   "dependencies": {
-    "@koa/router": "^10.1.0",
+    "@koa/router": "^10.1.1",
     "@noshot/env": "^2.1.1",
     "@throneless/libsignal-service": "^1.2.1",
     "@types/node": "^16.7.1",
@@ -30,10 +30,11 @@
     "koa-json": "^2.0.2",
     "koa-log4": "^2.3.2",
     "koa-onerror": "^4.1.0",
-    "koa-router": "^10.0.0",
+    "koa-router": "^10.1.1",
     "koa-static": "^5.0.0",
     "koa-views": "^7.0.1",
     "koa2-cors": "^2.0.6",
+    "koa2-swagger-ui": "^5.2.0",
     "lodash": "^4.17.21",
     "moment": "^2.29.1",
     "mysql2": "^2.3.0",
@@ -46,7 +47,8 @@
     "snowflake-id": "^1.1.0",
     "socket.io": "^4.1.3",
     "typescript": "^4.3.5",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "yamljs": "^0.3.0"
   },
   "devDependencies": {
     "@types/ioredis": "^4.26.7",
@@ -55,6 +57,7 @@
     "@types/koa__router": "^8.0.7",
     "@types/redlock": "^4.0.2",
     "@types/uuid": "^8.3.1",
+    "@types/yamljs": "^0.2.31",
     "chalk": "^4.1.2",
     "jsdoc": "^3.6.7",
     "koa-unless": "^1.0.7",

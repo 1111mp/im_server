@@ -38,7 +38,7 @@ export class UserController {
 
     if (!user.account || !user.pwd) {
       return (ctx.body = {
-        code: 400,
+        code: StatusCode.BadRequest,
         msg: "account or pwd cannot be repeated",
       });
     }
@@ -52,14 +52,14 @@ export class UserController {
 
       if (token === "failed")
         return (ctx.body = {
-          code: 500,
+          code: StatusCode.ServerError,
           msg: "An unknown error occurred while generating the token.",
         });
 
       delete (new_user as Optional<UserAttributes, "pwd">).pwd;
 
       return (ctx.body = {
-        code: 200,
+        code: StatusCode.Success,
         token,
         data: new_user,
       });
@@ -67,13 +67,13 @@ export class UserController {
     } catch (err) {
       if (err.name === "SequelizeUniqueConstraintError") {
         return (ctx.body = {
-          code: 500,
-          data: "The account already exists.",
+          code: StatusCode.ServerError,
+          msg: "The account already exists.",
         });
       } else {
         return (ctx.body = {
-          code: 500,
-          data: `${err.name}: ${err.message}`,
+          code: StatusCode.ServerError,
+          msg: `${err.name}: ${err.message}`,
         });
       }
     }
@@ -88,10 +88,10 @@ export class UserController {
    */
   public login = async (ctx: ParameterizedContext, next: Next) => {
     const { account, pwd } = <UserLogin>ctx.request.body;
-
+		
     if (!account || !pwd)
       return (ctx.body = {
-        code: 401,
+        code: StatusCode.BadRequest,
         msg: "account or pwd cannot be empty",
       });
 
@@ -102,7 +102,7 @@ export class UserController {
 
       if (!user)
         return (ctx.body = {
-          code: 403,
+          code: StatusCode.Forbidden,
           msg: "please register first",
         });
 
@@ -110,7 +110,7 @@ export class UserController {
 
       if (!isPwd)
         return (ctx.body = {
-          code: 403,
+          code: StatusCode.Forbidden,
           msg: "Incorrect password",
         });
 
@@ -119,20 +119,20 @@ export class UserController {
 
       if (token === "failed")
         return (ctx.body = {
-          code: 500,
+          code: StatusCode.ServerError,
           msg: "Unknow error when generating token。",
         });
 
       delete (user as Optional<UserAttributes, "pwd">).pwd;
 
       return (ctx.body = {
-        code: 200,
+        code: StatusCode.Success,
         token,
         data: user,
       });
     } catch (err) {
       return (ctx.body = {
-        code: 500,
+        code: StatusCode.ServerError,
         msg: `${err.name}: ${err.message}`,
       });
     }
@@ -157,7 +157,8 @@ export class UserController {
     await this.del_token(ctx.userId, token);
 
     return (ctx.body = {
-      code: 200,
+      code: StatusCode.Success,
+      msg: "Sign out successfully.",
     });
   };
 

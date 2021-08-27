@@ -8,13 +8,16 @@ import { RedisType } from "../redis";
 import { v4 } from "uuid";
 import { messagepackage } from "../proto/proto";
 
+type Callback = (response: Uint8Array) => void;
+type EventType = (msg: Uint8Array, cb: Callback) => void;
+
 interface ClientToServerEvents {
-  noArg: () => void;
-  basicEmit: (a: number, b: string, c: number[]) => void;
+  onSendMsg: EventType;
+  onNotify: EventType;
 }
 
 interface ServerToClientEvents {
-  notify: (notify: Uint8Array, cb: (response: Uint8Array) => void) => void;
+  notify: (notify: Uint8Array, cb: Callback) => void;
 }
 
 /**
@@ -54,6 +57,14 @@ export class IM {
       const { userId } = socket.decoded;
 
       this.users.set(userId, socket.id);
+
+      socket.on("onSendMsg", (msg, cb) => {
+        this.onSendMsg(msg, cb);
+      });
+
+      socket.on("onNotify", (notify, cb) => {
+        this.onNotify(this.notify_parsed(notify), cb);
+      });
 
       // Fired upon disconnection.
       socket.on("disconnect", (reason) => {
@@ -96,6 +107,10 @@ export class IM {
     }
   };
 
+  private onSendMsg: EventType = (msg, cb) => {};
+
+  private onNotify = (notify: Notify, cb: Callback) => {};
+
   /**
    * @private
    * @description Fired upon disconnection to remove user from users
@@ -106,10 +121,26 @@ export class IM {
     this.users.delete(userId);
   };
 
-  msg_send(msg: MessageText): void;
-  msg_send(msg: MessageImage): void;
-  public msg_send() {}
+  /**
+   * @description send msg
+   * @public
+   * @method {msg_send}
+   * @param msg MessageText | MessageImage
+   */
+  public msg_send(msg: MessageText | MessageImage) {
+    if (msg.type === MsgType.Text) {
+      msg.text;
+    } else {
+    }
+  }
 
+  /**
+   * @description send notify
+   * @public
+   * @method {notify_send}
+   * @param { type, sender, reciver, remark, ext }
+   * @returns
+   */
   public notify_send = async ({
     type,
     sender,
@@ -123,6 +154,7 @@ export class IM {
       type,
       sender,
       reciver,
+      status: NotifyStatus.Initial,
       time: Date.now(),
       remark,
       ext,
@@ -152,12 +184,33 @@ export class IM {
         } else {
           // failed to log
         }
+
+        return result;
       } else {
         // user offline
       }
     } catch (err) {
-      // return Promise.resolve(Result.error);
+      return {
+        code: StatusCode.ServerError,
+        msg: `${err.name}: ${err.message}`,
+      };
     }
+  };
+
+  private msg_to_proto = (msg: MessageText | MessageImage) => {
+    const proto = messagepackage.Message.create(msg);
+
+    return messagepackage.Message.encode(proto).finish();
+  };
+
+  private msg_parsed = (msg: Uint8Array) => {
+    const parsed_msg = messagepackage.Message.decode(msg);
+
+    return messagepackage.Message.toObject(parsed_msg, {
+      longs: String,
+      enums: String,
+      bytes: String,
+    }) as MessageText | MessageImage;
   };
 
   private notify_to_proto = (notify: messagepackage.INotify) => {
@@ -166,13 +219,29 @@ export class IM {
     return messagepackage.Notify.encode(proto).finish();
   };
 
+  private notify_parsed = (notify: Uint8Array) => {
+    const parsed_notify = messagepackage.Notify.decode(notify);
+
+    return messagepackage.Notify.toObject(parsed_notify, {
+      longs: String,
+      enums: String,
+      bytes: String,
+    }) as Notify;
+  };
+
   private ack_parsed_response = (
     cb: (res: messagepackage.IAckResponse) => void
   ) => {
     return (reponse: Uint8Array) => {
       const parsed_response = messagepackage.AckResponse.decode(reponse);
 
-      return cb(parsed_response);
+      return cb(
+        messagepackage.AckResponse.toObject(parsed_response, {
+          longs: String,
+          enums: String,
+          bytes: String,
+        })
+      );
     };
   };
 

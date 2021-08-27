@@ -11,17 +11,26 @@ export namespace messagepackage {
         /** Message type */
         type?: (string|null);
 
+        /** Message session */
+        session?: (number|null);
+
+        /** Message text */
+        text?: (string|null);
+
+        /** Message image */
+        image?: (string|null);
+
         /** Message status */
         status?: (number|null);
 
         /** Message sender */
-        sender?: (number|null);
-
-        /** Message time */
-        time?: (number|Long|null);
+        sender?: (messagepackage.ISender|null);
 
         /** Message reciver */
         reciver?: (number|null);
+
+        /** Message time */
+        time?: (number|Long|null);
 
         /** Message ext */
         ext?: (string|null);
@@ -42,17 +51,26 @@ export namespace messagepackage {
         /** Message type. */
         public type: string;
 
+        /** Message session. */
+        public session: number;
+
+        /** Message text. */
+        public text: string;
+
+        /** Message image. */
+        public image: string;
+
         /** Message status. */
         public status: number;
 
         /** Message sender. */
-        public sender: number;
-
-        /** Message time. */
-        public time: (number|Long);
+        public sender?: (messagepackage.ISender|null);
 
         /** Message reciver. */
         public reciver: number;
+
+        /** Message time. */
+        public time: (number|Long);
 
         /** Message ext. */
         public ext: string;
@@ -257,6 +275,9 @@ export namespace messagepackage {
         /** Notify type */
         type?: (number|null);
 
+        /** Notify status */
+        status?: (number|null);
+
         /** Notify sender */
         sender?: (messagepackage.ISender|null);
 
@@ -287,6 +308,9 @@ export namespace messagepackage {
 
         /** Notify type. */
         public type: number;
+
+        /** Notify status. */
+        public status: number;
 
         /** Notify sender. */
         public sender?: (messagepackage.ISender|null);

@@ -26,7 +26,7 @@ export class IMController {
 
     if (!type || !(type in [1, 2]) || !members || !members.length)
       return (ctx.body = {
-        code: 400,
+        code: StatusCode.BadRequest,
         msg: "Invalid parameter.",
       });
 
@@ -41,7 +41,7 @@ export class IMController {
         });
 
       return (ctx.body = {
-        code: 200,
+        code: StatusCode.Success,
         data: {
           ...group,
           members: group_members,
@@ -49,7 +49,7 @@ export class IMController {
       });
     } catch (err) {
       return (ctx.body = {
-        code: 500,
+        code: StatusCode.ServerError,
         msg: `${err.name}: ${err.message}`,
       });
     }
@@ -67,7 +67,7 @@ export class IMController {
 
     if (!id)
       return (ctx.body = {
-        code: 400,
+        code: StatusCode.BadRequest,
         msg: "The param of id cannot be empty.",
       });
 
@@ -80,7 +80,7 @@ export class IMController {
         return (ctx.body = { code: 403, msg: "The group does not exist." });
 
       return (ctx.body = {
-        code: 200,
+        code: StatusCode.Success,
         data: {
           ...group.toJSON(),
           members,
@@ -88,7 +88,7 @@ export class IMController {
       });
     } catch (err) {
       return (ctx.body = {
-        code: 500,
+        code: StatusCode.ServerError,
         msg: `${err.name}: ${err.message}`,
       });
     }

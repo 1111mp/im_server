@@ -27,7 +27,7 @@ export class FriendController {
 
     if (!friendId)
       return (ctx.body = {
-        code: 400,
+        code: StatusCode.BadRequest,
         msg: "The param of friendId cannot be empty.",
       });
 
@@ -39,7 +39,7 @@ export class FriendController {
 
       if (is_friend)
         return (ctx.body = {
-          code: 400,
+          code: StatusCode.BadRequest,
           msg: "It's already a friend relationship, don't repeat submit.",
         });
 
@@ -57,13 +57,13 @@ export class FriendController {
       });
 
       return (ctx.body = {
-        code: 200,
+        code: StatusCode.Success,
         msg: "Added successfully, please wait for confirmation from the other side.",
       });
     } catch (err) {
       return (ctx.body = {
-        code: 500,
-        data: `${err.name}: ${err.message}`,
+        code: StatusCode.ServerError,
+        msg: `${err.name}: ${err.message}`,
       });
     }
   };

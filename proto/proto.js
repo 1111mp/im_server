@@ -26,10 +26,13 @@ $root.messagepackage = (function() {
          * @interface IMessage
          * @property {string|null} [id] Message id
          * @property {string|null} [type] Message type
+         * @property {number|null} [session] Message session
+         * @property {string|null} [text] Message text
+         * @property {string|null} [image] Message image
          * @property {number|null} [status] Message status
-         * @property {number|null} [sender] Message sender
-         * @property {number|Long|null} [time] Message time
+         * @property {messagepackage.ISender|null} [sender] Message sender
          * @property {number|null} [reciver] Message reciver
+         * @property {number|Long|null} [time] Message time
          * @property {string|null} [ext] Message ext
          */
 
@@ -65,6 +68,30 @@ $root.messagepackage = (function() {
         Message.prototype.type = "";
 
         /**
+         * Message session.
+         * @member {number} session
+         * @memberof messagepackage.Message
+         * @instance
+         */
+        Message.prototype.session = 0;
+
+        /**
+         * Message text.
+         * @member {string} text
+         * @memberof messagepackage.Message
+         * @instance
+         */
+        Message.prototype.text = "";
+
+        /**
+         * Message image.
+         * @member {string} image
+         * @memberof messagepackage.Message
+         * @instance
+         */
+        Message.prototype.image = "";
+
+        /**
          * Message status.
          * @member {number} status
          * @memberof messagepackage.Message
@@ -74,19 +101,11 @@ $root.messagepackage = (function() {
 
         /**
          * Message sender.
-         * @member {number} sender
+         * @member {messagepackage.ISender|null|undefined} sender
          * @memberof messagepackage.Message
          * @instance
          */
-        Message.prototype.sender = 0;
-
-        /**
-         * Message time.
-         * @member {number|Long} time
-         * @memberof messagepackage.Message
-         * @instance
-         */
-        Message.prototype.time = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+        Message.prototype.sender = null;
 
         /**
          * Message reciver.
@@ -95,6 +114,14 @@ $root.messagepackage = (function() {
          * @instance
          */
         Message.prototype.reciver = 0;
+
+        /**
+         * Message time.
+         * @member {number|Long} time
+         * @memberof messagepackage.Message
+         * @instance
+         */
+        Message.prototype.time = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
 
         /**
          * Message ext.
@@ -132,16 +159,22 @@ $root.messagepackage = (function() {
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.id);
             if (message.type != null && Object.hasOwnProperty.call(message, "type"))
                 writer.uint32(/* id 2, wireType 2 =*/18).string(message.type);
+            if (message.session != null && Object.hasOwnProperty.call(message, "session"))
+                writer.uint32(/* id 3, wireType 0 =*/24).int32(message.session);
+            if (message.text != null && Object.hasOwnProperty.call(message, "text"))
+                writer.uint32(/* id 4, wireType 2 =*/34).string(message.text);
+            if (message.image != null && Object.hasOwnProperty.call(message, "image"))
+                writer.uint32(/* id 5, wireType 2 =*/42).string(message.image);
             if (message.status != null && Object.hasOwnProperty.call(message, "status"))
-                writer.uint32(/* id 5, wireType 0 =*/40).int32(message.status);
+                writer.uint32(/* id 6, wireType 0 =*/48).int32(message.status);
             if (message.sender != null && Object.hasOwnProperty.call(message, "sender"))
-                writer.uint32(/* id 6, wireType 0 =*/48).int32(message.sender);
+                $root.messagepackage.Sender.encode(message.sender, writer.uint32(/* id 7, wireType 2 =*/58).fork()).ldelim();
             if (message.reciver != null && Object.hasOwnProperty.call(message, "reciver"))
-                writer.uint32(/* id 7, wireType 0 =*/56).int32(message.reciver);
+                writer.uint32(/* id 8, wireType 0 =*/64).int32(message.reciver);
             if (message.time != null && Object.hasOwnProperty.call(message, "time"))
-                writer.uint32(/* id 8, wireType 0 =*/64).int64(message.time);
+                writer.uint32(/* id 9, wireType 0 =*/72).int64(message.time);
             if (message.ext != null && Object.hasOwnProperty.call(message, "ext"))
-                writer.uint32(/* id 9, wireType 2 =*/74).string(message.ext);
+                writer.uint32(/* id 10, wireType 2 =*/82).string(message.ext);
             return writer;
         };
 
@@ -182,19 +215,28 @@ $root.messagepackage = (function() {
                 case 2:
                     message.type = reader.string();
                     break;
+                case 3:
+                    message.session = reader.int32();
+                    break;
+                case 4:
+                    message.text = reader.string();
+                    break;
                 case 5:
-                    message.status = reader.int32();
+                    message.image = reader.string();
                     break;
                 case 6:
-                    message.sender = reader.int32();
-                    break;
-                case 8:
-                    message.time = reader.int64();
+                    message.status = reader.int32();
                     break;
                 case 7:
+                    message.sender = $root.messagepackage.Sender.decode(reader, reader.uint32());
+                    break;
+                case 8:
                     message.reciver = reader.int32();
                     break;
                 case 9:
+                    message.time = reader.int64();
+                    break;
+                case 10:
                     message.ext = reader.string();
                     break;
                 default:
@@ -238,18 +280,29 @@ $root.messagepackage = (function() {
             if (message.type != null && message.hasOwnProperty("type"))
                 if (!$util.isString(message.type))
                     return "type: string expected";
+            if (message.session != null && message.hasOwnProperty("session"))
+                if (!$util.isInteger(message.session))
+                    return "session: integer expected";
+            if (message.text != null && message.hasOwnProperty("text"))
+                if (!$util.isString(message.text))
+                    return "text: string expected";
+            if (message.image != null && message.hasOwnProperty("image"))
+                if (!$util.isString(message.image))
+                    return "image: string expected";
             if (message.status != null && message.hasOwnProperty("status"))
                 if (!$util.isInteger(message.status))
                     return "status: integer expected";
-            if (message.sender != null && message.hasOwnProperty("sender"))
-                if (!$util.isInteger(message.sender))
-                    return "sender: integer expected";
-            if (message.time != null && message.hasOwnProperty("time"))
-                if (!$util.isInteger(message.time) && !(message.time && $util.isInteger(message.time.low) && $util.isInteger(message.time.high)))
-                    return "time: integer|Long expected";
+            if (message.sender != null && message.hasOwnProperty("sender")) {
+                var error = $root.messagepackage.Sender.verify(message.sender);
+                if (error)
+                    return "sender." + error;
+            }
             if (message.reciver != null && message.hasOwnProperty("reciver"))
                 if (!$util.isInteger(message.reciver))
                     return "reciver: integer expected";
+            if (message.time != null && message.hasOwnProperty("time"))
+                if (!$util.isInteger(message.time) && !(message.time && $util.isInteger(message.time.low) && $util.isInteger(message.time.high)))
+                    return "time: integer|Long expected";
             if (message.ext != null && message.hasOwnProperty("ext"))
                 if (!$util.isString(message.ext))
                     return "ext: string expected";
@@ -272,10 +325,21 @@ $root.messagepackage = (function() {
                 message.id = String(object.id);
             if (object.type != null)
                 message.type = String(object.type);
+            if (object.session != null)
+                message.session = object.session | 0;
+            if (object.text != null)
+                message.text = String(object.text);
+            if (object.image != null)
+                message.image = String(object.image);
             if (object.status != null)
                 message.status = object.status | 0;
-            if (object.sender != null)
-                message.sender = object.sender | 0;
+            if (object.sender != null) {
+                if (typeof object.sender !== "object")
+                    throw TypeError(".messagepackage.Message.sender: object expected");
+                message.sender = $root.messagepackage.Sender.fromObject(object.sender);
+            }
+            if (object.reciver != null)
+                message.reciver = object.reciver | 0;
             if (object.time != null)
                 if ($util.Long)
                     (message.time = $util.Long.fromValue(object.time)).unsigned = false;
@@ -285,8 +349,6 @@ $root.messagepackage = (function() {
                     message.time = object.time;
                 else if (typeof object.time === "object")
                     message.time = new $util.LongBits(object.time.low >>> 0, object.time.high >>> 0).toNumber();
-            if (object.reciver != null)
-                message.reciver = object.reciver | 0;
             if (object.ext != null)
                 message.ext = String(object.ext);
             return message;
@@ -308,8 +370,11 @@ $root.messagepackage = (function() {
             if (options.defaults) {
                 object.id = "";
                 object.type = "";
+                object.session = 0;
+                object.text = "";
+                object.image = "";
                 object.status = 0;
-                object.sender = 0;
+                object.sender = null;
                 object.reciver = 0;
                 if ($util.Long) {
                     var long = new $util.Long(0, 0, false);
@@ -322,10 +387,16 @@ $root.messagepackage = (function() {
                 object.id = message.id;
             if (message.type != null && message.hasOwnProperty("type"))
                 object.type = message.type;
+            if (message.session != null && message.hasOwnProperty("session"))
+                object.session = message.session;
+            if (message.text != null && message.hasOwnProperty("text"))
+                object.text = message.text;
+            if (message.image != null && message.hasOwnProperty("image"))
+                object.image = message.image;
             if (message.status != null && message.hasOwnProperty("status"))
                 object.status = message.status;
             if (message.sender != null && message.hasOwnProperty("sender"))
-                object.sender = message.sender;
+                object.sender = $root.messagepackage.Sender.toObject(message.sender, options);
             if (message.reciver != null && message.hasOwnProperty("reciver"))
                 object.reciver = message.reciver;
             if (message.time != null && message.hasOwnProperty("time"))
@@ -658,6 +729,7 @@ $root.messagepackage = (function() {
          * @interface INotify
          * @property {string|null} [id] Notify id
          * @property {number|null} [type] Notify type
+         * @property {number|null} [status] Notify status
          * @property {messagepackage.ISender|null} [sender] Notify sender
          * @property {number|null} [reciver] Notify reciver
          * @property {number|Long|null} [time] Notify time
@@ -695,6 +767,14 @@ $root.messagepackage = (function() {
          * @instance
          */
         Notify.prototype.type = 0;
+
+        /**
+         * Notify status.
+         * @member {number} status
+         * @memberof messagepackage.Notify
+         * @instance
+         */
+        Notify.prototype.status = 0;
 
         /**
          * Notify sender.
@@ -764,16 +844,18 @@ $root.messagepackage = (function() {
                 writer.uint32(/* id 1, wireType 2 =*/10).string(message.id);
             if (message.type != null && Object.hasOwnProperty.call(message, "type"))
                 writer.uint32(/* id 2, wireType 0 =*/16).int32(message.type);
+            if (message.status != null && Object.hasOwnProperty.call(message, "status"))
+                writer.uint32(/* id 3, wireType 0 =*/24).int32(message.status);
             if (message.sender != null && Object.hasOwnProperty.call(message, "sender"))
                 $root.messagepackage.Sender.encode(message.sender, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
             if (message.reciver != null && Object.hasOwnProperty.call(message, "reciver"))
                 writer.uint32(/* id 5, wireType 0 =*/40).int32(message.reciver);
-            if (message.remark != null && Object.hasOwnProperty.call(message, "remark"))
-                writer.uint32(/* id 6, wireType 2 =*/50).string(message.remark);
             if (message.time != null && Object.hasOwnProperty.call(message, "time"))
-                writer.uint32(/* id 8, wireType 0 =*/64).int64(message.time);
+                writer.uint32(/* id 6, wireType 0 =*/48).int64(message.time);
+            if (message.remark != null && Object.hasOwnProperty.call(message, "remark"))
+                writer.uint32(/* id 7, wireType 2 =*/58).string(message.remark);
             if (message.ext != null && Object.hasOwnProperty.call(message, "ext"))
-                writer.uint32(/* id 9, wireType 2 =*/74).string(message.ext);
+                writer.uint32(/* id 8, wireType 2 =*/66).string(message.ext);
             return writer;
         };
 
@@ -814,19 +896,22 @@ $root.messagepackage = (function() {
                 case 2:
                     message.type = reader.int32();
                     break;
+                case 3:
+                    message.status = reader.int32();
+                    break;
                 case 4:
                     message.sender = $root.messagepackage.Sender.decode(reader, reader.uint32());
                     break;
                 case 5:
                     message.reciver = reader.int32();
                     break;
-                case 8:
+                case 6:
                     message.time = reader.int64();
                     break;
-                case 6:
+                case 7:
                     message.remark = reader.string();
                     break;
-                case 9:
+                case 8:
                     message.ext = reader.string();
                     break;
                 default:
@@ -870,6 +955,9 @@ $root.messagepackage = (function() {
             if (message.type != null && message.hasOwnProperty("type"))
                 if (!$util.isInteger(message.type))
                     return "type: integer expected";
+            if (message.status != null && message.hasOwnProperty("status"))
+                if (!$util.isInteger(message.status))
+                    return "status: integer expected";
             if (message.sender != null && message.hasOwnProperty("sender")) {
                 var error = $root.messagepackage.Sender.verify(message.sender);
                 if (error)
@@ -906,6 +994,8 @@ $root.messagepackage = (function() {
                 message.id = String(object.id);
             if (object.type != null)
                 message.type = object.type | 0;
+            if (object.status != null)
+                message.status = object.status | 0;
             if (object.sender != null) {
                 if (typeof object.sender !== "object")
                     throw TypeError(".messagepackage.Notify.sender: object expected");
@@ -945,31 +1035,34 @@ $root.messagepackage = (function() {
             if (options.defaults) {
                 object.id = "";
                 object.type = 0;
+                object.status = 0;
                 object.sender = null;
                 object.reciver = 0;
-                object.remark = "";
                 if ($util.Long) {
                     var long = new $util.Long(0, 0, false);
                     object.time = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
                 } else
                     object.time = options.longs === String ? "0" : 0;
+                object.remark = "";
                 object.ext = "";
             }
             if (message.id != null && message.hasOwnProperty("id"))
                 object.id = message.id;
             if (message.type != null && message.hasOwnProperty("type"))
                 object.type = message.type;
+            if (message.status != null && message.hasOwnProperty("status"))
+                object.status = message.status;
             if (message.sender != null && message.hasOwnProperty("sender"))
                 object.sender = $root.messagepackage.Sender.toObject(message.sender, options);
             if (message.reciver != null && message.hasOwnProperty("reciver"))
                 object.reciver = message.reciver;
-            if (message.remark != null && message.hasOwnProperty("remark"))
-                object.remark = message.remark;
             if (message.time != null && message.hasOwnProperty("time"))
                 if (typeof message.time === "number")
                     object.time = options.longs === String ? String(message.time) : message.time;
                 else
                     object.time = options.longs === String ? $util.Long.prototype.toString.call(message.time) : options.longs === Number ? new $util.LongBits(message.time.low >>> 0, message.time.high >>> 0).toNumber() : message.time;
+            if (message.remark != null && message.hasOwnProperty("remark"))
+                object.remark = message.remark;
             if (message.ext != null && message.hasOwnProperty("ext"))
                 object.ext = message.ext;
             return object;

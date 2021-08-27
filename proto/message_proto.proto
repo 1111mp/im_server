@@ -5,13 +5,14 @@ package messagepackage;
 message Message {
   string id = 1;
   string type = 2;
-  // int32 sessionType = 3;
-  // string content = 4;
-  int32 status = 5;
-  int32 sender = 6;
-  int64 time = 8;
-  int32 reciver = 7;
-  string ext = 9;
+  int32 session = 3;
+  string text = 4;
+  string image = 5;
+  int32 status = 6;
+  Sender sender = 7;
+  int32 reciver = 8;
+  int64 time = 9;
+  string ext = 10;
 }
 
 message Sender {
@@ -26,13 +27,12 @@ message Sender {
 message Notify {
   string id = 1;
   int32 type = 2;
-  // int32 status = 3;
+  int32 status = 3;
   Sender sender = 4;
   int32 reciver = 5;
-  int64 time = 8;
-  string remark = 6;
-  // string senderInfo = 7;
-  string ext = 9;
+  int64 time = 6;
+  string remark = 7;
+  string ext = 8;
 }
 
 message AckResponse {

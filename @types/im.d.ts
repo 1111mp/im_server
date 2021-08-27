@@ -5,10 +5,25 @@ declare enum MsgType {
   Audio = "audio",
 }
 
+declare enum Session {
+  Single,
+  Group,
+}
+
+declare enum MsgStatus {
+  Initial,
+  Sented,
+  Received,
+  Readed,
+}
+
 interface Message {
   id: string;
-  sender: number;
+  session: Session;
+  sender: UserAttributes;
   reciver: number;
+  status: MsgStatus;
+  time: number;
   ext?: string; // reserved field
 }
 
@@ -28,11 +43,19 @@ declare enum NotifyType {
   FriendSet,
 }
 
+declare enum NotifyStatus {
+  Initial,
+  Readed,
+  Fulfilled,
+  Rejected,
+}
+
 interface Notify {
   id: string;
   type: NotifyType;
   sender: UserAttributes;
   reciver: number;
+  status: NotifyStatus;
   time: number;
   remark?: string;
   ext?: string;
