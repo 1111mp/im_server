@@ -1,5 +1,6 @@
 import Router from "@koa/router";
 import { DB } from "../db";
+import { DefaultContext, DefaultState } from "koa";
 import { RedisType } from "../redis";
 
 import { routes as SwaggerRoutes } from "./swagger";
@@ -10,7 +11,7 @@ import { routes as FriendRoutes } from "./friend";
 export function routes(
   db: DB,
   redis: RedisType
-): { [key: string]: Router<any, {}> } {
+): { [key: string]: Router<DefaultState, DefaultContext> } {
   const swagger = SwaggerRoutes();
   // the router of user
   const user = UserRoutes(db, redis);

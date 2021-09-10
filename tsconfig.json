@@ -9,6 +9,8 @@
     "rootDir": "./",
     "noImplicitAny": false,
     "noUnusedLocals": false,
+    // https://devblogs.microsoft.com/typescript/announcing-typescript-4-4-beta/#use-unknown-catch-variables
+    "useUnknownInCatchVariables": false,
     "suppressImplicitAnyIndexErrors": true,
     "experimentalDecorators": true,
     "pretty": true,

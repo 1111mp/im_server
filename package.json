@@ -13,14 +13,14 @@
     "@koa/router": "^10.1.1",
     "@noshot/env": "^2.1.1",
     "@throneless/libsignal-service": "^1.2.1",
-    "@types/node": "^16.7.1",
+    "@types/node": "^16.9.1",
     "async-lock": "^1.3.0",
     "bcrypt": "^5.0.1",
     "cross-env": "^7.0.3",
     "debug": "^4.3.2",
     "fs-extra": "^10.0.0",
     "ini": "2.0.0",
-    "ioredis": "^4.27.8",
+    "ioredis": "^4.27.9",
     "ip": "^1.1.5",
     "jsonwebtoken": "^8.5.1",
     "koa": "^2.13.1",
@@ -45,16 +45,16 @@
     "redlock": "^4.2.0",
     "sequelize": "^6.6.5",
     "snowflake-id": "^1.1.0",
-    "socket.io": "^4.1.3",
-    "typescript": "^4.3.5",
+    "socket.io": "^4.2.0",
+    "typescript": "^4.4.2",
     "uuid": "^8.3.2",
     "yamljs": "^0.3.0"
   },
   "devDependencies": {
-    "@types/ioredis": "^4.26.7",
+    "@types/ioredis": "^4.27.2",
     "@types/jsonwebtoken": "^8.5.5",
     "@types/koa": "^2.13.4",
-    "@types/koa__router": "^8.0.7",
+    "@types/koa__router": "^8.0.8",
     "@types/redlock": "^4.0.2",
     "@types/uuid": "^8.3.1",
     "@types/yamljs": "^0.2.31",
@@ -63,8 +63,8 @@
     "koa-unless": "^1.0.7",
     "semver": "^7.3.5",
     "ts-node": "^10.2.1",
-    "tsconfig-paths": "^3.10.1",
+    "tsconfig-paths": "^3.11.0",
     "uglify": "^0.1.5",
-    "uglify-js": "^3.14.1"
+    "uglify-js": "^3.14.2"
   }
 }
