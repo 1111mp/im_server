@@ -15,6 +15,8 @@ export function routes(db: DB, redis: RedisType) {
   api.get("/getFriends", friendController.get_friends);
   // add friend
   api.post("/addFriend", friendController.friend_add);
+  // 
+  api.post("/");
 
   return api;
 }

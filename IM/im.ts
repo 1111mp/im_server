@@ -107,10 +107,6 @@ export class IM {
     }
   };
 
-  private onSendMsg: EventType = (msg, cb) => {};
-
-  private onNotify = (notify: Notify, cb: Callback) => {};
-
   /**
    * @private
    * @description Fired upon disconnection to remove user from users
@@ -134,6 +130,8 @@ export class IM {
     }
   }
 
+  private onSendMsg: EventType = (msg, cb) => {};
+
   /**
    * @description send notify
    * @public
@@ -147,7 +145,10 @@ export class IM {
     reciver,
     remark,
     ext,
-  }: Pick<Notify, "type" | "sender" | "reciver" | "remark" | "ext">) => {
+  }: Pick<Notify, "type" | "sender" | "reciver" | "remark" | "ext">): Promise<{
+    code: StatusCode;
+    msg: string;
+  }> => {
     // notify
     const notify: Notify = {
       id: v4(),
@@ -181,13 +182,24 @@ export class IM {
 
         if (result.code === StatusCode.Success) {
           // successed
+          return {
+            code: StatusCode.Success,
+            msg: "successed",
+          };
         } else {
           // failed to log
+          return {
+            code: StatusCode.Timeout,
+            msg: "timeouted.",
+          };
         }
-
-        return result;
       } else {
-        // user offline
+        // user offline. save to redis.
+
+        return {
+          code: StatusCode.Success,
+          msg: "",
+        };
       }
     } catch (err) {
       return {
@@ -196,6 +208,10 @@ export class IM {
       };
     }
   };
+
+  private onNotify = (notify: Notify, cb: Callback) => {};
+
+  /**********************************utils*************************************/
 
   private msg_to_proto = (msg: MessageText | MessageImage) => {
     const proto = messagepackage.Message.create(msg);
