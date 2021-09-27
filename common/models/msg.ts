@@ -59,7 +59,7 @@ module.exports = (sequelize) => {
         type: DataTypes.INTEGER,
         comment: "发送者userId",
       },
-      reciver: {
+      receiver: {
         type: DataTypes.INTEGER,
         comment: "接收者 userId or groupId",
       },
@@ -91,7 +91,7 @@ module.exports = (sequelize) => {
       indexes: [
         {
           using: "BTREE",
-          fields: ["sender", "reciver", "status", "time"],
+          fields: ["sender", "receiver", "status", "time"],
         },
       ],
     }

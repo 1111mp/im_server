@@ -120,7 +120,7 @@ export class UserController {
       if (token === "failed")
         return (ctx.body = {
           code: StatusCode.ServerError,
-          msg: "Unknow error when generating token。",
+          msg: "Unknow error when generating token.",
         });
 
       delete (user as Optional<UserAttributes, "pwd">).pwd;

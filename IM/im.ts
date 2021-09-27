@@ -136,39 +136,25 @@ export class IM {
    * @description send notify
    * @public
    * @method {notify_send}
-   * @param { type, sender, reciver, remark, ext }
+   * @param { type, sender, receiver, remark, ext }
    * @returns
    */
-  public notify_send = async ({
-    type,
-    sender,
-    reciver,
-    remark,
-    ext,
-  }: Pick<Notify, "type" | "sender" | "reciver" | "remark" | "ext">): Promise<{
+  public notify_send = async (
+    notify: Notify
+  ): Promise<{
     code: StatusCode;
     msg: string;
   }> => {
-    // notify
-    const notify: Notify = {
-      id: v4(),
-      type,
-      sender,
-      reciver,
-      status: NotifyStatus.Initial,
-      time: Date.now(),
-      remark,
-      ext,
-    };
+    const { id, receiver } = notify;
 
     try {
-      if (this.users.has(reciver)) {
+      if (this.users.has(receiver)) {
         // user online
         const notify_proto = this.notify_to_proto(notify);
 
         const emit_promise: Promise<messagepackage.IAckResponse> = new Promise(
           (resolve) => {
-            this.io.to(this.users.get(reciver)!).emit(
+            this.io.to(this.users.get(receiver)!).emit(
               "notify",
               notify_proto,
               this.ack_parsed_response((res) => {
@@ -181,6 +167,14 @@ export class IM {
         const result = await this.promise_race([emit_promise], 6000);
 
         if (result.code === StatusCode.Success) {
+          await this.db.Notify.update(
+            { status: NotifyStatus.Received },
+            {
+              where: {
+                id,
+              },
+            }
+          );
           // successed
           return {
             code: StatusCode.Success,

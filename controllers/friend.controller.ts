@@ -1,5 +1,6 @@
 import { ParameterizedContext, Next } from "koa";
 import { FriendService } from "../services";
+import { v4 } from "uuid";
 
 /**
  * @description friend controller
@@ -47,14 +48,25 @@ export class FriendController {
         await this.friendService.get_sender(ctx.userId)
       )?.toJSON() as UserAttributes;
 
-      // send notify
-      ctx.im.notify_send({
+      const notify: Notify = {
+        id: v4(),
         type: NotifyType.FriendAdd,
-        sender: sender,
-        reciver: friendId,
+        sender,
+        receiver: friendId,
+        status: NotifyStatus.Initial,
+        time: `${Date.now()}`,
         remark,
         ext,
+      };
+
+      // save notify to db
+      await this.friendService.save({
+        ...notify,
+        sender: sender.id,
       });
+
+      // send notify
+      ctx.im.notify_send(notify);
 
       return (ctx.body = {
         code: StatusCode.Success,

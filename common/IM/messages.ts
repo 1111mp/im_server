@@ -2,7 +2,7 @@
  * 消息的缓存机制
  * 存入redis中 定时把redis中聊天记录同步到数据库中
  * 单聊
- * key `${sender}::${reciver}`	value 消息list
+ * key `${sender}::${receiver}`	value 消息list
  *
  * 群聊消息其实也只需要往用户的消息list中push 因为群聊的消息 服务端转发的时候会遍历成员 将消息发送给每个成员
  *
