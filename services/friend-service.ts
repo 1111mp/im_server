@@ -16,6 +16,10 @@ export class FriendService {
    */
   public constructor(private db: DB, private redis: RedisType) {}
 
+  public save = async (notify: Omit<Notify, "sender"> & { sender: number }) => {
+    return this.db.Notify.create(notify);
+  };
+
   public is_friend = async (userId: number, friendId: number) => {
     const friend = await this.db.Friend.findOne({
       where: {

@@ -66,7 +66,7 @@ export function UserFactory(sequelize: Sequelize) {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
         get() {
-          return moment(this.getDataValue("createdAt")).format(
+          return moment(this.getDataValue("regisTime")).format(
             "YYYY-MM-DD HH:mm"
           );
         },
@@ -75,7 +75,7 @@ export function UserFactory(sequelize: Sequelize) {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
         get() {
-          return moment(this.getDataValue("updatedAt")).format(
+          return moment(this.getDataValue("updateTime")).format(
             "YYYY-MM-DD HH:mm"
           );
         },

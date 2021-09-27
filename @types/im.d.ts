@@ -21,9 +21,9 @@ interface Message {
   id: string;
   session: Session;
   sender: UserAttributes;
-  reciver: number;
+  receiver: number;
   status: MsgStatus;
-  time: number;
+  time: string;
   ext?: string; // reserved field
 }
 
@@ -45,6 +45,7 @@ declare enum NotifyType {
 
 declare enum NotifyStatus {
   Initial,
+  Received,
   Readed,
   Fulfilled,
   Rejected,
@@ -54,9 +55,9 @@ interface Notify {
   id: string;
   type: NotifyType;
   sender: UserAttributes;
-  reciver: number;
+  receiver: number;
   status: NotifyStatus;
-  time: number;
+  time: string;
   remark?: string;
   ext?: string;
 }

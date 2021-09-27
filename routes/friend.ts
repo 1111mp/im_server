@@ -54,7 +54,7 @@ router.post("/handle", async (ctx, next) => {
         msgId: v4(),
         type: 1,
         sender: ctx.userId,
-        reciver: friendId,
+        receiver: friendId,
         status: 0,
         time: Date.now(),
         remark,

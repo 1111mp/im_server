@@ -31,8 +31,8 @@ $root.messagepackage = (function() {
          * @property {string|null} [image] Message image
          * @property {number|null} [status] Message status
          * @property {messagepackage.ISender|null} [sender] Message sender
-         * @property {number|null} [reciver] Message reciver
-         * @property {number|Long|null} [time] Message time
+         * @property {number|null} [receiver] Message receiver
+         * @property {string|null} [time] Message time
          * @property {string|null} [ext] Message ext
          */
 
@@ -108,20 +108,20 @@ $root.messagepackage = (function() {
         Message.prototype.sender = null;
 
         /**
-         * Message reciver.
-         * @member {number} reciver
+         * Message receiver.
+         * @member {number} receiver
          * @memberof messagepackage.Message
          * @instance
          */
-        Message.prototype.reciver = 0;
+        Message.prototype.receiver = 0;
 
         /**
          * Message time.
-         * @member {number|Long} time
+         * @member {string} time
          * @memberof messagepackage.Message
          * @instance
          */
-        Message.prototype.time = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+        Message.prototype.time = "";
 
         /**
          * Message ext.
@@ -169,10 +169,10 @@ $root.messagepackage = (function() {
                 writer.uint32(/* id 6, wireType 0 =*/48).int32(message.status);
             if (message.sender != null && Object.hasOwnProperty.call(message, "sender"))
                 $root.messagepackage.Sender.encode(message.sender, writer.uint32(/* id 7, wireType 2 =*/58).fork()).ldelim();
-            if (message.reciver != null && Object.hasOwnProperty.call(message, "reciver"))
-                writer.uint32(/* id 8, wireType 0 =*/64).int32(message.reciver);
+            if (message.receiver != null && Object.hasOwnProperty.call(message, "receiver"))
+                writer.uint32(/* id 8, wireType 0 =*/64).int32(message.receiver);
             if (message.time != null && Object.hasOwnProperty.call(message, "time"))
-                writer.uint32(/* id 9, wireType 0 =*/72).int64(message.time);
+                writer.uint32(/* id 9, wireType 2 =*/74).string(message.time);
             if (message.ext != null && Object.hasOwnProperty.call(message, "ext"))
                 writer.uint32(/* id 10, wireType 2 =*/82).string(message.ext);
             return writer;
@@ -231,10 +231,10 @@ $root.messagepackage = (function() {
                     message.sender = $root.messagepackage.Sender.decode(reader, reader.uint32());
                     break;
                 case 8:
-                    message.reciver = reader.int32();
+                    message.receiver = reader.int32();
                     break;
                 case 9:
-                    message.time = reader.int64();
+                    message.time = reader.string();
                     break;
                 case 10:
                     message.ext = reader.string();
@@ -297,12 +297,12 @@ $root.messagepackage = (function() {
                 if (error)
                     return "sender." + error;
             }
-            if (message.reciver != null && message.hasOwnProperty("reciver"))
-                if (!$util.isInteger(message.reciver))
-                    return "reciver: integer expected";
+            if (message.receiver != null && message.hasOwnProperty("receiver"))
+                if (!$util.isInteger(message.receiver))
+                    return "receiver: integer expected";
             if (message.time != null && message.hasOwnProperty("time"))
-                if (!$util.isInteger(message.time) && !(message.time && $util.isInteger(message.time.low) && $util.isInteger(message.time.high)))
-                    return "time: integer|Long expected";
+                if (!$util.isString(message.time))
+                    return "time: string expected";
             if (message.ext != null && message.hasOwnProperty("ext"))
                 if (!$util.isString(message.ext))
                     return "ext: string expected";
@@ -338,17 +338,10 @@ $root.messagepackage = (function() {
                     throw TypeError(".messagepackage.Message.sender: object expected");
                 message.sender = $root.messagepackage.Sender.fromObject(object.sender);
             }
-            if (object.reciver != null)
-                message.reciver = object.reciver | 0;
+            if (object.receiver != null)
+                message.receiver = object.receiver | 0;
             if (object.time != null)
-                if ($util.Long)
-                    (message.time = $util.Long.fromValue(object.time)).unsigned = false;
-                else if (typeof object.time === "string")
-                    message.time = parseInt(object.time, 10);
-                else if (typeof object.time === "number")
-                    message.time = object.time;
-                else if (typeof object.time === "object")
-                    message.time = new $util.LongBits(object.time.low >>> 0, object.time.high >>> 0).toNumber();
+                message.time = String(object.time);
             if (object.ext != null)
                 message.ext = String(object.ext);
             return message;
@@ -375,12 +368,8 @@ $root.messagepackage = (function() {
                 object.image = "";
                 object.status = 0;
                 object.sender = null;
-                object.reciver = 0;
-                if ($util.Long) {
-                    var long = new $util.Long(0, 0, false);
-                    object.time = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
-                } else
-                    object.time = options.longs === String ? "0" : 0;
+                object.receiver = 0;
+                object.time = "";
                 object.ext = "";
             }
             if (message.id != null && message.hasOwnProperty("id"))
@@ -397,13 +386,10 @@ $root.messagepackage = (function() {
                 object.status = message.status;
             if (message.sender != null && message.hasOwnProperty("sender"))
                 object.sender = $root.messagepackage.Sender.toObject(message.sender, options);
-            if (message.reciver != null && message.hasOwnProperty("reciver"))
-                object.reciver = message.reciver;
+            if (message.receiver != null && message.hasOwnProperty("receiver"))
+                object.receiver = message.receiver;
             if (message.time != null && message.hasOwnProperty("time"))
-                if (typeof message.time === "number")
-                    object.time = options.longs === String ? String(message.time) : message.time;
-                else
-                    object.time = options.longs === String ? $util.Long.prototype.toString.call(message.time) : options.longs === Number ? new $util.LongBits(message.time.low >>> 0, message.time.high >>> 0).toNumber() : message.time;
+                object.time = message.time;
             if (message.ext != null && message.hasOwnProperty("ext"))
                 object.ext = message.ext;
             return object;
@@ -731,8 +717,8 @@ $root.messagepackage = (function() {
          * @property {number|null} [type] Notify type
          * @property {number|null} [status] Notify status
          * @property {messagepackage.ISender|null} [sender] Notify sender
-         * @property {number|null} [reciver] Notify reciver
-         * @property {number|Long|null} [time] Notify time
+         * @property {number|null} [receiver] Notify receiver
+         * @property {string|null} [time] Notify time
          * @property {string|null} [remark] Notify remark
          * @property {string|null} [ext] Notify ext
          */
@@ -785,20 +771,20 @@ $root.messagepackage = (function() {
         Notify.prototype.sender = null;
 
         /**
-         * Notify reciver.
-         * @member {number} reciver
+         * Notify receiver.
+         * @member {number} receiver
          * @memberof messagepackage.Notify
          * @instance
          */
-        Notify.prototype.reciver = 0;
+        Notify.prototype.receiver = 0;
 
         /**
          * Notify time.
-         * @member {number|Long} time
+         * @member {string} time
          * @memberof messagepackage.Notify
          * @instance
          */
-        Notify.prototype.time = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+        Notify.prototype.time = "";
 
         /**
          * Notify remark.
@@ -848,10 +834,10 @@ $root.messagepackage = (function() {
                 writer.uint32(/* id 3, wireType 0 =*/24).int32(message.status);
             if (message.sender != null && Object.hasOwnProperty.call(message, "sender"))
                 $root.messagepackage.Sender.encode(message.sender, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
-            if (message.reciver != null && Object.hasOwnProperty.call(message, "reciver"))
-                writer.uint32(/* id 5, wireType 0 =*/40).int32(message.reciver);
+            if (message.receiver != null && Object.hasOwnProperty.call(message, "receiver"))
+                writer.uint32(/* id 5, wireType 0 =*/40).int32(message.receiver);
             if (message.time != null && Object.hasOwnProperty.call(message, "time"))
-                writer.uint32(/* id 6, wireType 0 =*/48).int64(message.time);
+                writer.uint32(/* id 6, wireType 2 =*/50).string(message.time);
             if (message.remark != null && Object.hasOwnProperty.call(message, "remark"))
                 writer.uint32(/* id 7, wireType 2 =*/58).string(message.remark);
             if (message.ext != null && Object.hasOwnProperty.call(message, "ext"))
@@ -903,10 +889,10 @@ $root.messagepackage = (function() {
                     message.sender = $root.messagepackage.Sender.decode(reader, reader.uint32());
                     break;
                 case 5:
-                    message.reciver = reader.int32();
+                    message.receiver = reader.int32();
                     break;
                 case 6:
-                    message.time = reader.int64();
+                    message.time = reader.string();
                     break;
                 case 7:
                     message.remark = reader.string();
@@ -963,12 +949,12 @@ $root.messagepackage = (function() {
                 if (error)
                     return "sender." + error;
             }
-            if (message.reciver != null && message.hasOwnProperty("reciver"))
-                if (!$util.isInteger(message.reciver))
-                    return "reciver: integer expected";
+            if (message.receiver != null && message.hasOwnProperty("receiver"))
+                if (!$util.isInteger(message.receiver))
+                    return "receiver: integer expected";
             if (message.time != null && message.hasOwnProperty("time"))
-                if (!$util.isInteger(message.time) && !(message.time && $util.isInteger(message.time.low) && $util.isInteger(message.time.high)))
-                    return "time: integer|Long expected";
+                if (!$util.isString(message.time))
+                    return "time: string expected";
             if (message.remark != null && message.hasOwnProperty("remark"))
                 if (!$util.isString(message.remark))
                     return "remark: string expected";
@@ -1001,17 +987,10 @@ $root.messagepackage = (function() {
                     throw TypeError(".messagepackage.Notify.sender: object expected");
                 message.sender = $root.messagepackage.Sender.fromObject(object.sender);
             }
-            if (object.reciver != null)
-                message.reciver = object.reciver | 0;
+            if (object.receiver != null)
+                message.receiver = object.receiver | 0;
             if (object.time != null)
-                if ($util.Long)
-                    (message.time = $util.Long.fromValue(object.time)).unsigned = false;
-                else if (typeof object.time === "string")
-                    message.time = parseInt(object.time, 10);
-                else if (typeof object.time === "number")
-                    message.time = object.time;
-                else if (typeof object.time === "object")
-                    message.time = new $util.LongBits(object.time.low >>> 0, object.time.high >>> 0).toNumber();
+                message.time = String(object.time);
             if (object.remark != null)
                 message.remark = String(object.remark);
             if (object.ext != null)
@@ -1037,12 +1016,8 @@ $root.messagepackage = (function() {
                 object.type = 0;
                 object.status = 0;
                 object.sender = null;
-                object.reciver = 0;
-                if ($util.Long) {
-                    var long = new $util.Long(0, 0, false);
-                    object.time = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
-                } else
-                    object.time = options.longs === String ? "0" : 0;
+                object.receiver = 0;
+                object.time = "";
                 object.remark = "";
                 object.ext = "";
             }
@@ -1054,13 +1029,10 @@ $root.messagepackage = (function() {
                 object.status = message.status;
             if (message.sender != null && message.hasOwnProperty("sender"))
                 object.sender = $root.messagepackage.Sender.toObject(message.sender, options);
-            if (message.reciver != null && message.hasOwnProperty("reciver"))
-                object.reciver = message.reciver;
+            if (message.receiver != null && message.hasOwnProperty("receiver"))
+                object.receiver = message.receiver;
             if (message.time != null && message.hasOwnProperty("time"))
-                if (typeof message.time === "number")
-                    object.time = options.longs === String ? String(message.time) : message.time;
-                else
-                    object.time = options.longs === String ? $util.Long.prototype.toString.call(message.time) : options.longs === Number ? new $util.LongBits(message.time.low >>> 0, message.time.high >>> 0).toNumber() : message.time;
+                object.time = message.time;
             if (message.remark != null && message.hasOwnProperty("remark"))
                 object.remark = message.remark;
             if (message.ext != null && message.hasOwnProperty("ext"))

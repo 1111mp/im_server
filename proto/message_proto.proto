@@ -10,8 +10,8 @@ message Message {
   string image = 5;
   int32 status = 6;
   Sender sender = 7;
-  int32 reciver = 8;
-  int64 time = 9;
+  int32 receiver = 8;
+  string time = 9;
   string ext = 10;
 }
 
@@ -29,8 +29,8 @@ message Notify {
   int32 type = 2;
   int32 status = 3;
   Sender sender = 4;
-  int32 reciver = 5;
-  int64 time = 6;
+  int32 receiver = 5;
+  string time = 6;
   string remark = 7;
   string ext = 8;
 }

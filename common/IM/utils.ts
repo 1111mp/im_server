@@ -79,8 +79,8 @@ export async function exists(key) {
   return await RedisStore.redis.exists(key);
 }
 
-/** key有两种可能 `${sender}::${reciver}` or `${reciver}::${sender}` 所以需要进行处理 */
-// export async function getMsgList(offline = false, sender, reciver?: any) {
+/** key有两种可能 `${sender}::${receiver}` or `${receiver}::${sender}` 所以需要进行处理 */
+// export async function getMsgList(offline = false, sender, receiver?: any) {
 //   let res: any[];
 
 //   /** 获取离线消息列表 */
@@ -88,10 +88,10 @@ export async function exists(key) {
 //     res = await RedisStore.redis.lrange(`offline::${sender}`, 0, -1);
 //   } else {
 //     res = await RedisStore.redis.lrange(`to::${sender}`, 0, -1);
-//     // if (await exists(`${sender}::${reciver}`)) {
-//     //   res = await RedisStore.redis.lrange(`${sender}::${reciver}`, 0, -1);
-//     // } else if (await exists(`${reciver}::${sender}`)) {
-//     //   res = await RedisStore.redis.lrange(`${reciver}::${sender}`, 0, -1);
+//     // if (await exists(`${sender}::${receiver}`)) {
+//     //   res = await RedisStore.redis.lrange(`${sender}::${receiver}`, 0, -1);
+//     // } else if (await exists(`${receiver}::${sender}`)) {
+//     //   res = await RedisStore.redis.lrange(`${receiver}::${sender}`, 0, -1);
 //     // } else {
 //     //   res = [];
 //     // }
@@ -101,9 +101,9 @@ export async function exists(key) {
 // }
 
 /** 在线时的消息 push到 redis的list中去 */
-export async function msgToRedis(reciver, msg) {
+export async function msgToRedis(receiver, msg) {
   try {
-    await RedisStore.redis.rpush(`to::${reciver}`, JSON.stringify(msg));
+    await RedisStore.redis.rpush(`to::${receiver}`, JSON.stringify(msg));
   } catch (error) {
     throw new Error("push msg to redis error");
   }
@@ -111,16 +111,16 @@ export async function msgToRedis(reciver, msg) {
 
 /**
  * @description: 将用户的离线消息push到该用户的离线消息列表中去
- *  redis 的 key ===> `offline::${reciver}`
+ *  redis 的 key ===> `offline::${receiver}`
  *  list 类型储存
  * @param {*} sender  发送者 userId
- * @param {*} reciver 接受者 userId
+ * @param {*} receiver 接受者 userId
  * @param {*} msg 消息
  * @return {*}
  */
-export async function offlineMsgToRedis(sender, reciver, msg) {
+export async function offlineMsgToRedis(sender, receiver, msg) {
   try {
-    await RedisStore.redis.lpush(`offline::${reciver}`, JSON.stringify(msg));
+    await RedisStore.redis.lpush(`offline::${receiver}`, JSON.stringify(msg));
   } catch (error) {
     throw new Error("push msg to redis error");
   }
@@ -128,17 +128,17 @@ export async function offlineMsgToRedis(sender, reciver, msg) {
 
 /**
  * @description:  在线时的通知 push到 redis的list中去
- * @param {number} reciver  接受者userId
+ * @param {number} receiver  接受者userId
  * @param {Notify} notify 通知消息
  * @return {*}
  */
-export async function notifyToRedis(reciver: number, notify: Notify) {
-  await RedisStore.redis.rpush(getNotifyKey(reciver), JSON.stringify(notify));
+export async function notifyToRedis(receiver: number, notify: Notify) {
+  await RedisStore.redis.rpush(getNotifyKey(receiver), JSON.stringify(notify));
 }
 
-export async function offlineNotifyToRedis(reciver: number, notify: Notify) {
+export async function offlineNotifyToRedis(receiver: number, notify: Notify) {
   await RedisStore.redis.lpush(
-    getNotifyKey(reciver, true),
+    getNotifyKey(receiver, true),
     JSON.stringify(notify)
   );
 }
@@ -183,13 +183,13 @@ export async function getNotifyRedisInfo(
   redis: Redis.Redis,
   notify: Notify
 ): Promise<number> {
-  const { sender, reciver, type } = notify;
+  const { sender, receiver, type } = notify;
 
-  const notifys = await redis.lrange(getNotifyKey(reciver), 0, -1);
+  const notifys = await redis.lrange(getNotifyKey(receiver), 0, -1);
 
   return (notifys as any[]).findIndex(
     (item: Notify) =>
-      item.reciver === reciver && item.sender === sender && item.type === type
+      item.receiver === receiver && item.sender === sender && item.type === type
   );
 }
 

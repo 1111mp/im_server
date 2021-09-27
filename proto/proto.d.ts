@@ -26,11 +26,11 @@ export namespace messagepackage {
         /** Message sender */
         sender?: (messagepackage.ISender|null);
 
-        /** Message reciver */
-        reciver?: (number|null);
+        /** Message receiver */
+        receiver?: (number|null);
 
         /** Message time */
-        time?: (number|Long|null);
+        time?: (string|null);
 
         /** Message ext */
         ext?: (string|null);
@@ -66,11 +66,11 @@ export namespace messagepackage {
         /** Message sender. */
         public sender?: (messagepackage.ISender|null);
 
-        /** Message reciver. */
-        public reciver: number;
+        /** Message receiver. */
+        public receiver: number;
 
         /** Message time. */
-        public time: (number|Long);
+        public time: string;
 
         /** Message ext. */
         public ext: string;
@@ -281,11 +281,11 @@ export namespace messagepackage {
         /** Notify sender */
         sender?: (messagepackage.ISender|null);
 
-        /** Notify reciver */
-        reciver?: (number|null);
+        /** Notify receiver */
+        receiver?: (number|null);
 
         /** Notify time */
-        time?: (number|Long|null);
+        time?: (string|null);
 
         /** Notify remark */
         remark?: (string|null);
@@ -315,11 +315,11 @@ export namespace messagepackage {
         /** Notify sender. */
         public sender?: (messagepackage.ISender|null);
 
-        /** Notify reciver. */
-        public reciver: number;
+        /** Notify receiver. */
+        public receiver: number;
 
         /** Notify time. */
-        public time: (number|Long);
+        public time: string;
 
         /** Notify remark. */
         public remark: string;

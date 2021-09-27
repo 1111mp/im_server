@@ -148,14 +148,14 @@ class Chat {
     console.log(args);
     const { sessionType } = args;
     if (sessionType === 0) {
-      const { reciver, sender } = args;
+      const { receiver, sender } = args;
       let msg: Message = {
         ...args,
         time: new Date().getTime(),
       };
 
       /** 单聊 reciver为接收者的userId */
-      if (this.userList[reciver]) {
+      if (this.userList[receiver]) {
         /** 接收者在线 */
         try {
           msg = {
@@ -164,7 +164,7 @@ class Chat {
           };
 
           let promise: Promise<AckResponse> = new Promise((resolve, reject) => {
-            this.userList[reciver].socket.emit(
+            this.userList[receiver].socket.emit(
               "receiveMsg",
               msg,
               (data: Buffer) => {
@@ -183,10 +183,10 @@ class Chat {
             };
 
             /** 将msg push到redis消息列表中 */
-            await msgToRedis(reciver, msg);
+            await msgToRedis(receiver, msg);
           } else {
             /** 将msg push到redis 离线消息列表中 */
-            offlineMsgToRedis(sender, reciver, msg);
+            offlineMsgToRedis(sender, receiver, msg);
           }
 
           callback({ code: 200, msg: "success" });
@@ -202,7 +202,7 @@ class Chat {
         };
 
         try {
-          await offlineMsgToRedis(sender, reciver, msg);
+          await offlineMsgToRedis(sender, receiver, msg);
 
           callback({ code: 200, msg: "success" });
         } catch (error) {
@@ -223,14 +223,14 @@ class Chat {
    */
   sendNotify = async (
     ctx,
-    reciver,
+    receiver,
     notify: Notify,
     cache: boolean = true
   ): Promise<"successed" | "failed"> => {
     try {
       // 判断是否存在此类型通知 比如：A 重复发起添加 B 为好友
 
-      if (this.userList[reciver]) {
+      if (this.userList[receiver]) {
         /** 在线 */
         const senderInfo = await getUserInfoByUserId(
           ctx.redis.redis,
@@ -245,7 +245,7 @@ class Chat {
         const buffer = setNotifyToProto(notifyMsg);
 
         const promise: Promise<AckResponse> = new Promise((resolve) => {
-          this.userList[reciver].socket.emit(
+          this.userList[receiver].socket.emit(
             IMNOTIFY,
             buffer,
             (data: Buffer) => {
@@ -261,16 +261,16 @@ class Chat {
 
         if (result === "timedout" || result.code !== 200) {
           // 失败之后 将通知存到reciver的离线通知redis list中 或其他操作
-          await offlineNotifyToRedis(reciver, notify);
+          await offlineNotifyToRedis(receiver, notify);
         }
       } else {
         /** 离线 */
         // 保存到该用户的离线通知list
-        await offlineNotifyToRedis(reciver, notify);
+        await offlineNotifyToRedis(receiver, notify);
       }
 
       // 将通知 存到redis中
-      cache && (await notifyToRedis(reciver, notify));
+      cache && (await notifyToRedis(receiver, notify));
 
       return "successed";
     } catch (error) {
