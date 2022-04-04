@@ -4,10 +4,7 @@
 
 接口文档可在服务启动之后（[Swagger Ui](https://swagger.io/tools/swagger-ui/)），浏览器访问 `http://localhost:3000/api/docs` 查看
 
-Postman 导入可参考：[https://www.jianshu.com/p/91a5d7fd5fce](https://www.jianshu.com/p/91a5d7fd5fce)
-
 数据库：mysql、redis、sequelize 链接 mysql 的配置文件：.env.dev
-redis 配置：common/middlewares/redis
 
 dev 环境
 
@@ -15,6 +12,7 @@ dev 环境
 npm install or yarn
 npm run start:watch or yarn start:watch
 ```
+or `F5` to `Debug` project.
 
 prod 环境
 
