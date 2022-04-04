@@ -2,7 +2,7 @@ import Redis, { RedisOptions } from "ioredis";
 import * as Redlock from "redlock";
 
 export type RedisType = {
-  instance: Redis.Redis;
+  instance: Redis;
   redlock: Redlock;
 };
 
@@ -24,13 +24,14 @@ const redisConfig: RedisOptions = {
   // keyPrefix: ''
 };
 
-const instance = new Redis(redisConfig);
-const redlock = new Redlock([instance], {
+const client = new Redis(redisConfig);
+// @ts-ignore
+const redlock = new Redlock([client], {
   retryDelay: 200,
   retryCount: 5,
 });
 
 export const redis: RedisType = {
-  instance,
+  instance: client,
   redlock,
 };

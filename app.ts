@@ -6,16 +6,13 @@ import * as koaBody from "koa-body";
 import * as compose from "koa-compose";
 import * as staticServ from "koa-static";
 
-import { Auth } from "./middleware/auth";
-import logs, { createLogger } from "./common/middlewares/logger";
-import timerTask from "./common/utils/timerTask";
-import asycStarData from "./common/utils/syncStarData";
+import { Auth } from "./src/middleware/auth";
 import { Config } from "./config";
 
-import { db } from "./db";
-import { redis } from "./redis";
-import { routes } from "./route";
-import { IMInitialization } from "./IM";
+import { db } from "./src/db";
+import { redis } from "./src/redis";
+import { routes } from "./src/routes";
+import { IMInitialization } from "./src/IM";
 import { Server } from "http";
 
 /** 定时任务 */
@@ -56,7 +53,24 @@ export function koaApp() {
     // production
   } else {
     // development
-    app.use(require("koa2-cors")());
+    app.use(
+      require("koa2-cors")({
+        origin: function (ctx) {
+          return "http://localhost:1212";
+        },
+        exposeHeaders: ["WWW-Authenticate", "Server-Authorization"],
+        maxAge: 5, //指定本次预检请求的有效期，单位为秒。
+        credentials: true, //是否允许发送Cookie
+        allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allowHeaders: [
+          "Content-Type",
+          "Authorization",
+          "Accept",
+          "token",
+          "userId",
+        ],
+      })
+    );
   }
 
   const middlewares = [

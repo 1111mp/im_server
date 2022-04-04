@@ -3,10 +3,10 @@ interface UserRegister {
   pwd: string;
 }
 
-interface UserLogin {
+type UserLogin = {
   account: string;
   pwd: string;
-}
+};
 
 type GroupCreator = {
   type: 1 | 2;
@@ -29,4 +29,6 @@ declare const enum StatusCode {
   Forbidden = 403,
   Timeout = 408,
   ServerError = 500,
+
+  UnprocesableEntity = 422,
 }

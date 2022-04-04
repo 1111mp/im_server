@@ -22,5 +22,5 @@
     "lib": ["es2015", "es2016", "es2017"],
     "typeRoots": ["./@types", "./node_modules/@types"]
   },
-  "exclude": ["node_modules", "**/pm2.config.*", "demo", "proto"]
+  "exclude": ["node_modules", "**/pm2.config.*", "demo", "src/proto"]
 }

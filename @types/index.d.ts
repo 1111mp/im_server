@@ -1,5 +1,5 @@
 import { DefaultContext } from "koa";
-import { IM } from "../IM/im";
+import { IM } from "../src/IM/im";
 
 declare module "koa" {
   interface DefaultContext {

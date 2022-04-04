@@ -1,6 +1,6 @@
 import { Op } from "sequelize";
-import { DB } from "db";
-import { RedisType } from "redis";
+import { DB } from "src/db";
+import { RedisType } from "../redis";
 
 /**
  * @description	Friend service

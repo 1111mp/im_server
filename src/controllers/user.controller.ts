@@ -2,12 +2,13 @@ import { Optional } from "sequelize";
 import { sign } from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
 import { compareSync } from "bcrypt";
-import { Config } from "../config";
-import { USERAUTHKEY } from "../common/const";
+import { Config } from "../../config";
 
 import { ParameterizedContext, Next } from "koa";
 import { UserService } from "../services";
 import { RedisType } from "../redis";
+
+const { USER_AUTH_KEY } = process.env;
 
 /**
  * @description User controller
@@ -67,7 +68,7 @@ export class UserController {
     } catch (err) {
       if (err.name === "SequelizeUniqueConstraintError") {
         return (ctx.body = {
-          code: StatusCode.ServerError,
+          code: StatusCode.UnprocesableEntity,
           msg: "The account already exists.",
         });
       } else {
@@ -87,8 +88,8 @@ export class UserController {
    * @returns {Promise<BaseResponse>}
    */
   public login = async (ctx: ParameterizedContext, next: Next) => {
-    const { account, pwd } = <UserLogin>ctx.request.body;
-		
+    const { account, pwd } = <UserLogin>ctx.query;
+
     if (!account || !pwd)
       return (ctx.body = {
         code: StatusCode.BadRequest,
@@ -173,7 +174,7 @@ export class UserController {
     user: UserAttributes,
     maxAge: number = 60 * 60 * 1000
   ): Promise<string> => {
-    const auth = `${USERAUTHKEY}::${user.id}`;
+    const auth = `${USER_AUTH_KEY}::${user.id}`;
     const key = uuidv4();
     const token = sign(user, process.env.SECRET_Key!);
 
@@ -201,7 +202,7 @@ export class UserController {
    * @returns Promise<number>
    */
   private del_token = (userId: number, token: string) => {
-    const auth = `${USERAUTHKEY}::${userId}`;
+    const auth = `${USER_AUTH_KEY}::${userId}`;
 
     return this.redis.instance.hdel(auth, token);
   };
