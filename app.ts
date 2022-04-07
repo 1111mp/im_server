@@ -101,10 +101,11 @@ export function koaApp() {
       formidable: {
         uploadDir: Config.uploadPath,
         keepExtensions: true,
-        maxFieldsSize: 2 * 1024 * 1024,
+        maxFieldsSize: Infinity,
+        maxFileSize: Infinity,
         onFileBegin: (name, file) => {
-          // console.log(`name: ${name}`)
-          // console.log(`file: ${file}`)
+          // console.log(`name: ${name}`);
+          // console.log(file);
         },
       },
     }),

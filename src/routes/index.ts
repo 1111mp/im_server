@@ -7,6 +7,7 @@ import { routes as SwaggerRoutes } from "./swagger";
 import { routes as UserRoutes } from "./user";
 import { routes as IMRoutes } from "./im";
 import { routes as FriendRoutes } from "./friend";
+import { routes as ElectronRoutes } from "./electron";
 
 export function routes(
   db: DB,
@@ -19,11 +20,14 @@ export function routes(
   const im = IMRoutes(db, redis);
   // the router of friend
   const friend = FriendRoutes(db, redis);
+  // the router of electron
+  const electron = ElectronRoutes(db, redis);
 
   return {
     swagger,
     user,
     im,
     friend,
+    electron,
   };
 }

@@ -10,8 +10,10 @@ export const Config = {
     "/api/user/login",
     "/api/user/register",
     "/favicon.ico",
+    /^\/api\/electron/,
     /^\/upload/,
     /^\/stylesheets/,
+    /^\/windows/,
   ],
   // token的有效时间 一个月
   tokenExp: 30 * 24 * 60 * 60 * 1000,
