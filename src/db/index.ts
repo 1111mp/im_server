@@ -10,6 +10,7 @@ import {
 import { ChatGroupFactory, ChatGroupStatic } from "./models/chat_group";
 import { GroupMemberFactory, GroupMemberStatic } from "./models/group_member";
 import { NotifyFactory, NotifyStatic } from "./models/notify";
+import { ElectronFactory, ElectronStatic } from "./models/electron";
 
 export type DB = {
   sequelize: Sequelize;
@@ -19,6 +20,7 @@ export type DB = {
   ChatGroup: ChatGroupStatic;
   GroupMember: GroupMemberStatic;
   Notify: NotifyStatic;
+  Electron: ElectronStatic;
 };
 
 const sequelize = new Sequelize(
@@ -51,6 +53,7 @@ const FriendSetting = FriendSettingFactory(sequelize);
 const ChatGroup = ChatGroupFactory(sequelize);
 const GroupMember = GroupMemberFactory(sequelize);
 const Notify = NotifyFactory(sequelize);
+const Electron = ElectronFactory(sequelize);
 
 ChatGroup.hasMany(GroupMember, { foreignKey: "groupId", sourceKey: "id" });
 GroupMember.belongsTo(ChatGroup, { foreignKey: "groupId", targetKey: "id" });
@@ -65,4 +68,5 @@ export const db: DB = {
   ChatGroup,
   GroupMember,
   Notify,
+  Electron,
 };

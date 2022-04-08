@@ -1,74 +1,69 @@
 import * as Router from "@koa/router";
-import { dirname as dirnameFun, join } from "path";
-import { ParameterizedContext } from "koa";
+import { ElectronController } from "../controllers/electron.controller";
+import { ElectronService } from "../services";
 import { DB } from "src/db";
 import { RedisType } from "src/redis";
-import { Config } from "../../config";
-import * as fs from "fs-extra";
-import { File } from "formidable";
-
-const mkdirsSync = (dirname) => {
-  if (fs.existsSync(dirname)) {
-    return true;
-  } else {
-    if (mkdirsSync(dirnameFun(dirname))) {
-      fs.mkdirSync(dirname);
-      return true;
-    }
-  }
-};
 
 export function routes(db: DB, redis: RedisType) {
   const api = new Router();
 
+  /**
+   * @swagger
+   * tags:
+   *  name: Electron
+   *  description: Operations about Electron.
+   */
   api.prefix("/api/electron");
 
-  api.post("/update", async (ctx: ParameterizedContext) => {
-    const files = ctx.request.files!;
-    const { platform, version, archs } = <
-      { platform: string; version: string; archs: string }
-    >ctx.request.body;
+  const controller = new ElectronController(new ElectronService(db, redis));
 
-    const appPath = join(
-      Config.uploadPath,
-      platform,
-      platform === "windows" ? archs : "",
-      version,
-      "/"
-    );
+  api.get("/appInfo", async () => {});
 
-    if (fs.existsSync(appPath)) {
-      for (let name in files) {
-        const file = files[name];
-        if (Array.isArray(file)) {
-          file.forEach((f) => fs.remove(f.path));
-        } else {
-          fs.remove(file.path);
-        }
-      }
-      return (ctx.body = {
-        code: StatusCode.UnprocesableEntity,
-        msg: `The current version[${version}] already exists under the platform[${platform}].`,
-      });
-    }
+  /**
+   * @swagger
+   * /api/electron/fullUpload:
+   *  post:
+   *    summary: upload(full) electron app files.
+   *    description: upload(full) electron app files.
+   *    tags:
+   *      - Electron
+   *    consumes:
+   *      - multipart/form-data
+   *    produces:
+   *      - application/json
+   *    parameters:
+   *    - name: platform
+   *      in: formData
+   *      description: electron app platform.
+   *      required: true
+   *      type: string
+   *    - name: version
+   *      in: formData
+   *      description: electron app version.
+   *      required: true
+   *      type: string
+   *    - name: archs
+   *      in: formData
+   *      description: electron app archs, it's required when platform is windows.
+   *      required: false
+   *      type: string
+   *    - name: app
+   *      in: formData
+   *      description: files to upload.
+   *      required: true
+   *      type: array
+   *      items:
+   *        type: file
+   *        format: binary
+   *    - name: yml
+   *      in: formData
+   *      description: latest.yml to upload.
+   *      required: true
+   *      type: file
+   */
+  api.post("/fullUpload", controller.fullUpload);
 
-    mkdirsSync(appPath);
-
-    for (let name in files) {
-      const curFile = files[name];
-      if (Array.isArray(curFile)) {
-        curFile.forEach((file) => {
-          const { name, path } = file;
-          fs.renameSync(path, appPath + name);
-        });
-      } else {
-        const { name, path } = curFile;
-        fs.renameSync(path, appPath + name);
-      }
-    }
-
-    ctx.body = { code: StatusCode.Success, msg: "Upload successed." };
-  });
+  api.post("/asarUpload", controller.asarUpload);
 
   return api;
 }

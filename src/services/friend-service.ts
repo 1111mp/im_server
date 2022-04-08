@@ -11,8 +11,8 @@ export class FriendService {
   /**
    * @description create an instance of Friend service
    * @constructor
-   * @param db DB
-   * @param redis RedisType
+   * @param {DB} db - private
+   * @param {RedisType} redis - private
    */
   public constructor(private db: DB, private redis: RedisType) {}
 
