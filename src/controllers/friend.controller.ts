@@ -24,11 +24,11 @@ export class FriendController {
    * @returns
    */
   public friend_add = async (ctx: ParameterizedContext, next: Next) => {
-    const { friendId, remark, ext } = <AddFriend>ctx.request.body;
+    const { friendId, remark, ext } = <Friend.Params.AddFriend>ctx.request.body;
 
     if (!friendId)
       return (ctx.body = {
-        code: StatusCode.BadRequest,
+        code: Response.StatusCode.BadRequest,
         msg: "The param of friendId cannot be empty.",
       });
 
@@ -40,20 +40,20 @@ export class FriendController {
 
       if (is_friend)
         return (ctx.body = {
-          code: StatusCode.BadRequest,
+          code: Response.StatusCode.BadRequest,
           msg: "It's already a friend relationship, don't repeat submit.",
         });
 
       const sender = (
         await this.friendService.get_sender(ctx.userId)
-      )?.toJSON() as UserAttributes;
+      )?.toJSON() as User.DB.UserAttributes;
 
-      const notify: Notify = {
+      const notify: ModuleIM.Core.Notify = {
         id: v4(),
-        type: NotifyType.FriendAdd,
+        type: ModuleIM.Common.NotifyType.FriendAdd,
         sender,
         receiver: friendId,
-        status: NotifyStatus.Initial,
+        status: ModuleIM.Common.NotifyStatus.Initial,
         time: `${Date.now()}`,
         remark,
         ext,
@@ -69,12 +69,12 @@ export class FriendController {
       ctx.im.notify_send(notify);
 
       return (ctx.body = {
-        code: StatusCode.Success,
+        code: Response.StatusCode.Success,
         msg: "Added successfully, please wait for confirmation from the other side.",
       });
     } catch (err) {
       return (ctx.body = {
-        code: StatusCode.ServerError,
+        code: Response.StatusCode.ServerError,
         msg: `${err.name}: ${err.message}`,
       });
     }

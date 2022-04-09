@@ -35,11 +35,11 @@ export class UserController {
    * @returns {Promise<BaseResponse>}
    */
   public register = async (ctx: ParameterizedContext, next: Next) => {
-    const user = <UserRegister>ctx.request.body;
+    const user = <User.Params.UserRegister>ctx.request.body;
 
     if (!user.account || !user.pwd) {
       return (ctx.body = {
-        code: StatusCode.BadRequest,
+        code: Response.StatusCode.BadRequest,
         msg: "account or pwd cannot be repeated",
       });
     }
@@ -47,20 +47,20 @@ export class UserController {
     try {
       let new_user = (
         await this.userService.save(user)
-      ).toJSON() as UserAttributes;
+      ).toJSON() as User.DB.UserAttributes;
 
       const token = await this.set_token(new_user, Config.tokenExp);
 
       if (token === "failed")
         return (ctx.body = {
-          code: StatusCode.ServerError,
+          code: Response.StatusCode.ServerError,
           msg: "An unknown error occurred while generating the token.",
         });
 
-      delete (new_user as Optional<UserAttributes, "pwd">).pwd;
+      delete (new_user as Optional<User.DB.UserAttributes, "pwd">).pwd;
 
       return (ctx.body = {
-        code: StatusCode.Success,
+        code: Response.StatusCode.Success,
         token,
         data: new_user,
       });
@@ -68,12 +68,12 @@ export class UserController {
     } catch (err) {
       if (err.name === "SequelizeUniqueConstraintError") {
         return (ctx.body = {
-          code: StatusCode.UnprocesableEntity,
+          code: Response.StatusCode.UnprocesableEntity,
           msg: "The account already exists.",
         });
       } else {
         return (ctx.body = {
-          code: StatusCode.ServerError,
+          code: Response.StatusCode.ServerError,
           msg: `${err.name}: ${err.message}`,
         });
       }
@@ -88,22 +88,22 @@ export class UserController {
    * @returns {Promise<BaseResponse>}
    */
   public login = async (ctx: ParameterizedContext, next: Next) => {
-    const { account, pwd } = <UserLogin>ctx.query;
+    const { account, pwd } = <User.Params.UserLogin>ctx.query;
 
     if (!account || !pwd)
       return (ctx.body = {
-        code: StatusCode.BadRequest,
+        code: Response.StatusCode.BadRequest,
         msg: "account or pwd cannot be empty",
       });
 
     try {
       const user = (
         await this.userService.getUserByAccount({ account })
-      )?.toJSON() as UserAttributes;
+      )?.toJSON() as User.DB.UserAttributes;
 
       if (!user)
         return (ctx.body = {
-          code: StatusCode.Forbidden,
+          code: Response.StatusCode.Forbidden,
           msg: "please register first",
         });
 
@@ -111,7 +111,7 @@ export class UserController {
 
       if (!isPwd)
         return (ctx.body = {
-          code: StatusCode.Forbidden,
+          code: Response.StatusCode.Forbidden,
           msg: "Incorrect password",
         });
 
@@ -120,20 +120,20 @@ export class UserController {
 
       if (token === "failed")
         return (ctx.body = {
-          code: StatusCode.ServerError,
+          code: Response.StatusCode.ServerError,
           msg: "Unknow error when generating token.",
         });
 
-      delete (user as Optional<UserAttributes, "pwd">).pwd;
+      delete (user as Optional<User.DB.UserAttributes, "pwd">).pwd;
 
       return (ctx.body = {
-        code: StatusCode.Success,
+        code: Response.StatusCode.Success,
         token,
         data: user,
       });
     } catch (err) {
       return (ctx.body = {
-        code: StatusCode.ServerError,
+        code: Response.StatusCode.ServerError,
         msg: `${err.name}: ${err.message}`,
       });
     }
@@ -158,7 +158,7 @@ export class UserController {
     await this.del_token(ctx.userId, token);
 
     return (ctx.body = {
-      code: StatusCode.Success,
+      code: Response.StatusCode.Success,
       msg: "Sign out successfully.",
     });
   };
@@ -166,12 +166,12 @@ export class UserController {
   /**
    * @description generate token
    * @method {set_token}
-   * @param {UserAttributes} user
+   * @param {User.DB.UserAttributes} user
    * @param {number} maxAge
    * @returns token string
    */
   private set_token = (
-    user: UserAttributes,
+    user: User.DB.UserAttributes,
     maxAge: number = 60 * 60 * 1000
   ): Promise<string> => {
     const auth = `${USER_AUTH_KEY}::${user.id}`;

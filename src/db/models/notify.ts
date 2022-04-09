@@ -12,10 +12,10 @@ import { UserModel } from "./user";
 
 interface NotifyAttributes {
   id: string;
-  type: NotifyType;
+  type: ModuleIM.Common.NotifyType;
   sender: number;
   receiver: number;
-  status: NotifyStatus;
+  status: ModuleIM.Common.NotifyStatus;
   time: string;
   remark: string;
   ext: string;

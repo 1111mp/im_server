@@ -16,7 +16,9 @@ export class FriendService {
    */
   public constructor(private db: DB, private redis: RedisType) {}
 
-  public save = async (notify: Omit<Notify, "sender"> & { sender: number }) => {
+  public save = async (
+    notify: Omit<ModuleIM.Core.Notify, "sender"> & { sender: number }
+  ) => {
     return this.db.Notify.create(notify);
   };
 

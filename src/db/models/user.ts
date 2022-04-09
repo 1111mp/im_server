@@ -3,17 +3,10 @@ import { BuildOptions, DataTypes, Model, Optional, Sequelize } from "sequelize";
 import { hashSync } from "bcrypt";
 import * as moment from "moment";
 
-// Some fields are optional when calling UserModel.create() or UserModel.build()
-interface UserCreationAttributes
-  extends Optional<
-    UserAttributes,
-    "id" | "avatar" | "email" | "regisTime" | "updateTime"
-  > {}
-
 export interface UserModel
-  extends Model<UserAttributes, UserCreationAttributes>,
-    UserAttributes {}
-export class User extends Model<UserModel, UserAttributes> {}
+  extends Model<User.DB.UserAttributes, User.DB.UserCreationAttributes>,
+    User.DB.UserAttributes {}
+export class User extends Model<UserModel, User.DB.UserAttributes> {}
 
 export type UserStatic = typeof Model & {
   new (values?: object, options?: BuildOptions): UserModel;

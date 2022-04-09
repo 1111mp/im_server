@@ -28,7 +28,7 @@ export class IMService {
     name,
     members,
     creator,
-  }: GroupCreator & { creator: number }) => {
+  }: ModuleIM.Params.GroupCreator & { creator: number }) => {
     return this.db.sequelize.transaction(async (t) => {
       const chat_group = await this.db.ChatGroup.create(
         {

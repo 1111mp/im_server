@@ -23,8 +23,8 @@ export function routes(db: DB, redis: RedisType) {
    * @swagger
    * /api/electron/fullUpload:
    *  post:
-   *    summary: upload(full) electron app files.
-   *    description: upload(full) electron app files.
+   *    summary: upload(full) the files of Electron App.
+   *    description: upload(full) the files of Electron App.
    *    tags:
    *      - Electron
    *    consumes:
@@ -60,9 +60,65 @@ export function routes(db: DB, redis: RedisType) {
    *      description: latest.yml to upload.
    *      required: true
    *      type: file
+   *    responses:
+   *      200:
+   *        description: upload files successed.
+   *        schema:
+   *          type: object
+   *          properties:
+   *            code:
+   *              type: integer
+   *              default: 200
+   *            msg:
+   *              type: string
+   *              default: Upload successed.
    */
   api.post("/fullUpload", controller.fullUpload);
 
+  /**
+   * @swagger
+   * /api/electron/asarUpload:
+   *  post:
+   *    summary: upload(asar) the files of Electron App.
+   *    description: upload(asar) the files of Electron App.
+   *    tags:
+   *      - Electron
+   *    consumes:
+   *      - multipart/form-data
+   *    produces:
+   *      - application/json
+   *    parameters:
+   *    - name: platform
+   *      in: formData
+   *      description: electron app platform.
+   *      required: true
+   *      type: string
+   *    - name: version
+   *      in: formData
+   *      description: electron app version.
+   *      required: true
+   *      type: string
+   *    - name: app
+   *      in: formData
+   *      description: files to upload.
+   *      required: true
+   *      type: array
+   *      items:
+   *        type: file
+   *        format: binary
+   *    responses:
+   *      200:
+   *        description: upload files successed.
+   *        schema:
+   *          type: object
+   *          properties:
+   *            code:
+   *              type: integer
+   *              default: 200
+   *            msg:
+   *              type: string
+   *              default: Upload successed.
+   */
   api.post("/asarUpload", controller.asarUpload);
 
   return api;

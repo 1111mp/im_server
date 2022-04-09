@@ -97,7 +97,7 @@ export class IM {
       const { id } = verify(
         real_token,
         process.env.SECRET_Key!
-      ) as UserAttributes;
+      ) as User.DB.UserAttributes;
 
       socket.decoded = { userId: id };
 
@@ -123,8 +123,8 @@ export class IM {
    * @method {msg_send}
    * @param msg MessageText | MessageImage
    */
-  public msg_send(msg: MessageText | MessageImage) {
-    if (msg.type === MsgType.Text) {
+  public msg_send(msg: ModuleIM.Core.MessageText | ModuleIM.Core.MessageImage) {
+    if (msg.type === ModuleIM.Common.MsgType.Text) {
       msg.text;
     } else {
     }
@@ -140,9 +140,9 @@ export class IM {
    * @returns
    */
   public notify_send = async (
-    notify: Notify
+    notify: ModuleIM.Core.Notify
   ): Promise<{
-    code: StatusCode;
+    code: Response.StatusCode;
     msg: string;
   }> => {
     const { id, receiver } = notify;
@@ -166,9 +166,9 @@ export class IM {
 
         const result = await this.promise_race([emit_promise], 6000);
 
-        if (result.code === StatusCode.Success) {
+        if (result.code === Response.StatusCode.Success) {
           await this.db.Notify.update(
-            { status: NotifyStatus.Received },
+            { status: ModuleIM.Common.NotifyStatus.Received },
             {
               where: {
                 id,
@@ -177,13 +177,13 @@ export class IM {
           );
           // successed
           return {
-            code: StatusCode.Success,
+            code: Response.StatusCode.Success,
             msg: "successed",
           };
         } else {
           // failed to log
           return {
-            code: StatusCode.Timeout,
+            code: Response.StatusCode.Timeout,
             msg: "timeouted.",
           };
         }
@@ -191,23 +191,25 @@ export class IM {
         // user offline. save to redis.
 
         return {
-          code: StatusCode.Success,
+          code: Response.StatusCode.Success,
           msg: "",
         };
       }
     } catch (err) {
       return {
-        code: StatusCode.ServerError,
+        code: Response.StatusCode.ServerError,
         msg: `${err.name}: ${err.message}`,
       };
     }
   };
 
-  private onNotify = (notify: Notify, cb: Callback) => {};
+  private onNotify = (notify: ModuleIM.Core.Notify, cb: Callback) => {};
 
   /**********************************utils*************************************/
 
-  private msg_to_proto = (msg: MessageText | MessageImage) => {
+  private msg_to_proto = (
+    msg: ModuleIM.Core.MessageText | ModuleIM.Core.MessageImage
+  ) => {
     const proto = messagepackage.Message.create(msg);
 
     return messagepackage.Message.encode(proto).finish();
@@ -220,7 +222,7 @@ export class IM {
       longs: String,
       enums: String,
       bytes: String,
-    }) as MessageText | MessageImage;
+    }) as ModuleIM.Core.MessageText | ModuleIM.Core.MessageImage;
   };
 
   private notify_to_proto = (notify: messagepackage.INotify) => {
@@ -236,7 +238,7 @@ export class IM {
       longs: String,
       enums: String,
       bytes: String,
-    }) as Notify;
+    }) as ModuleIM.Core.Notify;
   };
 
   private ack_parsed_response = (
@@ -262,7 +264,7 @@ export class IM {
     const timeout: Promise<messagepackage.IAckResponse> = new Promise(
       (resolve) => {
         setTimeout(() => {
-          resolve({ code: StatusCode.Timeout, msg: "timeout" });
+          resolve({ code: Response.StatusCode.Timeout, msg: "timeout" });
         }, timer);
       }
     );

@@ -27,7 +27,7 @@ export function Auth(redis: RedisType) {
         const decoded = verify(
           real_token,
           process.env.SECRET_Key!
-        ) as UserAttributes;
+        ) as User.DB.UserAttributes;
 
         ctx.userId = decoded.id;
       } catch (err) {

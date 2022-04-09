@@ -45,7 +45,7 @@ export class ElectronController {
       if (fs.existsSync(appPath)) {
         removeFiles(files);
         return (ctx.body = {
-          code: StatusCode.UnprocesableEntity,
+          code: Response.StatusCode.UnprocesableEntity,
           msg: `The current version[${version}] already exists under the platform[${platform}].`,
         });
       }
@@ -79,11 +79,11 @@ export class ElectronController {
         ),
       });
 
-      ctx.body = { code: StatusCode.Success, msg: "Upload successed." };
+      ctx.body = { code: Response.StatusCode.Success, msg: "Upload successed." };
     } catch (err) {
       removeFiles(files);
       ctx.body = {
-        code: StatusCode.ServerError,
+        code: Response.StatusCode.ServerError,
         msg: `${err.name}: ${err.message}`,
       };
     }
@@ -98,7 +98,7 @@ export class ElectronController {
     const files = ctx.request.files;
     if (!files || !files["app"])
       return (ctx.body = {
-        code: StatusCode.BadRequest,
+        code: Response.StatusCode.BadRequest,
         msg: "The file of formData cannot be empty.",
       });
 
@@ -106,7 +106,7 @@ export class ElectronController {
 
     if (!platform || !version)
       return (ctx.body = {
-        code: StatusCode.BadRequest,
+        code: Response.StatusCode.BadRequest,
         msg: "Invalid parameter.",
       });
 
@@ -123,7 +123,7 @@ export class ElectronController {
       if (fs.existsSync(appPath)) {
         removeFiles(files);
         return (ctx.body = {
-          code: StatusCode.UnprocesableEntity,
+          code: Response.StatusCode.UnprocesableEntity,
           msg: `The current version[${version}] already exists under the platform[${platform}].`,
         });
       }
@@ -173,11 +173,11 @@ export class ElectronController {
         });
       }
 
-      ctx.body = { code: StatusCode.Success, msg: "Upload successed." };
+      ctx.body = { code: Response.StatusCode.Success, msg: "Upload successed." };
     } catch (err) {
       removeFiles(files);
       ctx.body = {
-        code: StatusCode.ServerError,
+        code: Response.StatusCode.ServerError,
         msg: `${err.name}: ${err.message}`,
       };
     }

@@ -7,6 +7,11 @@ import { UserModel } from "../db/models/user";
  * @public
  */
 export class UserService {
+  /**
+   * @description: Create an instance of user service.
+   * @constructor
+   * @param {*} private
+   */  
   public constructor(private db: DB) {}
 
   /**
@@ -16,7 +21,7 @@ export class UserService {
    * @param {UserRegister} user
    * @returns {UserModel}
    */
-  public save = (user: UserRegister): Promise<UserModel> => {
+  public save = (user: User.Params.UserRegister): Promise<UserModel> => {
     return this.db.User.create(user);
   };
 
@@ -29,7 +34,7 @@ export class UserService {
    */
   public getUserByAccount = ({
     account,
-  }: Pick<UserLogin, "account">): Promise<UserModel | null> => {
+  }: Pick<User.Params.UserLogin, "account">): Promise<UserModel | null> => {
     return this.db.User.findOne({
       attributes: [
         "id",
