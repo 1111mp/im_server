@@ -54,13 +54,13 @@ export function FriendSettingFactory(sequelize: Sequelize) {
       astrolabe: {
         type: DataTypes.BOOLEAN,
         allowNull: false,
-        defaultValue: 0,
+        defaultValue: false,
         comment: "星标好友",
       },
       block: {
         type: DataTypes.BOOLEAN,
         allowNull: false,
-        defaultValue: 0,
+        defaultValue: false,
         comment: "是否拉黑",
       },
       createdAt: {

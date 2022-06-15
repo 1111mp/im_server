@@ -1,7 +1,6 @@
 import { Server, Socket } from "socket.io";
 import { Server as HttpServer } from "http";
 import { verify } from "jsonwebtoken";
-import { ExtendedError } from "socket.io/dist/namespace";
 import { DB } from "../db";
 import { RedisType } from "../redis";
 
@@ -77,12 +76,12 @@ export class IM {
    * @description middleware to verify user identity
    * @method {auth_middleware}
    * @param socket Socket
-   * @param next (err?: ExtendedError) => void
+   * @param next (err?: Error) => void
    * @returns
    */
   private auth_middleware = async (
     socket: Socket,
-    next: (err?: ExtendedError) => void
+    next: (err?: Error) => void
   ) => {
     const { token, userid: userId } = socket.handshake.headers;
 

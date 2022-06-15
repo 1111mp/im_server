@@ -30,7 +30,7 @@ const sequelize = new Sequelize(
   {
     port: Number(process.env.DB_PORT),
     host: process.env.DB_HOST || "127.0.0.1",
-    dialect: "mysql",
+    dialect: "mariadb",
     pool: {
       min: 0,
       max: 5,
@@ -58,7 +58,6 @@ const Electron = ElectronFactory(sequelize);
 ChatGroup.hasMany(GroupMember, { foreignKey: "groupId", sourceKey: "id" });
 GroupMember.belongsTo(ChatGroup, { foreignKey: "groupId", targetKey: "id" });
 GroupMember.belongsTo(User, { foreignKey: "userId", targetKey: "id" });
-Notify.hasOne(User, { foreignKey: "id", sourceKey: "sender" });
 
 export const db: DB = {
   sequelize,
