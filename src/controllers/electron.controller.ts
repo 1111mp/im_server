@@ -38,7 +38,7 @@ export class ElectronController {
         Electron.Common.UpdateType.Full,
         version,
         platform,
-        platform === "windows" ? archs : "",
+        platform === Electron.Common.Platform.Windows ? archs : "",
         "/"
       );
 
@@ -75,11 +75,14 @@ export class ElectronController {
           Electron.Common.UpdateType.Full,
           version,
           platform,
-          platform === "windows" ? archs : ""
+          platform === Electron.Common.Platform.Windows ? archs : ""
         ),
       });
 
-      ctx.body = { code: Response.StatusCode.Success, msg: "Upload successed." };
+      ctx.body = {
+        code: Response.StatusCode.Success,
+        msg: "Upload successed.",
+      };
     } catch (err) {
       removeFiles(files);
       ctx.body = {
@@ -173,7 +176,10 @@ export class ElectronController {
         });
       }
 
-      ctx.body = { code: Response.StatusCode.Success, msg: "Upload successed." };
+      ctx.body = {
+        code: Response.StatusCode.Success,
+        msg: "Upload successed.",
+      };
     } catch (err) {
       removeFiles(files);
       ctx.body = {
@@ -181,5 +187,30 @@ export class ElectronController {
         msg: `${err.name}: ${err.message}`,
       };
     }
+  };
+
+  public appInfoForAsar = async (ctx: ParameterizedContext) => {
+    const { platform, archs, version } = <Electron.Params.InfoForAsar>ctx.query;
+
+    if (!platform || !archs || !version)
+      return (ctx.body = {
+        code: Response.StatusCode.BadRequest,
+        msg: "Invalid parameter.",
+      });
+
+    const info = await this.service.findOne(version, archs);
+
+    if (!info)
+      return (ctx.body = {
+        code: Response.StatusCode.Success,
+        msg: "No update available.",
+      });
+
+    // nedd to compare version
+
+    return (ctx.body = {
+      code: Response.StatusCode.Success,
+      data: info.toJSON(),
+    });
   };
 }

@@ -40,12 +40,12 @@ export function GroupMemberFactory(sequelize: Sequelize) {
     },
     groupId: {
       type: DataTypes.INTEGER,
-      field: "group_id",
+      allowNull: false,
       comment: "群id",
     },
     userId: {
       type: DataTypes.INTEGER,
-      field: "user_id",
+      allowNull: false,
       comment: "用户id",
     },
     createdAt: {

@@ -55,31 +55,30 @@ export function ChatGroupFactory(sequelize: Sequelize) {
       },
       name: {
         type: DataTypes.STRING,
-        defaultValue: "null",
+        allowNull: true,
         comment: "群组名称",
       },
       avatar: {
         type: DataTypes.STRING,
-        defaultValue: "null",
+        allowNull: true,
         comment: "群组头像",
       },
       type: {
         type: DataTypes.INTEGER,
         validate: {
-          isIn: [["1", "2"]],
+          isIn: [[1, 2]],
         },
         comment: "群组类型 1基础群 2超大群",
       },
       max: {
         type: DataTypes.INTEGER,
         validate: {
-          isIn: [["200", "2000"]],
+          isIn: [[200, 2000]],
         },
         comment: "群组成员数量限制",
       },
       creator: {
         type: DataTypes.INTEGER,
-        field: "group_creator",
         comment: "群组创建者userId",
         allowNull: false,
       },

@@ -14,6 +14,12 @@ declare global {
         platform: Common.Platform;
         version: string;
       };
+
+      type InfoForAsar = {
+        platform: Common.Platform;
+        version: string;
+        archs: Common.Archs;
+      };
     }
 
     namespace DB {
@@ -53,7 +59,7 @@ declare global {
       const enum Archs {
         x32 = "x32",
         x64 = "x64",
-        Mac = "mac",
+        Arm64 = "arm64",
       }
 
       const enum UpdateType {

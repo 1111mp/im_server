@@ -19,6 +19,8 @@ export function routes(db: DB, redis: RedisType) {
 
   api.get("/appInfo", async () => {});
 
+  api.get("/appInfoForAsar", controller.appInfoForAsar);
+
   /**
    * @swagger
    * /api/electron/fullUpload:

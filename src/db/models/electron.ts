@@ -34,7 +34,7 @@ export function ElectronFactory(sequelize: Sequelize) {
     archs: {
       type: DataTypes.STRING,
       validate: {
-        isIn: [["x32", "x64", "mac"]],
+        isIn: [["x32", "x64", "arm64"]],
       },
       allowNull: false,
     },

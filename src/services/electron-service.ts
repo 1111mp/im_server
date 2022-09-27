@@ -34,4 +34,13 @@ export class ElectronService {
   ) => {
     return this.db.Electron.bulkCreate(params);
   };
+
+  public findOne = async (version: string, archs: Electron.Common.Archs) => {
+    return this.db.Electron.findOne({
+      where: {
+        version,
+        archs,
+      },
+    });
+  };
 }
