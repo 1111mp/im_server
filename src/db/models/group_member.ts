@@ -6,7 +6,7 @@ import {
   Optional,
   BelongsToGetAssociationMixin,
 } from "sequelize";
-import * as moment from "moment";
+import dayjs from "dayjs";
 import { UserModel } from "./user";
 
 export interface GroupMemberAttributes {
@@ -52,7 +52,7 @@ export function GroupMemberFactory(sequelize: Sequelize) {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
       get() {
-        return moment(this.getDataValue("createdAt")).format(
+        return dayjs(this.getDataValue("createdAt")).format(
           "YYYY-MM-DD HH:mm"
         );
       },
@@ -61,7 +61,7 @@ export function GroupMemberFactory(sequelize: Sequelize) {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
       get() {
-        return moment(this.getDataValue("updatedAt")).format(
+        return dayjs(this.getDataValue("updatedAt")).format(
           "YYYY-MM-DD HH:mm"
         );
       },

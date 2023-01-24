@@ -6,9 +6,9 @@ export function removeFiles(files: Files) {
   for (let name in files) {
     const file = files[name];
     if (Array.isArray(file)) {
-      file.forEach((f) => fs.remove(f.path));
+      file.forEach((f) => fs.remove(f.originalFilename!));
     } else {
-      fs.remove(file.path);
+      fs.remove(file.originalFilename!);
     }
   }
 }

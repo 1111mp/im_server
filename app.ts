@@ -2,18 +2,18 @@ import * as Koa from "koa";
 import * as views from "koa-views";
 import * as json from "koa-json";
 import * as onerror from "koa-onerror";
-import * as koaBody from "koa-body";
+import { koaBody } from "koa-body";
 import * as compose from "koa-compose";
 import * as staticServ from "koa-static";
 
-import { Auth } from "./src/middleware/auth";
+import { Auth } from "./src/middleware/Auth";
 import { Config } from "./config";
 
 import { db } from "./src/db";
 import { redis } from "./src/redis";
 import { routes } from "./src/routes";
 import { IMInitialization } from "./src/IM";
-import { Server } from "http";
+import type { Server } from "http";
 
 /** 定时任务 */
 // timerTask(asycStarData);

@@ -1,6 +1,6 @@
 import { BuildOptions, DataTypes, Model, Sequelize } from "sequelize";
 
-import moment from "moment";
+import dayjs from "dayjs";
 
 type FriendAttributes = {
   id: number;
@@ -55,7 +55,7 @@ export function FriendFactory(sequelize: Sequelize) {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
         get() {
-          return moment(this.getDataValue("createdAt")).format(
+          return dayjs(this.getDataValue("createdAt")).format(
             "YYYY-MM-DD HH:mm"
           );
         },
@@ -64,7 +64,7 @@ export function FriendFactory(sequelize: Sequelize) {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
         get() {
-          return moment(this.getDataValue("updatedAt")).format(
+          return dayjs(this.getDataValue("updatedAt")).format(
             "YYYY-MM-DD HH:mm"
           );
         },

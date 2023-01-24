@@ -8,7 +8,7 @@
 
   <body>
     <input id="input" type="text" />
-    <button onclick="send()">发送</button>
+    <!-- <button onclick="send()">发送</button> -->
     <br />
     <button>离线消息</button>
   </body>
@@ -16,17 +16,23 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.1.0/uuidv4.min.js"></script>
   <script>
     // const url = "ws://192.168.80.208:3000"
-    const url = "ws://127.0.0.1:3000/im";
+    const url =
+      "ws://127.0.0.1:3000/im?userid=10005&token=40a04112-93c6-4581-bd6e-e08bfa56a045";
     const token = "376a7114-d226-461a-8527-3566cc072649",
       userid = 10001;
 
-    const socket = new WebSocket(url, [
-      "10001",
-      "ddc1c31e-2616-4bc6-a109-36f768452ff3",
-    ]);
+    const socket = new WebSocket(url);
 
     socket.onmessage = (evt) => {
       console.log(evt);
+      // socket.send("ping");
+      // socket.send(
+      //   JSON.stringify({
+      //     msgId: uuidv4(),
+      //     receiver: 10002,
+      //     content: "this is a message from A",
+      //   })
+      // );
     };
 
     socket.onopen = (socket, evt) => {
@@ -34,17 +40,10 @@
       console.log(evt);
     };
 
-    function send() {
-      let input = document.getElementById("input");
-
-      socket.send(
-        JSON.stringify({
-          msgId: uuidv4(),
-          receiver: 10005,
-          content: input.value,
-        })
-      );
-    }
+    socket.onclose = (socket, evt) => {
+      console.log(socket);
+      console.log(evt);
+    };
 
     // let socket = io(url, {
     //   transports: ["polling", "websocket"],

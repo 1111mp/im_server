@@ -1,7 +1,7 @@
 import { BuildOptions, DataTypes, Model, Optional, Sequelize } from "sequelize";
 
 import { hashSync } from "bcrypt";
-import * as moment from "moment";
+import dayjs from "dayjs";
 
 export interface UserModel
   extends Model<User.DB.UserAttributes, User.DB.UserCreationAttributes>,
@@ -59,7 +59,7 @@ export function UserFactory(sequelize: Sequelize) {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
         get() {
-          return moment(this.getDataValue("regisTime")).format(
+          return dayjs(this.getDataValue("regisTime")).format(
             "YYYY-MM-DD HH:mm"
           );
         },
@@ -68,7 +68,7 @@ export function UserFactory(sequelize: Sequelize) {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
         get() {
-          return moment(this.getDataValue("updateTime")).format(
+          return dayjs(this.getDataValue("updateTime")).format(
             "YYYY-MM-DD HH:mm"
           );
         },

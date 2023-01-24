@@ -56,12 +56,12 @@ export class ElectronController {
         const curFile = files[name];
         if (Array.isArray(curFile)) {
           curFile.forEach((file) => {
-            const { name, path } = file;
-            fs.renameSync(path, appPath + name);
+            const { originalFilename, filepath } = file;
+            fs.renameSync(filepath, appPath + originalFilename);
           });
         } else {
-          const { name, path } = curFile;
-          fs.renameSync(path, appPath + name);
+          const { originalFilename, filepath } = curFile;
+          fs.renameSync(filepath, appPath + originalFilename);
         }
       }
 
@@ -138,40 +138,40 @@ export class ElectronController {
       // windows one file | macos two files
       if (Array.isArray(curFile)) {
         curFile.forEach((file) => {
-          const { name, path } = file;
-          fs.renameSync(path, appPath + name);
+          const { originalFilename, filepath } = file;
+          fs.renameSync(filepath, appPath + originalFilename);
         });
 
         await this.service.createMultiple(
-          curFile.map(({ name, path }) => ({
+          curFile.map(({ originalFilename }) => ({
             type: Electron.Common.UpdateType.Asar,
             platform,
             version,
-            archs: name?.split(".")[0] as Electron.Common.Archs,
+            archs: originalFilename?.split(".")[0] as Electron.Common.Archs,
             url: join(
               "electron",
               Electron.Common.UpdateType.Asar,
               version,
               platform,
-              name!
+              originalFilename!
             ),
           }))
         );
       } else {
-        const { name, path } = curFile;
-        fs.renameSync(path, appPath + name);
+        const { originalFilename, filepath } = curFile;
+        fs.renameSync(filepath, appPath + originalFilename);
 
         await this.service.create({
           type: Electron.Common.UpdateType.Asar,
           platform,
           version,
-          archs: name?.split(".")[0] as Electron.Common.Archs,
+          archs: originalFilename?.split(".")[0] as Electron.Common.Archs,
           url: join(
             "electron",
             Electron.Common.UpdateType.Asar,
             version,
             platform,
-            name!
+            originalFilename!
           ),
         });
       }
