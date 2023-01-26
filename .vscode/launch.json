@@ -7,17 +7,17 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Launch Program",
-      "runtimeArgs": ["-r", "@noshot/env", "-r", "ts-node/register"],
+      "name": "Debug Nest Framework",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start:debug", "--", "--inspect-brk"],
       "env": {
-        // https://github.com/TypeStrong/ts-node#help-my-types-are-missing
-        "TS_NODE_FILES": "true",
-        "TS_NODE_PROJECT": "tsconfig.json",
-        "NODE_ENV": "development",
-        "LOAD_CONFIG": "dev"
+        "NODE_ENV": "dev"
       },
-      "program": "${workspaceFolder}/run/index.ts",
-      "resolveSourceMapLocations": ["!**/node_modules/**", "!node:internal/**"]
+      "autoAttachChildProcesses": true,
+      "restart": true,
+      "sourceMaps": true,
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
     }
   ]
 }

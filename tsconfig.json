@@ -1,25 +1,22 @@
 {
   "compilerOptions": {
-    "target": "es6",
     "module": "commonjs",
-    "allowJs": true,
-    "strict": true,
     "declaration": true,
-    "baseUrl": ".",
-    "rootDir": "./",
-    "noImplicitAny": false,
-    "noUnusedLocals": false,
-    // https://devblogs.microsoft.com/typescript/announcing-typescript-4-4-beta/#use-unknown-catch-variables
-    "useUnknownInCatchVariables": false,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "pretty": true,
-    "sourceMap": true,
-    "moduleResolution": "node",
-    "isolatedModules": false,
-    "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
-    "lib": ["es2015", "es2016", "es2017"],
+    "target": "es2017",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "incremental": true,
+    "skipLibCheck": true,
+    "strictNullChecks": false,
+    "noImplicitAny": false,
+    "strictBindCallApply": false,
+    "forceConsistentCasingInFileNames": false,
+    "noFallthroughCasesInSwitch": false,
     "typeRoots": ["./@types", "./node_modules/@types"]
-  },
-  "exclude": ["node_modules", "**/pm2.config.*", "demo", "src/proto"]
+  }
 }
