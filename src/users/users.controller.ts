@@ -4,6 +4,7 @@ import {
   ConflictException,
   Controller,
   Get,
+  HttpStatus,
   InternalServerErrorException,
   NotFoundException,
   Param,
@@ -109,7 +110,7 @@ export class UsersController {
       const token = await this.authService.create(result);
 
       return {
-        statusCode: IMServerResponse.StatusCode.Success,
+        statusCode: HttpStatus.OK,
         token,
         message: 'Successed.',
         data: { avatar: null, email: null, ...result },
@@ -121,6 +122,41 @@ export class UsersController {
         throw new InternalServerErrorException(`${err.name}: ${err.message}`);
       }
     }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('logout')
+  @ApiOperation({
+    summary: 'User logout',
+    description: 'User logout',
+  })
+  @ApiBearerAuth('token')
+  @ApiBearerAuth('userid')
+  @ApiResponse({
+    status: 200,
+    description: 'Successed to logout',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: {
+          type: 'number',
+          example: 200,
+        },
+        message: {
+          type: 'string',
+          example: 'Logout successed.',
+        },
+      },
+    },
+  })
+  async logout(@Request() req: IMServerRequest.RequestForHeader) {
+    const { userid, authorization } = req.headers;
+    await this.authService.delToken(userid, authorization);
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Logout successed.',
+    };
   }
 
   @UseGuards(JwtAuthGuard)
@@ -150,20 +186,16 @@ export class UsersController {
   async findOne(
     @Param('id') id: string,
   ): Promise<IMServerResponse.JsonResponse<User.UserAttributes>> {
-    try {
-      const user = await this.usersService.findOne(id);
+    const user = await this.usersService.findOne(id);
 
-      if (!user) {
-        throw new NotFoundException();
-      }
-
-      return {
-        statusCode: IMServerResponse.StatusCode.Success,
-        message: 'Successed.',
-        data: user,
-      };
-    } catch (err) {
-      throw new InternalServerErrorException(`${err.name}: ${err.message}`);
+    if (!user) {
+      throw new NotFoundException();
     }
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Successed.',
+      data: user,
+    };
   }
 }

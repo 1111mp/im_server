@@ -1,5 +1,6 @@
 import {
   Injectable,
+  HttpStatus,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
@@ -36,7 +37,7 @@ export class AuthService {
     const token = await this.cacheToken(user);
 
     return {
-      statusCode: 200,
+      statusCode: HttpStatus.OK,
       token,
       data: user,
     };
@@ -46,6 +47,18 @@ export class AuthService {
     const token = await this.cacheToken(user);
 
     return token;
+  }
+
+  async delToken(userid: string, token: string) {
+    const auth = `${process.env.USER_AUTH_KEY}::${userid}`;
+
+    const res = await this.redisService.getRedisClient().hDel(auth, token);
+
+    if (!res) {
+      throw new InternalServerErrorException(
+        'Error[Redis]: An unknown error occurred while delete the token cache',
+      );
+    }
   }
 
   private cacheToken(

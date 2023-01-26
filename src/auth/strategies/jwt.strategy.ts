@@ -5,20 +5,11 @@ import { User } from '../../users/models/user.model';
 import { jwtConstants } from '../constants';
 import { RedisService } from 'src/redis/redis.service';
 
-import type { Request } from 'express';
-
-interface RequestForHeader extends Request {
-  headers: {
-    userid?: string;
-    authorization?: string;
-  };
-}
-
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(private readonly redisService: RedisService) {
     super({
-      jwtFromRequest: async (req: RequestForHeader) => {
+      jwtFromRequest: async (req: IMServerRequest.RequestForHeader) => {
         const { userid, authorization } = req.headers;
 
         if (!userid || !authorization) return null;
