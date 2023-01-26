@@ -1,6 +1,11 @@
 import {
+  BadRequestException,
+  Body,
+  ConflictException,
   Controller,
   Get,
+  InternalServerErrorException,
+  NotFoundException,
   Param,
   Post,
   Request,
@@ -15,15 +20,15 @@ import {
   ApiTags,
   getSchemaPath,
 } from '@nestjs/swagger';
-import { User } from './models/user.model';
+import { User as UserModel } from './models/user.model';
 import { UsersService } from './users.service';
 import { AuthService } from 'src/auth/auth.service';
 import { LocalAuthGuard } from 'src/auth/guards/local-auth.guard';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { CreateUserDto } from './dto/create-user.dto';
+import { UserLoginDto, CreateUserDto } from './dto/create-user.dto';
 
 @ApiTags('User')
-@ApiExtraModels(User)
+@ApiExtraModels(UserModel)
 @Controller('users')
 export class UsersController {
   constructor(
@@ -38,7 +43,7 @@ export class UsersController {
     description: 'User login',
   })
   @ApiBody({
-    type: CreateUserDto,
+    type: UserLoginDto,
   })
   @ApiResponse({
     status: 200,
@@ -46,7 +51,7 @@ export class UsersController {
     schema: {
       type: 'object',
       properties: {
-        code: {
+        statusCode: {
           type: 'number',
           example: 200,
         },
@@ -55,13 +60,67 @@ export class UsersController {
           example: '28aeb634-95c1-4b57-983a-6bc0d0238042',
         },
         data: {
-          $ref: getSchemaPath(User),
+          $ref: getSchemaPath(UserModel),
         },
       },
     },
   })
   async login(@Request() req) {
     return this.authService.login(req.user);
+  }
+
+  @Post('create')
+  @ApiOperation({
+    summary: 'Create user',
+    description: 'Create user',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'user login',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: {
+          type: 'number',
+          example: 200,
+        },
+        token: {
+          type: 'string',
+          example: '28aeb634-95c1-4b57-983a-6bc0d0238042',
+        },
+        data: {
+          $ref: getSchemaPath(UserModel),
+        },
+      },
+    },
+  })
+  async create(
+    @Body() createUserDto: CreateUserDto,
+  ): Promise<IMServerResponse.JsonResponse<Omit<User.UserAttributes, 'pwd'>>> {
+    const { account, pwd } = createUserDto;
+
+    if (!account || !pwd) {
+      throw new BadRequestException('Parameter error');
+    }
+
+    try {
+      const user = (await this.usersService.create(createUserDto)).toJSON();
+      const { pwd, ...result } = user;
+      const token = await this.authService.create(result);
+
+      return {
+        statusCode: IMServerResponse.StatusCode.Success,
+        token,
+        message: 'Successed.',
+        data: { avatar: null, email: null, ...result },
+      };
+    } catch (err) {
+      if (err.name === 'SequelizeUniqueConstraintError') {
+        throw new ConflictException('The account already exists.');
+      } else {
+        throw new InternalServerErrorException(`${err.name}: ${err.message}`);
+      }
+    }
   }
 
   @UseGuards(JwtAuthGuard)
@@ -78,17 +137,33 @@ export class UsersController {
     schema: {
       type: 'object',
       properties: {
-        code: {
+        statusCode: {
           type: 'number',
           example: 200,
         },
         data: {
-          $ref: getSchemaPath(User),
+          $ref: getSchemaPath(UserModel),
         },
       },
     },
   })
-  async findOne(@Param('id') id: string): Promise<User> {
-    return this.usersService.findOne(id);
+  async findOne(
+    @Param('id') id: string,
+  ): Promise<IMServerResponse.JsonResponse<User.UserAttributes>> {
+    try {
+      const user = await this.usersService.findOne(id);
+
+      if (!user) {
+        throw new NotFoundException();
+      }
+
+      return {
+        statusCode: IMServerResponse.StatusCode.Success,
+        message: 'Successed.',
+        data: user,
+      };
+    } catch (err) {
+      throw new InternalServerErrorException(`${err.name}: ${err.message}`);
+    }
   }
 }

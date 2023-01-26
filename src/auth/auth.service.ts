@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { compareSync } from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
@@ -32,32 +36,37 @@ export class AuthService {
     const token = await this.cacheToken(user);
 
     return {
-      code: 200,
+      statusCode: 200,
       token,
       data: user,
     };
   }
 
+  async create(user: Omit<User.UserAttributes, 'pwd'>) {
+    const token = await this.cacheToken(user);
+
+    return token;
+  }
+
   private cacheToken(
     user: Omit<User.UserAttributes, 'pwd'>,
-    maxAge: number = 60 * 60 * 1000, // default 1 hour
-  ) {
+    maxAge: number = 60 * 60, // s. default 1 hour
+  ): Promise<string> {
     const auth = `${process.env.USER_AUTH_KEY}::${user.id}`;
     const key = uuidv4();
     const token = this.jwtService.sign(user);
 
     return new Promise(async (reslove) => {
-      const [delKey, setKey, expKey] = await this.redisService
+      const [setKey, expKey] = await this.redisService
         .getRedisClient()
         .multi()
-        .del(auth)
         .hSet(auth, key, token)
         .expire(auth, maxAge)
         .exec();
 
-      if (!!delKey && !!setKey && expKey) reslove(key);
+      if (!!setKey && expKey) reslove(key);
       else
-        throw Error(
+        throw new InternalServerErrorException(
           'Error[Redis]: An unknown error occurred while updating the token cache',
         );
     });

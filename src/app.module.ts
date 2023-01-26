@@ -39,7 +39,6 @@ if (process.env.NODE_ENV === 'dev') {
       autoLoadModels: true,
       synchronize: true,
     }),
-    // RedisModule,
     UsersModule,
   ],
   providers: [],

@@ -14,7 +14,7 @@ import { RedisModule } from '../redis/redis.module';
     PassportModule,
     JwtModule.register({
       secret: jwtConstants.secret,
-      signOptions: { expiresIn: '1 days' },
+      signOptions: { expiresIn: '6h' },
     }),
     RedisModule,
   ],

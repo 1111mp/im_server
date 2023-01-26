@@ -38,7 +38,7 @@ export class User extends Model<User> {
   pwd;
 
   @ApiProperty({ type: 'string' })
-  @Column({ type: DataTypes.STRING, comment: '用户头像' })
+  @Column({ type: DataTypes.STRING, allowNull: true, comment: '用户头像' })
   avatar;
 
   @ApiProperty({ type: 'string' })

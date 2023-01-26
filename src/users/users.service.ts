@@ -27,4 +27,8 @@ export class UsersService {
       },
     });
   }
+
+  create(user: User.UserCreationAttributes) {
+    return this.userModel.create(user);
+  }
 }
