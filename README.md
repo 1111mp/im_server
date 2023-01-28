@@ -4,7 +4,7 @@
 
 接口文档可在服务启动之后（[Swagger Ui](https://swagger.io/tools/swagger-ui/)），浏览器访问 `http://localhost:3000/api/docs` 查看
 
-数据库：mariadb、redis、sequelize 链接 mysql 的配置文件：.env.dev
+数据库：mariadb、redis、sequelize 链接 mariasb的配置文件：.env.dev
 
 ## Installation
 
@@ -48,7 +48,7 @@ UserContext(req.user), example:
   regisTime: '2023-01-28 17:36:29',
   updateTime: '2023-01-28 17:36:30',
   id: 10009,
-  account: '17601254993',
+  account: '176xxxxxxxx',
   roleId: 5,
   roleName: 'admin',
   roleDesc: '管理员',
