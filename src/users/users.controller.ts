@@ -25,9 +25,10 @@ import {
 import { User as UserModel } from './models/user.model';
 import { UsersService } from './users.service';
 import { AuthService } from 'src/auth/auth.service';
+import { Roles } from 'src/permission/decorators/roles.decorator';
 import { LocalAuthGuard } from 'src/auth/guards/local-auth.guard';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { UserLoginDto, CreateUserDto } from './dto/create-user.dto';
+import { Public } from 'src/auth/decorators/jwt.decorator';
 
 @ApiTags('User')
 @ApiExtraModels(UserModel)
@@ -38,6 +39,7 @@ export class UsersController {
     private readonly authService: AuthService,
   ) {}
 
+  @Public()
   @UseGuards(LocalAuthGuard)
   @Post('login')
   @ApiOperation({
@@ -71,6 +73,7 @@ export class UsersController {
     return this.authService.login(req.user);
   }
 
+  @Public()
   @Post('create')
   @ApiOperation({
     summary: 'Create user',
@@ -78,7 +81,7 @@ export class UsersController {
   })
   @ApiResponse({
     status: 200,
-    description: 'user login',
+    description: 'Create user',
     schema: {
       type: 'object',
       properties: {
@@ -126,7 +129,6 @@ export class UsersController {
     }
   }
 
-  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   @ApiOperation({
     summary: 'Delete a user',
@@ -159,8 +161,8 @@ export class UsersController {
     return this.usersService.deleteOne(id, authorization);
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get(':id')
+  @Roles(1)
   @ApiOperation({
     summary: 'Get user info',
     description: 'Get user info by userid',
@@ -199,7 +201,6 @@ export class UsersController {
     };
   }
 
-  @UseGuards(JwtAuthGuard)
   @Post('logout')
   @ApiOperation({
     summary: 'User logout',

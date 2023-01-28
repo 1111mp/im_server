@@ -52,17 +52,22 @@ export class UsersService {
 
     if (!user) return null;
 
-    const {
-      id: roleId,
-      name: roleName,
-      desc: roleDesc,
-    } = await user.$get('role');
+    const role = await user.$get('role');
+    const permissions = (await role.$get('permissions')).map(
+      ({ id, name, desc }) => ({
+        id,
+        name,
+        desc,
+      }),
+    );
+    const { id: roleId, name: roleName, desc: roleDesc } = role;
 
     return {
       ...user.toJSON(),
       roleId,
       roleName,
       roleDesc,
+      permissions,
     };
   }
 
@@ -80,9 +85,18 @@ export class UsersService {
       await trans.commit();
 
       const role = await user.$get('role');
+
+      const permissions = (await role.$get('permissions')).map(
+        ({ id, name, desc }) => ({
+          id,
+          name,
+          desc,
+        }),
+      );
+
       const { id, name: roleName, desc: roleDesc } = role;
 
-      return { ...user.toJSON(), roleId: id, roleName, roleDesc };
+      return { ...user.toJSON(), roleId: id, roleName, roleDesc, permissions };
     } catch (err) {
       await trans.rollback();
       throw err;

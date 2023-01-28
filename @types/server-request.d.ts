@@ -8,5 +8,9 @@ declare global {
         authorization?: string;
       };
     }
+
+    interface RequestForContext extends Request {
+      user: User.UserInfo;
+    }
   }
 }

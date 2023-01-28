@@ -1,8 +1,11 @@
 import { Module } from '@nestjs/common';
-import { SequelizeModule } from '@nestjs/sequelize';
+import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
+import { SequelizeModule } from '@nestjs/sequelize';
 import { UsersModule } from './users/users.module';
 import { PermissionModule } from './permission/permission.module';
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { RolesGuard } from './permission/guards/roles.guard';
 
 let envFilePath = ['.env'];
 if (process.env.NODE_ENV === 'dev') {
@@ -43,6 +46,12 @@ if (process.env.NODE_ENV === 'dev') {
     UsersModule,
     PermissionModule,
   ],
-  providers: [],
+  providers: [
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+  ],
 })
 export class ApplicationModule {}
