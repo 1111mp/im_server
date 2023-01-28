@@ -1,8 +1,15 @@
-import { DataTypes } from 'sequelize';
-import { Model, Table, Column } from 'sequelize-typescript';
+import {
+  Model,
+  Table,
+  Column,
+  DataType,
+  ForeignKey,
+  BelongsTo,
+} from 'sequelize-typescript';
 import { ApiProperty } from '@nestjs/swagger';
 import { hashSync } from 'bcrypt';
 import * as dayjs from 'dayjs';
+import { Role } from 'src/permission/models/role.model';
 
 @Table({
   initialAutoIncrement: '10000',
@@ -11,12 +18,12 @@ import * as dayjs from 'dayjs';
 })
 export class User extends Model<User> {
   @ApiProperty({ type: 'number', example: 10001, description: 'userid' })
-  @Column({ primaryKey: true, autoIncrement: true, type: DataTypes.INTEGER })
+  @Column({ primaryKey: true, autoIncrement: true, type: DataType.INTEGER })
   id;
 
   @ApiProperty({ example: '176xxxxxxxx', description: '账号 手机号' })
   @Column({
-    type: DataTypes.STRING(11),
+    type: DataType.STRING(11),
     validate: {
       is: /^1[3-9](\d{9})$/i,
     },
@@ -26,7 +33,7 @@ export class User extends Model<User> {
   account;
 
   @Column({
-    type: DataTypes.STRING,
+    type: DataType.STRING,
     allowNull: false,
     set(val: string) {
       // hash pwd
@@ -38,12 +45,12 @@ export class User extends Model<User> {
   pwd;
 
   @ApiProperty({ type: 'string' })
-  @Column({ type: DataTypes.STRING, allowNull: true, comment: '用户头像' })
+  @Column({ type: DataType.STRING, allowNull: true, comment: '用户头像' })
   avatar;
 
   @ApiProperty({ type: 'string' })
   @Column({
-    type: DataTypes.STRING,
+    type: DataType.STRING,
     allowNull: true,
     unique: 'email',
     validate: {
@@ -55,21 +62,28 @@ export class User extends Model<User> {
 
   @ApiProperty({ type: 'string' })
   @Column({
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
+    type: DataType.DATE,
+    defaultValue: DataType.NOW,
     get() {
-      return dayjs(this.getDataValue('regisTime')).format('YYYY-MM-DD HH:mm');
+      return dayjs(this.getDataValue('regisTime')).format('YYYY-MM-DD HH:mm:ss');
     },
   })
   regisTime;
 
   @ApiProperty({ type: 'string' })
   @Column({
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
+    type: DataType.DATE,
+    defaultValue: DataType.NOW,
     get() {
-      return dayjs(this.getDataValue('updateTime')).format('YYYY-MM-DD HH:mm');
+      return dayjs(this.getDataValue('updateTime')).format('YYYY-MM-DD HH:mm:ss');
     },
   })
   updateTime;
+
+  @ForeignKey(() => Role)
+  @Column(DataType.INTEGER)
+  roleId;
+
+  @BelongsTo(() => Role)
+  role: Role;
 }

@@ -20,6 +20,8 @@ declare global {
         UserAttributes,
         'id' | 'avatar' | 'email' | 'regisTime' | 'updateTime'
       > {}
+
+    interface UserInfo extends UserAttributes, RoleModel.Role {}
   }
 
   namespace Params {

@@ -15,6 +15,9 @@ export class CreateUserDto {
   @ApiProperty({ type: 'string', required: true, example: '**********' })
   pwd;
 
+  @ApiProperty({ type: 'number', example: 5, default: 5 })
+  roleId;
+
   @ApiProperty({ type: 'string', example: '*****@gmail.com' })
   email;
 

@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
+import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
+import { PermissionModule } from './permission/permission.module';
 
 let envFilePath = ['.env'];
 if (process.env.NODE_ENV === 'dev') {
@@ -40,6 +41,7 @@ if (process.env.NODE_ENV === 'dev') {
       synchronize: true,
     }),
     UsersModule,
+    PermissionModule,
   ],
   providers: [],
 })

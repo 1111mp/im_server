@@ -3,6 +3,7 @@ import {
   Body,
   ConflictException,
   Controller,
+  Delete,
   Get,
   HttpStatus,
   InternalServerErrorException,
@@ -105,7 +106,8 @@ export class UsersController {
     }
 
     try {
-      const user = (await this.usersService.create(createUserDto)).toJSON();
+      const user = await this.usersService.createOne(createUserDto);
+
       const { pwd, ...result } = user;
       const token = await this.authService.create(result);
 
@@ -125,16 +127,16 @@ export class UsersController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('logout')
+  @Delete(':id')
   @ApiOperation({
-    summary: 'User logout',
-    description: 'User logout',
+    summary: 'Delete a user',
+    description: 'Delete a user by userid',
   })
   @ApiBearerAuth('token')
   @ApiBearerAuth('userid')
   @ApiResponse({
-    status: 200,
-    description: 'Successed to logout',
+    status: HttpStatus.OK,
+    description: 'Successed to delete a user',
     schema: {
       type: 'object',
       properties: {
@@ -144,19 +146,17 @@ export class UsersController {
         },
         message: {
           type: 'string',
-          example: 'Logout successed.',
+          example: 'Successfully.',
         },
       },
     },
   })
-  async logout(@Request() req: IMServerRequest.RequestForHeader) {
-    const { userid, authorization } = req.headers;
-    await this.authService.delToken(userid, authorization);
-
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Logout successed.',
-    };
+  async deleteOne(
+    @Request() req: IMServerRequest.RequestForHeader,
+    @Param('id') id: string,
+  ) {
+    const { authorization } = req.headers;
+    return this.usersService.deleteOne(id, authorization);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -196,6 +196,41 @@ export class UsersController {
       statusCode: HttpStatus.OK,
       message: 'Successed.',
       data: user,
+    };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('logout')
+  @ApiOperation({
+    summary: 'User logout',
+    description: 'User logout',
+  })
+  @ApiBearerAuth('token')
+  @ApiBearerAuth('userid')
+  @ApiResponse({
+    status: 200,
+    description: 'Successed to logout',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: {
+          type: 'number',
+          example: 200,
+        },
+        message: {
+          type: 'string',
+          example: 'Logout successed.',
+        },
+      },
+    },
+  })
+  async logout(@Request() req: IMServerRequest.RequestForHeader) {
+    const { userid, authorization } = req.headers;
+    await this.authService.delToken(userid, authorization);
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Logout successed.',
     };
   }
 }

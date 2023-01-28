@@ -14,6 +14,6 @@ namespace IMServerResponse {
     statusCode: number;
     message?: string;
     token?: string;
-    data: T;
+    data?: T;
   }
 }

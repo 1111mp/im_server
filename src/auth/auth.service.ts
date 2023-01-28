@@ -21,11 +21,10 @@ export class AuthService {
   async validateUser(
     account: string,
     pwd: string,
-  ): Promise<Omit<User.UserAttributes, 'pwd'>> {
-    let user = await this.usersService.findByAccount(account);
+  ): Promise<Omit<User.UserInfo, 'pwd'>> {
+    const user = await this.usersService.findByAccount(account);
     if (!user) throw new NotFoundException();
 
-    user = user.toJSON();
     if (user && compareSync(pwd, user.pwd)) {
       const { pwd, ...result } = user;
       return result;

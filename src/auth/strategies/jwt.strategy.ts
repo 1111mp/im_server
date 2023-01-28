@@ -27,6 +27,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: User) {
+    console.log(payload);
     // refresh token expiration time. (1 hour)
     const auth_key = `${process.env.USER_AUTH_KEY}::${payload.id}`;
     await this.redisService.getRedisClient().expire(auth_key, 60 * 60);
