@@ -24,3 +24,14 @@ export class CreateUserDto {
   @ApiProperty({ type: 'string', example: 'http://127.0.0.1/avatar.png' })
   avatar;
 }
+
+export class UpdateUserDto {
+  @ApiProperty({ type: 'number', example: 10001 })
+  userId;
+
+  @ApiProperty({ type: 'string', example: '*****@gmail.com' })
+  email;
+
+  @ApiProperty({ type: 'string', example: 'http://127.0.0.1/avatar.png' })
+  avatar;
+}

@@ -7,7 +7,7 @@ import {
 import { InjectModel } from '@nestjs/sequelize';
 import { User } from './models/user.model';
 import { RedisService } from 'src/redis/redis.service';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto, UpdateUserDto } from './dto/create-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -129,6 +129,23 @@ export class UsersService {
     } else {
       await t.rollback();
       throw new InternalServerErrorException('Something error.');
+    }
+  }
+
+  async updateOne(
+    updateUserDto: UpdateUserDto,
+  ): Promise<IMServerResponse.JsonResponse<unknown>> {
+    const { userId, ...info } = updateUserDto;
+    const [count] = await this.userModel.update(info, {
+      where: { id: userId },
+    });
+
+    if (count === 1) {
+      return { statusCode: HttpStatus.OK, message: 'Update successed.' };
+    } else if (count === 0) {
+      throw new NotFoundException('No resources are updated.');
+    } else {
+      throw new InternalServerErrorException('Database error.');
     }
   }
 }

@@ -10,6 +10,7 @@ import {
   NotFoundException,
   Param,
   Post,
+  Put,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -27,7 +28,11 @@ import { UsersService } from './users.service';
 import { AuthService } from 'src/auth/auth.service';
 import { Roles } from 'src/permission/decorators/roles.decorator';
 import { LocalAuthGuard } from 'src/auth/guards/local-auth.guard';
-import { UserLoginDto, CreateUserDto } from './dto/create-user.dto';
+import {
+  UserLoginDto,
+  CreateUserDto,
+  UpdateUserDto,
+} from './dto/create-user.dto';
 import { Public } from 'src/auth/decorators/jwt.decorator';
 
 @ApiTags('User')
@@ -159,6 +164,34 @@ export class UsersController {
   ) {
     const { authorization } = req.headers;
     return this.usersService.deleteOne(id, authorization);
+  }
+
+  @Put()
+  @ApiOperation({
+    summary: 'Update user info',
+    description: 'Update user info by userid',
+  })
+  @ApiBearerAuth('token')
+  @ApiBearerAuth('userid')
+  @ApiResponse({
+    status: 200,
+    description: 'Successed to update user info',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: {
+          type: 'number',
+          example: 200,
+        },
+        message: {
+          type: 'string',
+          example: 'Update successed.',
+        },
+      },
+    },
+  })
+  async updateOne(@Body() updateUserDto: UpdateUserDto) {
+    return this.usersService.updateOne(updateUserDto);
   }
 
   @Get(':id')
