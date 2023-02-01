@@ -1,6 +1,8 @@
 {
   "appenders": {
-    "console": { "type": "console" },
+    "console": {
+      "type": "console"
+    },
     "logs": {
       "type": "dateFile",
       "filename": "logs/log",
@@ -8,7 +10,11 @@
       "encoding": "utf-8",
       "pattern": "yyyy-MM-dd-hh.log",
       "alwaysIncludePattern": true,
-      "numBackups": 3
+      "numBackups": 3,
+      "layout": {
+        "type": "pattern",
+        "pattern": "[%d{yyyy-MM-dd hh:mm:ss}] [%p] [%c] %m%n"
+      }
     }
   },
   "categories": {
