@@ -1,0 +1,18 @@
+{
+  "appenders": {
+    "console": { "type": "console" },
+    "logs": {
+      "type": "dateFile",
+      "filename": "logs/log",
+      "maxLogSize": 10485760,
+      "encoding": "utf-8",
+      "pattern": "yyyy-MM-dd-hh.log",
+      "alwaysIncludePattern": true,
+      "numBackups": 3
+    }
+  },
+  "categories": {
+    "default": { "appenders": ["console", "logs"], "level": "TRACE" },
+    "IM_Server": { "appenders": ["console", "logs"], "level": "DEBUG" }
+  }
+}

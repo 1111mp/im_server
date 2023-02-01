@@ -2,13 +2,18 @@ import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ApplicationModule } from './app.module';
+import { LoggerService } from './logger/logger.service';
 
 async function bootstrap() {
-  const app = await NestFactory.create(ApplicationModule);
+  const app = await NestFactory.create(ApplicationModule, {
+    bufferLogs: true,
+  });
   app.setGlobalPrefix('api/v1');
 
   const configService = app.get(ConfigService);
   const port = configService.get('PORT');
+
+  app.useLogger(app.get(LoggerService));
 
   const options = new DocumentBuilder()
     .setTitle('for-nestjs')

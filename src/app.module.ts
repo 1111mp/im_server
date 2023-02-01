@@ -6,6 +6,7 @@ import { UsersModule } from './users/users.module';
 import { PermissionModule } from './permission/permission.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './permission/guards/roles.guard';
+import { LoggerModule } from './logger/logger.module';
 
 let envFilePath = ['.env'];
 if (process.env.NODE_ENV === 'dev') {
@@ -45,6 +46,7 @@ if (process.env.NODE_ENV === 'dev') {
     }),
     UsersModule,
     PermissionModule,
+    LoggerModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },
