@@ -42,7 +42,7 @@ $ yarn run test:cov
 
 ## Notes
 
-Authentication & Authorization has been achieved.
+1. Authentication & Authorization has been achieved.
 
 ```
 UserContext(req.user), example:
@@ -61,4 +61,6 @@ UserContext(req.user), example:
 }
 ```
 
-关于 pm2 启动 ts 项目的报错可参考：[pm2:2675](https://github.com/Unitech/pm2/issues/2675)
+2. `passport-jwt` 库的 `jwtFromRequest` 选项目前不支持异步函数，解决方案参考：[passport-jwt:187](https://github.com/mikenicholson/passport-jwt/pull/187)
+
+3. 关于 pm2 启动 ts 项目的报错可参考：[pm2:2675](https://github.com/Unitech/pm2/issues/2675)
