@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ApplicationModule } from './app.module';
 import { LoggerService } from './logger/logger.service';
+import { SocketIOAdapter } from './events/socket-io-adapter';
 
 async function bootstrap() {
   const app = await NestFactory.create(ApplicationModule, {
@@ -14,6 +15,7 @@ async function bootstrap() {
   const port = configService.get('PORT');
 
   app.useLogger(app.get(LoggerService));
+  app.useWebSocketAdapter(new SocketIOAdapter(app, configService));
 
   const options = new DocumentBuilder()
     .setTitle('for-nestjs')

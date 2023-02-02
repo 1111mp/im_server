@@ -2,11 +2,12 @@ import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { UsersModule } from './users/users.module';
-import { PermissionModule } from './permission/permission.module';
-import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
-import { RolesGuard } from './permission/guards/roles.guard';
+import { EventsModule } from './events/events.module';
 import { LoggerModule } from './logger/logger.module';
+import { PermissionModule } from './permission/permission.module';
+import { RolesGuard } from './permission/guards/roles.guard';
+import { UsersModule } from './users/users.module';
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 
 let envFilePath = ['.env'];
 if (process.env.NODE_ENV === 'dev') {
@@ -44,9 +45,10 @@ if (process.env.NODE_ENV === 'dev') {
       autoLoadModels: true,
       synchronize: true,
     }),
-    UsersModule,
-    PermissionModule,
     LoggerModule,
+    EventsModule,
+    PermissionModule,
+    UsersModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },

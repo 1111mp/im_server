@@ -2,12 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { User } from '../../users/models/user.model';
-import { jwtConstants } from '../constants';
 import { RedisService } from 'src/redis/redis.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(private readonly redisService: RedisService) {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly redisService: RedisService,
+  ) {
     super({
       jwtFromRequest: async (req: IMServerRequest.RequestForHeader) => {
         const { userid, authorization } = req.headers;
@@ -15,14 +18,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         if (!userid || !authorization) return null;
 
         const auth_key = `${process.env.USER_AUTH_KEY}::${userid}`;
-        const token = await this.redisService
+        const token = await redisService
           .getRedisClient()
           .hGet(auth_key, authorization);
 
         return token;
       },
       ignoreExpiration: false,
-      secretOrKey: jwtConstants.secret,
+      secretOrKey: configService.get<string>('SECRET_KEY'),
     });
   }
 
