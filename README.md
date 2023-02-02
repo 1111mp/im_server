@@ -4,7 +4,11 @@
 
 接口文档可在服务启动之后（[Swagger Ui](https://swagger.io/tools/swagger-ui/)），浏览器访问 `http://localhost:3000/api/docs` 查看
 
-数据库：mariadb、redis、sequelize 链接 mariasb的配置文件：.env.dev
+数据库：mariadb、redis、sequelize 链接 mariadb 的配置文件：.env.dev
+
+`日志系统` 借由 `log4js` 实现
+
+已支持 [JSON Web Token](https://jwt.io/) & [protocol-buffers](https://github.com/protobufjs/protobuf.js/)
 
 ## Installation
 
