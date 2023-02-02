@@ -25,6 +25,8 @@ $ yarn run start:dev
 $ yarn run start:prod
 ```
 
+Or `F5` to `Debug` project.
+
 ## Test
 
 ```bash
