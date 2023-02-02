@@ -35,8 +35,8 @@ export class SocketIOAdapter extends IoAdapter {
 
     const jwtService = this.app.get(JwtService);
     const redisService = this.app.get(RedisService);
-    server.use(createTokenMiddleware(redisService, jwtService, this.logger));
     server
+      .use(createTokenMiddleware(redisService, jwtService, this.logger))
       .of('socket/v1/IM')
       .use(createTokenMiddleware(redisService, jwtService, this.logger));
 

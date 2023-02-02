@@ -33,17 +33,19 @@ export class EventsGateway
 
   handleConnection(client: Socket) {
     const { user } = client.decoded;
+    this.eventsService.addUser(user, client.id);
   }
 
   handleDisconnect(client: Socket) {
     const { user } = client.decoded;
+    this.eventsService.removeUser(user.id);
   }
 
   @SubscribeMessage('message')
   handleMessage(
     @MessageBody() data: unknown,
     @ConnectedSocket() client: Socket,
-  ): string {
-    return 'Hello world!';
+  ): Uint8Array {
+    return this.eventsService.makeAckResp();
   }
 }

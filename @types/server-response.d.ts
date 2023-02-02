@@ -1,19 +1,28 @@
-namespace IMServerResponse {
-  const enum StatusCode {
-    Success = 200,
-    BadRequest = 400,
-    Unauthorized = 401,
-    Forbidden = 403,
-    Timeout = 408,
-    ServerError = 500,
+import { HttpStatus } from '@nestjs/common';
 
-    UnprocesableEntity = 422,
-  }
+declare global {
+  namespace IMServerResponse {
+    const enum StatusCode {
+      Success = 200,
+      BadRequest = 400,
+      Unauthorized = 401,
+      Forbidden = 403,
+      Timeout = 408,
+      ServerError = 500,
 
-  interface JsonResponse<T> {
-    statusCode: number;
-    message?: string;
-    token?: string;
-    data?: T;
+      UnprocesableEntity = 422,
+    }
+
+    interface JsonResponse<T> {
+      statusCode: HttpStatus;
+      message?: string;
+      token?: string;
+      data?: T;
+    }
+
+    interface AckResponse {
+      statusCode: HttpStatus;
+      message?: string;
+    }
   }
 }
