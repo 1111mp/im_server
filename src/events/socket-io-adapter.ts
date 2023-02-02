@@ -1,9 +1,9 @@
 import { INestApplicationContext, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
 import { IoAdapter } from '@nestjs/platform-socket.io';
-import { Server, ServerOptions, Socket } from 'socket.io';
-import { RedisService } from 'src/redis/redis.service';
+import { AuthService } from 'src/auth/auth.service';
+
+import type { Server, ServerOptions, Socket } from 'socket.io';
 
 export class SocketIOAdapter extends IoAdapter {
   private readonly logger = new Logger(SocketIOAdapter.name);
@@ -33,19 +33,19 @@ export class SocketIOAdapter extends IoAdapter {
 
     const server: Server = super.createIOServer(port, optionsWithCORS);
 
-    const jwtService = this.app.get(JwtService);
-    const redisService = this.app.get(RedisService);
+    const authService = this.app.get(AuthService);
+
     server
-      .use(createTokenMiddleware(redisService, jwtService, this.logger))
+      .use(createTokenMiddleware(authService, this.logger))
       .of('socket/v1/IM')
-      .use(createTokenMiddleware(redisService, jwtService, this.logger));
+      .use(createTokenMiddleware(authService, this.logger));
 
     return server;
   }
 }
 
 const createTokenMiddleware =
-  (redisService: RedisService, jwtService: JwtService, logger: Logger) =>
+  (authService: AuthService, logger: Logger) =>
   async (socket: Socket, next: (err?: Error) => void) => {
     const { userid, authorization } = socket.handshake.headers;
 
@@ -56,15 +56,12 @@ const createTokenMiddleware =
       `Validating auth token before connection: [authorization] ${authorization} [userid] ${userid}`,
     );
 
-    const auth_key = `${process.env.USER_AUTH_KEY}::${userid}`;
-    const token = await redisService
-      .getRedisClient()
-      .hGet(auth_key, authorization);
+    const token = await authService.getToken(userid, authorization);
 
     if (!token) return next(new Error('Authentication error'));
 
     try {
-      const payload = jwtService.verify(token) as User.UserInfo;
+      const payload = authService.verifyToken(token);
       socket.decoded = { user: payload };
       next();
     } catch (err) {

@@ -1,28 +1,51 @@
-import { Module, CacheModule } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { redisStore } from 'cache-manager-redis-yet';
-import { RedisService } from './redis.service';
+import {
+  Module,
+  ModuleMetadata,
+  FactoryProvider,
+  DynamicModule,
+} from '@nestjs/common';
+import IORedis, { Redis, RedisOptions } from 'ioredis';
 
-import type { RedisClientOptions } from 'redis';
+type RedisModuleOptions = {
+  connectionOptions: RedisOptions;
+  onClientReady?: (client: Redis) => void;
+};
 
-@Module({
-  imports: [
-    CacheModule.registerAsync<RedisClientOptions>({
-      isGlobal: true,
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => {
-        const { REDIS_HOST, REDIS_PORT, REDIS_USERNAME, REDIS_PWD, REDIS_DB } =
-          process.env;
-        return {
-          store: await redisStore({
-            url: `redis://:@${REDIS_HOST}:${REDIS_PORT}/${REDIS_DB}`,
-          }),
-        };
+type RedisAsyncModuleOptions = {
+  useFactory: (
+    ...args: any[]
+  ) => Promise<RedisModuleOptions> | RedisModuleOptions;
+} & Pick<ModuleMetadata, 'imports'> &
+  Pick<FactoryProvider, 'inject'>;
+
+export const IORedisKey = 'IORedis';
+
+@Module({})
+export class RedisModule {
+  static async registerAsync({
+    useFactory,
+    imports,
+    inject,
+  }: RedisAsyncModuleOptions): Promise<DynamicModule> {
+    const redisProvider = {
+      provide: IORedisKey,
+      useFactory: async (...args) => {
+        const { connectionOptions, onClientReady } = await useFactory(...args);
+
+        const client = await new IORedis(connectionOptions);
+
+        onClientReady(client);
+
+        return client;
       },
-    }),
-  ],
-  providers: [RedisService],
-  exports: [RedisService],
-})
-export class RedisModule {}
+      inject,
+    };
+
+    return {
+      module: RedisModule,
+      imports,
+      providers: [redisProvider],
+      exports: [redisProvider],
+    };
+  }
+}

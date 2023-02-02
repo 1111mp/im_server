@@ -3,19 +3,22 @@ import {
   HttpStatus,
   InternalServerErrorException,
   NotFoundException,
+  Inject,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { compareSync } from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 import { UsersService } from 'src/users/users.service';
-import { RedisService } from 'src/redis/redis.service';
+import { IORedisKey } from 'src/redis/redis.module';
+
+import type { Redis } from 'ioredis';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
-    private readonly redisService: RedisService,
+    @Inject(IORedisKey) private readonly redisClient: Redis,
   ) {}
 
   async validateUser(
@@ -51,13 +54,22 @@ export class AuthService {
   async delToken(userid: string, token: string) {
     const auth = `${process.env.USER_AUTH_KEY}::${userid}`;
 
-    const res = await this.redisService.getRedisClient().hDel(auth, token);
+    const res = await this.redisClient.hdel(auth, token);
 
     if (!res) {
       throw new InternalServerErrorException(
         'Error[Redis]: An unknown error occurred while delete the token cache',
       );
     }
+  }
+
+  verifyToken(token: string): User.UserInfo {
+    return this.jwtService.verify(token);
+  }
+
+  getToken(userid: string, authorization: string) {
+    const auth_key = `${process.env.USER_AUTH_KEY}::${userid}`;
+    return this.redisClient.hget(auth_key, authorization);
   }
 
   private cacheToken(
@@ -69,10 +81,9 @@ export class AuthService {
     const token = this.jwtService.sign(user);
 
     return new Promise(async (reslove) => {
-      const [setKey, expKey] = await this.redisService
-        .getRedisClient()
+      const [setKey, expKey] = await this.redisClient
         .multi()
-        .hSet(auth, key, token)
+        .hset(auth, key, token)
         .expire(auth, maxAge)
         .exec();
 

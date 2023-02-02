@@ -7,9 +7,17 @@ import { SocketIOAdapter } from './events/socket-io-adapter';
 
 async function bootstrap() {
   const app = await NestFactory.create(ApplicationModule, {
-    bufferLogs: true,
+    bufferLogs: true, //是否允许发送Cookie
   });
   app.setGlobalPrefix('api/v1');
+  app.enableCors({
+    origin: ['http://localhost:1212'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Accept', 'authorization', 'userid'],
+    exposedHeaders: ['authorization', 'userid'],
+    maxAge: 60, //指定本次预检请求的有效期，单位为秒。
+    credentials: true,
+  });
 
   const configService = app.get(ConfigService);
   const port = configService.get('PORT');

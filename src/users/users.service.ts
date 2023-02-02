@@ -1,20 +1,23 @@
 import {
   HttpStatus,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { IORedisKey } from 'src/redis/redis.module';
 import { User } from './models/user.model';
-import { RedisService } from 'src/redis/redis.service';
 import { CreateUserDto, UpdateUserDto } from './dto/create-user.dto';
+
+import type { Redis } from 'ioredis';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(User)
     private readonly userModel: typeof User,
-    private readonly redisService: RedisService,
+    @Inject(IORedisKey) private readonly redisClient: Redis,
   ) {}
 
   async findOne(id: string) {
@@ -116,7 +119,7 @@ export class UsersService {
 
     if (count === 1) {
       const auth = `${process.env.USER_AUTH_KEY}::${id}`;
-      await this.redisService.getRedisClient().hDel(auth, token);
+      await this.redisClient.hdel(auth, token);
 
       await t.commit();
       return {
