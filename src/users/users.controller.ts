@@ -34,6 +34,7 @@ import {
   UpdateUserDto,
 } from './dto/create-user.dto';
 import { Public } from 'src/auth/decorators/jwt.decorator';
+import { CacheApi } from 'src/cache/decotators/cache.decorator';
 
 @ApiTags('User')
 @ApiExtraModels(UserModel)
@@ -196,6 +197,7 @@ export class UsersController {
 
   @Get(':id')
   @Roles(1)
+  @CacheApi()
   @ApiOperation({
     summary: 'Get user info',
     description: 'Get user info by userid',

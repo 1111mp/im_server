@@ -3,6 +3,7 @@ import {
   ModuleMetadata,
   FactoryProvider,
   DynamicModule,
+  Global,
 } from '@nestjs/common';
 import IORedis, { Redis, RedisOptions } from 'ioredis';
 
@@ -20,6 +21,7 @@ type RedisAsyncModuleOptions = {
 
 export const IORedisKey = 'IORedis';
 
+@Global()
 @Module({})
 export class RedisModule {
   static async registerAsync({

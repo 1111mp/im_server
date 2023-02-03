@@ -1,13 +1,15 @@
 import { Module } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
+import { redisModule } from './redis/redis.config';
 import { EventsModule } from './events/events.module';
 import { LoggerModule } from './logger/logger.module';
 import { PermissionModule } from './permission/permission.module';
 import { RolesGuard } from './permission/guards/roles.guard';
 import { UsersModule } from './users/users.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { CacheApiInterceptor } from './cache/interceptors/cache.interceptor';
 
 let envFilePath = ['.env'];
 if (process.env.NODE_ENV === 'dev') {
@@ -45,6 +47,7 @@ if (process.env.NODE_ENV === 'dev') {
       autoLoadModels: true,
       synchronize: true,
     }),
+    redisModule,
     LoggerModule,
     EventsModule,
     PermissionModule,
@@ -55,6 +58,10 @@ if (process.env.NODE_ENV === 'dev') {
     {
       provide: APP_GUARD,
       useClass: RolesGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: CacheApiInterceptor,
     },
   ],
 })
