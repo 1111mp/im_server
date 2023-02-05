@@ -1,11 +1,4 @@
-import {
-  Model,
-  Table,
-  Column,
-  DataType,
-  ForeignKey,
-  BelongsTo,
-} from 'sequelize-typescript';
+import { Model, Table, Column, DataType } from 'sequelize-typescript';
 import { ApiProperty } from '@nestjs/swagger';
 import * as dayjs from 'dayjs';
 
