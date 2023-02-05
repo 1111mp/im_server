@@ -10,6 +10,7 @@ import { RolesGuard } from './permission/guards/roles.guard';
 import { UsersModule } from './users/users.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { CacheApiInterceptor } from './cache/interceptors/cache.interceptor';
+import { FriendsModule } from './friends/friends.module';
 
 let envFilePath = ['.env'];
 if (process.env.NODE_ENV === 'dev') {
@@ -48,10 +49,11 @@ if (process.env.NODE_ENV === 'dev') {
       synchronize: true,
     }),
     redisModule,
-    LoggerModule,
     EventsModule,
+    LoggerModule,
     PermissionModule,
     UsersModule,
+    FriendsModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },

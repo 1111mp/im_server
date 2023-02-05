@@ -1,26 +1,16 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
-import { ProtoService } from 'src/proto/proto.service';
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
+import { Notify } from './models/notify.model';
+import { CreateNotifyDto } from './dto/create-notify.dto';
 
 @Injectable()
 export class EventsService {
-  private users: Map<number, User.UserInfo & { socketId: string }>;
+  constructor(
+    @InjectModel(Notify)
+    private readonly notifyModel: typeof Notify,
+  ) {}
 
-  constructor(private readonly protoService: ProtoService) {
-    this.users = new Map();
-  }
-
-  public addUser(user: User.UserInfo, id: string) {
-    this.users.set(user.id, { ...user, socketId: id });
-  }
-
-  public removeUser(userid: number) {
-    this.users.delete(userid);
-  }
-
-  public makeAckResp() {
-    return this.protoService.setAckToProto({
-      statusCode: HttpStatus.OK,
-      message: 'Successed.',
-    });
+  public createNotify(notify: CreateNotifyDto) {
+    return this.notifyModel.create(notify);
   }
 }

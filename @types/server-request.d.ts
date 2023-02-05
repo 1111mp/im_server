@@ -12,5 +12,7 @@ declare global {
     interface RequestForContext extends Request {
       user: User.UserInfo;
     }
+
+    interface RequestForAuthed extends RequestForContext, RequestForHeader {}
   }
 }

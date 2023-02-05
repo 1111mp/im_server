@@ -10,8 +10,6 @@ declare global {
       email: string | null;
       regisTime: string;
       updateTime: string;
-      createdAt?: Date;
-      updatedAt?: Date;
     }
 
     // Some fields are optional when calling UserModel.create() or UserModel.build()
