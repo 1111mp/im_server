@@ -9,7 +9,7 @@ import {
 import { Reflector } from '@nestjs/core';
 import { Observable, map, of } from 'rxjs';
 import { CacheApiInfo, CacheApiKey } from '../decotators/cache.decorator';
-import { IORedisKey } from 'src/redis/redis.module';
+import { IORedisKey } from 'src/common/redis/redis.module';
 import type { Redis } from 'ioredis';
 
 @Injectable()

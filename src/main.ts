@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ApplicationModule } from './app.module';
-import { LoggerService } from './logger/logger.service';
+import { LoggerService } from './common/logger/logger.service';
 import { SocketIOAdapter } from './events/socket-io-adapter';
 
 async function bootstrap() {

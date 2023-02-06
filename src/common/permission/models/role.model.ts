@@ -13,7 +13,7 @@ import {
 } from 'sequelize-typescript';
 import { Permission } from './permission.model';
 import { RolePermission } from './role-permission.model';
-import { User } from 'src/users/models/user.model';
+import { User } from 'src/api/users/models/user.model';
 
 import * as dayjs from 'dayjs';
 

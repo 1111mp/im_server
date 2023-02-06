@@ -1,7 +1,7 @@
 import { INestApplicationContext, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { IoAdapter } from '@nestjs/platform-socket.io';
-import { AuthService } from 'src/auth/auth.service';
+import { AuthService } from 'src/common/auth/auth.service';
 
 import type { Server, ServerOptions, Socket } from 'socket.io';
 

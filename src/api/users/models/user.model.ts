@@ -10,8 +10,8 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 import { hashSync } from 'bcrypt';
 import * as dayjs from 'dayjs';
-import { Role } from 'src/permission/models/role.model';
-import { Friend } from 'src/friends/models/friend.model';
+import { Role } from 'src/common/permission/models/role.model';
+import { Friend } from 'src/api/friends/models/friend.model';
 
 @Table({
   initialAutoIncrement: '10000',
@@ -92,10 +92,4 @@ export class User extends Model<User> {
 
   @BelongsTo(() => Role)
   role: Role;
-
-  @HasMany(() => Friend, { foreignKey: 'userId', sourceKey: 'id' })
-  friends: Friend[];
-
-  @HasMany(() => Friend, { foreignKey: 'friendId', sourceKey: 'id' })
-  infos: Friend[];
 }

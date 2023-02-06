@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { IORedisKey } from 'src/redis/redis.module';
+import { IORedisKey } from 'src/common/redis/redis.module';
 import { User } from './models/user.model';
 import { CreateUserDto, UpdateUserDto } from './dto/create-user.dto';
 

@@ -8,8 +8,8 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { compareSync } from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
-import { UsersService } from 'src/users/users.service';
-import { IORedisKey } from 'src/redis/redis.module';
+import { UsersService } from 'src/api/users/users.service';
+import { IORedisKey } from 'src/common/redis/redis.module';
 
 import type { Redis } from 'ioredis';
 

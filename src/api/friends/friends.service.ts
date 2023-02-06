@@ -44,7 +44,7 @@ export class FriendsService {
         },
       });
 
-      if (count < 1) {
+      if (count > 0) {
         throw new ForbiddenException(
           "It's already a friend relationship, don't repeat submit.",
         );

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body></body>
+  <script>
+    let nodes = {
+      name: 1,
+      child: {
+        name: 2,
+        child: {
+          name: 5,
+          sibling: {
+            name: 7,
+            child: { name: 8 },
+          },
+          child: { name: 6 },
+        },
+      },
+      sibling: { name: 3, child: { name: 4 } },
+    };
+
+    function deepForEach(nodes) {
+      console.log(nodes.name);
+      // if (!nodes.child) return nodes;
+      nodes.child && deepForEach(nodes.child);
+
+      nodes.sibling && deepForEach(nodes.sibling);
+    }
+
+    deepForEach(nodes);
+
+    function breadthForEach(nodes) {
+      if (!nodes) return;
+
+      let quene = [nodes];
+
+      while (quene.length) {
+        let cur = quene.shift();
+        console.log(cur);
+        cur.sibling && quene.push(cur.sibling);
+        cur.child && quene.push(cur.child);
+      }
+
+      // nodes.sibling && deepForEach(nodes.sibling);
+
+      // nodes.child && deepForEach(nodes.child);
+    }
+
+    breadthForEach(nodes);
+  </script>
+</html>

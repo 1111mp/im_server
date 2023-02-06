@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { User } from '../../users/models/user.model';
-import { IORedisKey } from 'src/redis/redis.module';
+import { User } from '../../../api/users/models/user.model';
+import { IORedisKey } from 'src/common/redis/redis.module';
 import { ConfigService } from '@nestjs/config';
 
 import type { Redis } from 'ioredis';

@@ -8,7 +8,7 @@ import {
 } from 'sequelize-typescript';
 import { ApiProperty } from '@nestjs/swagger';
 import * as dayjs from 'dayjs';
-import { User } from 'src/users/models/user.model';
+import { User } from 'src/api/users/models/user.model';
 
 @Table
 export class Friend extends Model<Friend> {

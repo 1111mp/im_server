@@ -1,7 +1,7 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { PermissionService } from './permission.service';
-import { LocalAuthGuard } from 'src/auth/guards/local-auth.guard';
+import { LocalAuthGuard } from 'src/common/auth/guards/local-auth.guard';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { CreatePermDto } from './dto/create-permission.dto';
 

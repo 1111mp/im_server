@@ -14,9 +14,24 @@ namespace ModuleIM {
       remark?: string;
       ext?: string;
     };
+
+    type Group = {
+      id: number;
+      name: string;
+      avatar?: string;
+      type: Common.GroupType;
+      creator: number;
+      createdAt?: string;
+      updatedAt?: string;
+    };
   }
 
   namespace Common {
+    const enum GroupType {
+      Basic = 1, // 200
+      Big, // 2000
+    }
+
     const enum MessageType {
       Message = 'message',
       Notify = 'notify',

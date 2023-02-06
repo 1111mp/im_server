@@ -25,16 +25,16 @@ import {
 } from '@nestjs/swagger';
 import { User as UserModel } from './models/user.model';
 import { UsersService } from './users.service';
-import { AuthService } from 'src/auth/auth.service';
-import { Roles } from 'src/permission/decorators/roles.decorator';
-import { LocalAuthGuard } from 'src/auth/guards/local-auth.guard';
+import { AuthService } from 'src/common/auth/auth.service';
+import { Roles } from 'src/common/permission/decorators/roles.decorator';
+import { LocalAuthGuard } from 'src/common/auth/guards/local-auth.guard';
 import {
   UserLoginDto,
   CreateUserDto,
   UpdateUserDto,
 } from './dto/create-user.dto';
-import { Public } from 'src/auth/decorators/jwt.decorator';
-import { CacheApi } from 'src/cache/decotators/cache.decorator';
+import { Public } from 'src/common/auth/decorators/jwt.decorator';
+import { CacheApi } from 'src/common/cache/decotators/cache.decorator';
 
 @ApiTags('User')
 @ApiExtraModels(UserModel)

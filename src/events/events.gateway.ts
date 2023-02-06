@@ -10,7 +10,8 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import type { Server, Socket } from 'socket.io';
-import { ProtoService } from 'src/proto/proto.service';
+import { EventsService } from './events.service';
+import { ProtoService } from 'src/common/proto/proto.service';
 
 @UsePipes(new ValidationPipe())
 @WebSocketGateway({
@@ -22,7 +23,10 @@ export class EventsGateway
   private readonly logger = new Logger(EventsGateway.name);
   private users: Map<number, User.UserInfo & { socketId: string }>;
 
-  constructor(private readonly protoService: ProtoService) {
+  constructor(
+    private readonly eventsService: EventsService,
+    private readonly protoService: ProtoService,
+  ) {
     this.users = new Map();
   }
 
@@ -58,9 +62,21 @@ export class EventsGateway
 
   @SubscribeMessage('notify')
   private handleNotify(
-    @MessageBody() data: unknown,
+    @MessageBody() data: Uint8Array,
     @ConnectedSocket() client: Socket,
-  ) {}
+  ) {
+    const notify = this.protoService.getNotifyFromProto(data);
+    const { type } = notify;
+    switch (type) {
+      case ModuleIM.Common.Notifys.AddFriend: {
+        // agree or reject friend request
+        return;
+      }
+      default:
+        // dont need do anything
+        return;
+    }
+  }
 
   public async sendNotify(
     notify: ModuleIM.Core.Notify,

@@ -8,7 +8,13 @@
 
 `日志系统` 借由 `log4js` 实现
 
-已支持 [JSON Web Token](https://jwt.io/) & [protocol-buffers](https://github.com/protobufjs/protobuf.js/)
+已支持:
+
+  [JSON Web Token](https://jwt.io/)
+
+  [protocol-buffers](https://github.com/protobufjs/protobuf.js/)
+  
+  [Api Data Cache](https://github.com/1111mp/im_server/blob/nestjs/src/cache/interceptors/cache.interceptor.ts)
 
 ## Installation
 
