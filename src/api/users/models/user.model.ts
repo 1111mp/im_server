@@ -5,14 +5,12 @@ import {
   DataType,
   ForeignKey,
   BelongsTo,
-  HasMany,
   BelongsToMany,
 } from 'sequelize-typescript';
 import { ApiProperty } from '@nestjs/swagger';
 import { hashSync } from 'bcrypt';
 import * as dayjs from 'dayjs';
 import { Role } from 'src/common/permission/models/role.model';
-import { Friend } from 'src/api/friends/models/friend.model';
 import { Group } from 'src/api/groups/models/group.model';
 import { Member } from 'src/api/groups/models/member.model';
 

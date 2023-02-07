@@ -3,18 +3,20 @@ import {
   Table,
   Column,
   DataType,
-  HasMany,
   BelongsToMany,
 } from 'sequelize-typescript';
+import { ApiProperty } from '@nestjs/swagger';
 import * as dayjs from 'dayjs';
 import { Member } from './member.model';
 import { User } from 'src/api/users/models/user.model';
 
 @Table
 export class Group extends Model<Group> {
+  @ApiProperty({ type: 'number', example: 1 })
   @Column({ primaryKey: true, autoIncrement: true, type: DataType.INTEGER })
   id?: number;
 
+  @ApiProperty({ type: 'string', example: 'name' })
   @Column({
     type: DataType.STRING,
     allowNull: false,
@@ -22,6 +24,7 @@ export class Group extends Model<Group> {
   })
   name: string;
 
+  @ApiProperty({ type: 'string', example: 'avatar url' })
   @Column({
     type: DataType.STRING,
     allowNull: true,
@@ -29,6 +32,7 @@ export class Group extends Model<Group> {
   })
   avatar: string;
 
+  @ApiProperty({ enum: [1, 2] })
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
@@ -39,6 +43,7 @@ export class Group extends Model<Group> {
   })
   type: ModuleIM.Common.GroupType;
 
+  @ApiProperty({ type: 'number', example: 10007 })
   @Column({
     type: DataType.INTEGER,
     comment: '群组创建者userId',
@@ -46,6 +51,7 @@ export class Group extends Model<Group> {
   })
   creator: number;
 
+  @ApiProperty({ type: 'string', example: '' })
   @Column({
     type: DataType.DATE,
     defaultValue: DataType.NOW,
@@ -57,6 +63,7 @@ export class Group extends Model<Group> {
   })
   createdAt?: string;
 
+  @ApiProperty({ type: 'string', example: '' })
   @Column({
     type: DataType.DATE,
     defaultValue: DataType.NOW,
