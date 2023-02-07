@@ -78,6 +78,10 @@ export class EventsGateway
     }
   }
 
+  /**
+   * @description: send a notify
+   * @return {Promise<IMServerResponse.AckResponse>}
+   */
   public async sendNotify(
     notify: ModuleIM.Core.Notify,
   ): Promise<IMServerResponse.AckResponse> {

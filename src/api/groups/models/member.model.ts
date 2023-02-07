@@ -23,9 +23,6 @@ export class Member extends Model<Member> {
   })
   groupId: number;
 
-  @BelongsTo(() => Group)
-  group: Group;
-
   @ForeignKey(() => User)
   @Column({
     type: DataType.INTEGER,
@@ -33,9 +30,6 @@ export class Member extends Model<Member> {
     comment: 'userid',
   })
   userId: number;
-
-  @BelongsTo(() => User)
-  info: User;
 
   @Column({
     type: DataType.DATE,

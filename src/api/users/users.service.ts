@@ -85,8 +85,6 @@ export class UsersService {
         transaction: trans,
       });
 
-      await trans.commit();
-
       const role = await user.$get('role');
 
       const permissions = (await role.$get('permissions')).map(
@@ -97,11 +95,14 @@ export class UsersService {
         }),
       );
 
+      await trans.commit();
+
       const { id, name: roleName, desc: roleDesc } = role;
 
       return { ...user.toJSON(), roleId: id, roleName, roleDesc, permissions };
     } catch (err) {
       await trans.rollback();
+      console.log(err);
       throw err;
     }
   }

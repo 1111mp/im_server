@@ -1,6 +1,14 @@
-import { Model, Table, Column, DataType, HasMany } from 'sequelize-typescript';
+import {
+  Model,
+  Table,
+  Column,
+  DataType,
+  HasMany,
+  BelongsToMany,
+} from 'sequelize-typescript';
 import * as dayjs from 'dayjs';
 import { Member } from './member.model';
+import { User } from 'src/api/users/models/user.model';
 
 @Table
 export class Group extends Model<Group> {
@@ -60,6 +68,6 @@ export class Group extends Model<Group> {
   })
   updatedAt?: string;
 
-  @HasMany(() => Member)
-  members: Member[];
+  @BelongsToMany(() => User, () => Member)
+  members: User[];
 }

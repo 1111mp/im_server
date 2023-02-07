@@ -9,6 +9,7 @@ import { LoggerModule } from './common/logger/logger.module';
 import { PermissionModule } from './common/permission/permission.module';
 import { UsersModule } from './api/users/users.module';
 import { FriendsModule } from './api/friends/friends.module';
+import { GroupsModule } from './api/groups/groups.module';
 
 import { RolesGuard } from './common/permission/guards/roles.guard';
 import { JwtAuthGuard } from './common/auth/guards/jwt-auth.guard';
@@ -56,6 +57,7 @@ if (process.env.NODE_ENV === 'dev') {
     PermissionModule,
     UsersModule,
     FriendsModule,
+    GroupsModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },
