@@ -14,7 +14,7 @@ import { User } from 'src/api/users/models/user.model';
 export class Group extends Model<Group> {
   @ApiProperty({ type: 'number', example: 1 })
   @Column({ primaryKey: true, autoIncrement: true, type: DataType.INTEGER })
-  id?: number;
+  id: number;
 
   @ApiProperty({ type: 'string', example: 'name' })
   @Column({

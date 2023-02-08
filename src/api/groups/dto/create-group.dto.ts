@@ -18,3 +18,21 @@ export class CreateGroupDto {
   })
   members: number[];
 }
+
+export class UpdateGroupDto {
+  @ApiProperty({ type: 'string', required: true, example: 'name' })
+  name?: string;
+
+  @ApiProperty({ type: 'string', example: 'avatar url' })
+  avatar?: string;
+}
+
+export class AddMembersDto {
+  @ApiProperty({
+    type: [Number],
+    isArray: true,
+    required: true,
+    example: [10007],
+  })
+  members: number[];
+}

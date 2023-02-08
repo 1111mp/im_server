@@ -46,6 +46,13 @@ export class UsersService {
     };
   }
 
+  async getUserModel(id: number) {
+    return this.userModel.findOne({
+      attributes: { exclude: ['pwd'] },
+      where: { id },
+    });
+  }
+
   async findByAccount(account: string): Promise<User.UserInfo | null> {
     const user = await this.userModel.findOne({
       where: {

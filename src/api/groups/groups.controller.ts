@@ -6,6 +6,8 @@ import {
   HttpStatus,
   Delete,
   Param,
+  Get,
+  Put,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -16,10 +18,13 @@ import {
   getSchemaPath,
 } from '@nestjs/swagger';
 import { GroupsService } from './groups.service';
-import { CreateGroupDto } from './dto/create-group.dto';
+import {
+  AddMembersDto,
+  CreateGroupDto,
+  UpdateGroupDto,
+} from './dto/create-group.dto';
 import { Group as GroupModel } from './models/group.model';
 import { User } from '../users/models/user.model';
-import { Public } from 'src/common/auth/decorators/jwt.decorator';
 
 @ApiTags('Groups')
 @ApiExtraModels(GroupModel)
@@ -70,7 +75,6 @@ export class GroupsController {
     return this.groupsService.createOne(req.user, createGroupDto);
   }
 
-  @Public()
   @Delete(':id')
   @ApiOperation({
     summary: 'Delete a im group',
@@ -99,5 +103,108 @@ export class GroupsController {
     @Param('id') id: string,
   ) {
     return this.groupsService.deleteOne(req.user, parseInt(id));
+  }
+
+  @Put(':id')
+  @ApiOperation({
+    summary: 'Update a groups basic info',
+    description: 'Update a groups basic info',
+  })
+  @ApiBearerAuth('token')
+  @ApiBearerAuth('userid')
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successed to update.',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: {
+          type: 'number',
+          example: 200,
+        },
+        message: {
+          type: 'string',
+        },
+      },
+    },
+  })
+  updateOne(@Param('id') id: string, @Body() updateGroupDto: UpdateGroupDto) {
+    return this.groupsService.updateOne(parseInt(id), updateGroupDto);
+  }
+
+  @Post(':id')
+  @ApiOperation({
+    summary: 'Add members to group',
+    description: 'Add members to group',
+  })
+  @ApiBearerAuth('token')
+  @ApiBearerAuth('userid')
+  addMembers(@Param('id') id: string, @Body() addMembersDto: AddMembersDto) {
+    return this.groupsService.addMembers(parseInt(id), addMembersDto);
+  }
+
+  @Get(':id')
+  @ApiOperation({
+    summary: 'Get user a groups info',
+    description: 'Get user a groups info',
+  })
+  @ApiBearerAuth('token')
+  @ApiBearerAuth('userid')
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successed to create a group.',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: {
+          type: 'number',
+          example: 200,
+        },
+        data: {
+          allOf: [
+            { $ref: getSchemaPath(GroupModel) },
+            {
+              properties: {
+                members: {
+                  type: 'array',
+                  items: { $ref: getSchemaPath(User) },
+                },
+              },
+            },
+          ],
+        },
+      },
+    },
+  })
+  getOne(@Param('id') id: string) {
+    return this.groupsService.getOne(parseInt(id));
+  }
+
+  @Get()
+  @ApiOperation({
+    summary: 'Get user all groups info',
+    description: 'Get user all groups info',
+  })
+  @ApiBearerAuth('token')
+  @ApiBearerAuth('userid')
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successed to create a group.',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: {
+          type: 'number',
+          example: 200,
+        },
+        data: {
+          type: 'array',
+          items: { $ref: getSchemaPath(GroupModel) },
+        },
+      },
+    },
+  })
+  getAll(@Request() req: IMServerRequest.RequestForAuthed) {
+    return this.groupsService.getAll(req.user);
   }
 }
