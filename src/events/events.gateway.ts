@@ -9,11 +9,15 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
+import { Process, Processor } from '@nestjs/bull';
 import type { Server, Socket } from 'socket.io';
 import { EventsService } from './events.service';
 import { ProtoService } from 'src/common/proto/proto.service';
+import { IMQueueName } from './constants';
+import { Job } from 'bull';
 
 @UsePipes(new ValidationPipe())
+@Processor(IMQueueName)
 @WebSocketGateway({
   namespace: 'socket/v1/IM',
 })
@@ -66,8 +70,7 @@ export class EventsGateway
     @ConnectedSocket() client: Socket,
   ) {
     const notify = this.protoService.getNotifyFromProto(data);
-    const { type } = notify;
-    switch (type) {
+    switch (notify.type) {
       case ModuleIM.Common.Notifys.AddFriend: {
         // agree or reject friend request
         return;
@@ -76,6 +79,23 @@ export class EventsGateway
         // dont need do anything
         return;
     }
+  }
+
+  @Process('notify')
+  public async handleNotifyTask(job: Job<ModuleIM.Core.Notify>) {
+    console.log(job);
+    this.logger.debug('Start send notify task...');
+    
+    const res = await this.sendNotify(job.data);
+    if (res.statusCode !== HttpStatus.OK) {
+      // something error
+      const { id, sender, receiver } = job.data;
+      this.logger.debug(
+        `[id]: ${id} [sender]: ${sender.id} [receiver]: ${receiver}. Notify send failed.`,
+      );
+    }
+
+    this.logger.debug('Send notify task completed');
   }
 
   /**

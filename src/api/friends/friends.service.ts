@@ -18,7 +18,6 @@ export class FriendsService {
     @InjectModel(Friend)
     private readonly friendModel: typeof Friend,
     private readonly eventsService: EventsService,
-    private readonly eventsGateway: EventsGateway,
   ) {}
 
   public async addOne(
@@ -63,7 +62,8 @@ export class FriendsService {
 
       await this.eventsService.createNotify({ ...notify, sender: userId });
 
-      this.eventsGateway.sendNotify(notify);
+      // add a send notify task to Queue
+      await this.eventsService.addNotifyTaskToQueue(notify);
 
       return {
         statusCode: HttpStatus.OK,

@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
+import { BullModule } from '@nestjs/bull';
 
 import { redisModule } from './common/redis/redis.config';
 import { EventsModule } from './events/events.module';
@@ -50,6 +51,21 @@ if (process.env.NODE_ENV === 'dev') {
       },
       autoLoadModels: true,
       synchronize: true,
+    }),
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => {
+        return {
+          redis: {
+            host: configService.get('REDIS_HOST'),
+            port: configService.get('REDIS_PORT'),
+            // username: configService.get('REDIS_USERNAME'),
+            password: configService.get('REDIS_PWD'),
+            db: configService.get('REDIS_DB'),
+          },
+        };
+      },
+      inject: [ConfigService],
     }),
     redisModule,
     EventsModule,

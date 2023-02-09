@@ -1,0 +1,1 @@
+export const IMQueueName = 'IMQueue';
