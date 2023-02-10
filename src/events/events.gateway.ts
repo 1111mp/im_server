@@ -10,11 +10,11 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Process, Processor } from '@nestjs/bull';
-import type { Server, Socket } from 'socket.io';
 import { EventsService } from './events.service';
 import { ProtoService } from 'src/common/proto/proto.service';
 import { IMQueueName } from './constants';
-import { Job } from 'bull';
+import type { Server, Socket } from 'socket.io';
+import type { Job } from 'bull';
 
 @UsePipes(new ValidationPipe())
 @Processor(IMQueueName)
@@ -60,9 +60,10 @@ export class EventsGateway
   private handleMessage(
     @MessageBody() data: unknown,
     @ConnectedSocket() client: Socket,
-  ): Uint8Array {
-    return this.makeAckResp();
-  }
+  ) {}
+
+  @Process('im-message')
+  private async handleMessageTask(job: Job) {}
 
   @SubscribeMessage('notify')
   private handleNotify(
@@ -82,10 +83,10 @@ export class EventsGateway
   }
 
   @Process('notify')
-  public async handleNotifyTask(job: Job<ModuleIM.Core.Notify>) {
+  private async handleNotifyTask(job: Job<ModuleIM.Core.Notify>) {
     console.log(job);
     this.logger.debug('Start send notify task...');
-    
+
     const res = await this.sendNotify(job.data);
     if (res.statusCode !== HttpStatus.OK) {
       // something error
@@ -109,7 +110,7 @@ export class EventsGateway
     const userStatus = this.getStatus(receiver);
     if (userStatus) {
       // online
-      const message = this.makeNotifyProto(notify);
+      const message = this.protoService.setNotifyToProto(notify);
       const result = await this.send(
         `${receiver}`,
         ModuleIM.Common.MessageType.Notify,
@@ -132,7 +133,7 @@ export class EventsGateway
     const promise: Promise<IMServerResponse.AckResponse> = new Promise(
       (resolve) => {
         this.io.to(receiver).emit(evtName, message, (data: Uint8Array) => {
-          resolve(this.getAckResp(data));
+          resolve(this.protoService.getAckFromProto(data));
         });
       },
     );
@@ -149,20 +150,5 @@ export class EventsGateway
     );
 
     return Promise.race([promise, timeout]);
-  }
-
-  private makeAckResp() {
-    return this.protoService.setAckToProto({
-      statusCode: HttpStatus.OK,
-      message: 'Successed.',
-    });
-  }
-
-  private getAckResp(data: Uint8Array) {
-    return this.protoService.getAckFromProto(data);
-  }
-
-  private makeNotifyProto(notify: ModuleIM.Core.Notify) {
-    return this.protoService.setNotifyToProto(notify);
   }
 }

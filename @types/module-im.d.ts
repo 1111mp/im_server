@@ -2,6 +2,22 @@ namespace ModuleIM {
   namespace Core {
     type Message = {
       id: string;
+      session: Common.Session;
+      sender: User.UserInfo;
+      receiver: number; // userId or groupId
+      status: Common.MsgStatus;
+      timer: string;
+      ext?: string; // reserved field
+    };
+
+    type MessageText = Message & {
+      type: Common.MsgType.Text;
+      text: string;
+    };
+
+    type MessageImage = Message & {
+      type: Common.MsgType.Image;
+      image: string;
     };
 
     type Notify = {
@@ -48,6 +64,24 @@ namespace ModuleIM {
       Readed,
       Fulfilled,
       Rejected,
+    }
+
+    const enum Session {
+      Single = 1,
+      Group,
+    }
+
+    const enum MsgType {
+      Text = 'text',
+      Image = 'image',
+      Video = 'video',
+      Audio = 'audio',
+    }
+
+    const enum MsgStatus {
+      Initial = 1,
+      Received,
+      Readed,
     }
   }
 }

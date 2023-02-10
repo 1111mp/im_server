@@ -16,7 +16,7 @@ import { RolesGuard } from './common/permission/guards/roles.guard';
 import { JwtAuthGuard } from './common/auth/guards/jwt-auth.guard';
 import { CacheApiInterceptor } from './common/cache/interceptors/cache.interceptor';
 
-let envFilePath = ['.env'];
+const envFilePath = ['.env'];
 if (process.env.NODE_ENV === 'dev') {
   envFilePath.unshift('.env.dev');
 } else {
@@ -29,28 +29,34 @@ if (process.env.NODE_ENV === 'dev') {
       isGlobal: true,
       envFilePath,
     }),
-    SequelizeModule.forRoot({
-      dialect: 'mariadb',
-      host: process.env.DB_HOST || '127.0.0.1',
-      port: parseInt(process.env.DB_PORT),
-      username: process.env.DB_USER,
-      password: process.env.DB_PASS,
-      database: process.env.DB_NAME,
-      pool: {
-        min: 0,
-        max: 5,
-        acquire: 30000,
-        idle: 10000,
+    SequelizeModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory(configService: ConfigService) {
+        return {
+          dialect: 'mariadb',
+          host: configService.get('DB_HOST') || '127.0.0.1',
+          port: configService.get<number>('DB_PORT'),
+          username: configService.get('DB_USER'),
+          password: configService.get('DB_PASS'),
+          database: configService.get('DB_NAME'),
+          pool: {
+            min: 0,
+            max: 5,
+            acquire: 30000,
+            idle: 10000,
+          },
+          timezone: '+08:00',
+          define: {
+            charset: 'utf8',
+          },
+          dialectOptions: {
+            // collate: "utf8_general_ci",
+          },
+          autoLoadModels: true,
+          synchronize: true,
+        };
       },
-      timezone: '+08:00',
-      define: {
-        charset: 'utf8',
-      },
-      dialectOptions: {
-        // collate: "utf8_general_ci",
-      },
-      autoLoadModels: true,
-      synchronize: true,
+      inject: [ConfigService],
     }),
     BullModule.forRootAsync({
       imports: [ConfigModule],
@@ -60,7 +66,7 @@ if (process.env.NODE_ENV === 'dev') {
             host: configService.get('REDIS_HOST'),
             port: configService.get('REDIS_PORT'),
             // username: configService.get('REDIS_USERNAME'),
-            password: configService.get('REDIS_PWD'),
+            // password: configService.get('REDIS_PWD'),
             db: configService.get('REDIS_DB'),
           },
         };

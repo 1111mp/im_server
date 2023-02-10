@@ -20,6 +20,11 @@ export class EventsService {
     return this.notifyModel.create(notify);
   }
 
+  /**
+   * @description: Add a send notify task to IMQueue
+   * @param ModuleIM.Core.Notify
+   * @returns Promise<void>
+   */
   public async addNotifyTaskToQueue(notify: ModuleIM.Core.Notify) {
     await this.imQueue.add('send-notify', notify);
   }

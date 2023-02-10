@@ -12,7 +12,7 @@ export const redisModule = RedisModule.registerAsync({
         host: configService.get('REDIS_HOST'),
         port: configService.get('REDIS_PORT'),
         // username: configService.get('REDIS_USERNAME'),
-        password: configService.get('REDIS_PWD'),
+        // password: configService.get('REDIS_PWD'),
         db: configService.get('REDIS_DB'),
       },
       onClientReady: (client) => {
