@@ -1,6 +1,6 @@
 namespace ModuleIM {
   namespace Core {
-    type Message = {
+    type MessageBasic = {
       id: string;
       session: Common.Session;
       sender: User.UserInfo;
@@ -10,15 +10,17 @@ namespace ModuleIM {
       ext?: string; // reserved field
     };
 
-    type MessageText = Message & {
+    type MessageText = MessageBasic & {
       type: Common.MsgType.Text;
       text: string;
     };
 
-    type MessageImage = Message & {
+    type MessageImage = MessageBasic & {
       type: Common.MsgType.Image;
       image: string;
     };
+
+    type MessageAll = MessageText | MessageImage;
 
     type Notify = {
       id: string;

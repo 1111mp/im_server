@@ -63,7 +63,24 @@ export class EventsGateway
   ) {}
 
   @Process('im-message')
-  private async handleMessageTask(job: Job) {}
+  private async handleMessageTask(job: Job<ModuleIM.Core.MessageAll>) {
+    const { session } = job.data;
+
+    switch (session) {
+      case ModuleIM.Common.Session.Single: {
+        // single message
+        return;
+      }
+      case ModuleIM.Common.Session.Group: {
+        // group message
+        return;
+      }
+      default:
+        // dont need do anything
+        this.logger.debug(`Unknown message session type: ${session}`);
+        return;
+    }
+  }
 
   @SubscribeMessage('notify')
   private handleNotify(
@@ -73,11 +90,16 @@ export class EventsGateway
     const notify = this.protoService.getNotifyFromProto(data);
     switch (notify.type) {
       case ModuleIM.Common.Notifys.AddFriend: {
-        // agree or reject friend request
+        // Agree or reject add friend request
+        return;
+      }
+      case ModuleIM.Common.Notifys.DelFriend: {
+        // Send a notification message to the other party when the user deletes a friend
         return;
       }
       default:
         // dont need do anything
+        this.logger.debug(`Unknown notify type: ${notify.type}`);
         return;
     }
   }
@@ -87,13 +109,28 @@ export class EventsGateway
     console.log(job);
     this.logger.debug('Start send notify task...');
 
-    const res = await this.sendNotify(job.data);
-    if (res.statusCode !== HttpStatus.OK) {
-      // something error
+    const { statusCode } = await this.sendNotify(job.data);
+
+    if (statusCode === HttpStatus.REQUEST_TIMEOUT) {
+      // timeout
       const { id, sender, receiver } = job.data;
       this.logger.debug(
-        `[id]: ${id} [sender]: ${sender.id} [receiver]: ${receiver}. Notify send failed.`,
+        `[id]: ${id} [sender]: ${sender.id} [receiver]: ${receiver}. Notify send timeout.`,
       );
+    }
+
+    if (statusCode === HttpStatus.OK) {
+      // received
+      const [count] = await this.eventsService.updateNotifyStatus(
+        job.data.id,
+        ModuleIM.Common.NotifyStatus.Received,
+      );
+
+      if (count !== 1) {
+        this.logger.error(
+          `[Database Error] unknown error when update notify(${job.data.id}) status.`,
+        );
+      }
     }
 
     this.logger.debug('Send notify task completed');
@@ -120,7 +157,7 @@ export class EventsGateway
       return result;
     } else {
       // offline, dont need do anything
-      return { statusCode: HttpStatus.OK, message: 'User is offline' };
+      return { statusCode: HttpStatus.NO_CONTENT, message: 'User is offline' };
     }
   }
 

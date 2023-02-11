@@ -7,6 +7,7 @@ import { CreateNotifyDto } from './dto/create-notify.dto';
 
 import { IMQueueName } from './constants';
 import type { Queue } from 'bull';
+import type { Transaction } from 'sequelize';
 
 @Injectable()
 export class EventsService {
@@ -16,8 +17,8 @@ export class EventsService {
     @InjectQueue(IMQueueName) private readonly imQueue: Queue,
   ) {}
 
-  public createNotify(notify: CreateNotifyDto) {
-    return this.notifyModel.create(notify);
+  public createNotify(notify: CreateNotifyDto, trans: Transaction = null) {
+    return this.notifyModel.create(notify, { transaction: trans });
   }
 
   /**
@@ -25,7 +26,17 @@ export class EventsService {
    * @param ModuleIM.Core.Notify
    * @returns Promise<void>
    */
-  public async addNotifyTaskToQueue(notify: ModuleIM.Core.Notify) {
-    await this.imQueue.add('send-notify', notify);
+  public addNotifyTaskToQueue(notify: ModuleIM.Core.Notify) {
+    return this.imQueue.add('send-notify', notify);
+  }
+
+  /**
+   * @description: update notify status
+   * @param {string} id
+   * @param {ModuleIM} status
+   * @return {Promise<[affectedCount:number]>}
+   */
+  public updateNotifyStatus(id: string, status: ModuleIM.Common.NotifyStatus) {
+    return this.notifyModel.update({ status }, { where: { id } });
   }
 }

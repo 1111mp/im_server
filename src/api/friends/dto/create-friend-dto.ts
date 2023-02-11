@@ -10,3 +10,14 @@ export class CreateFriendDto {
   @ApiProperty({ type: 'string', required: false, example: '' })
   ext: string;
 }
+
+export class UpdateFriendDto {
+  @ApiProperty({ type: 'string' })
+  remark?: string;
+
+  @ApiProperty({ type: 'boolean' })
+  astrolabe?: boolean;
+
+  @ApiProperty({ type: 'boolean' })
+  block?: boolean;
+}

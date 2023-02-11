@@ -1,12 +1,14 @@
-import { Model, Table, Column, DataType } from 'sequelize-typescript';
 import { ApiProperty } from '@nestjs/swagger';
+import { Model, Table, Column, DataType } from 'sequelize-typescript';
 import * as dayjs from 'dayjs';
 
 @Table
 export class FriendSetting extends Model<FriendSetting> {
+  @ApiProperty({ type: 'number' })
   @Column({ primaryKey: true, autoIncrement: true, type: DataType.INTEGER })
-  id;
+  id: number;
 
+  @ApiProperty({ type: 'number' })
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
@@ -14,6 +16,7 @@ export class FriendSetting extends Model<FriendSetting> {
   })
   userId: number;
 
+  @ApiProperty({ type: 'number' })
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
@@ -56,7 +59,7 @@ export class FriendSetting extends Model<FriendSetting> {
       );
     },
   })
-  createdAt;
+  createdAt: string;
 
   @ApiProperty({ type: 'string' })
   @Column({
@@ -68,5 +71,5 @@ export class FriendSetting extends Model<FriendSetting> {
       );
     },
   })
-  updatedAt;
+  updatedAt: string;
 }

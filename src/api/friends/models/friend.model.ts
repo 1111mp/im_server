@@ -44,12 +44,12 @@ export class Friend extends Model<Friend> {
   userId;
 
   @BelongsTo(() => User, { foreignKey: 'userId', targetKey: 'id' })
-  user: User;
+  infoFromUser: User;
 
   @ForeignKey(() => User)
   @Column(DataType.INTEGER)
   friendId;
 
   @BelongsTo(() => User, { foreignKey: 'friendId', targetKey: 'id' })
-  friend: User;
+  infoFromFriend: User;
 }
