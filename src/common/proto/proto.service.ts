@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { AckMessage, Notify } from './source/proto';
+import { AckMessage, Notify, MessageText, MessageImage } from './source/proto';
 
 @Injectable()
 export class ProtoService {
@@ -19,5 +19,23 @@ export class ProtoService {
 
   public getNotifyFromProto(buffer: Uint8Array) {
     return Notify.decode(buffer);
+  }
+
+  public setMessageTextToProto(messageText: ModuleIM.Core.MessageText) {
+    const message = new MessageText(messageText);
+    return MessageText.encode(message).finish();
+  }
+
+  public getMessageTextFromProto(buffer: Uint8Array) {
+    return MessageText.decode(buffer);
+  }
+
+  public setMessageImageToProto(messageText: ModuleIM.Core.MessageText) {
+    const message = new MessageImage(messageText);
+    return MessageImage.encode(message).finish();
+  }
+
+  public getMessageImageFromProto(buffer: Uint8Array) {
+    return MessageImage.decode(buffer);
   }
 }

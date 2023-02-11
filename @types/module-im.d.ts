@@ -3,7 +3,7 @@ namespace ModuleIM {
     type MessageBasic = {
       id: string;
       session: Common.Session;
-      sender: User.UserInfo;
+      sender: Omit<User.UserAttributes, 'pwd'>;
       receiver: number; // userId or groupId
       status: Common.MsgStatus;
       timer: string;

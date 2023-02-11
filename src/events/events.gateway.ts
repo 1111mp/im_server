@@ -56,11 +56,54 @@ export class EventsGateway
     return this.users.has(userid);
   }
 
-  @SubscribeMessage('message')
-  private handleMessage(
-    @MessageBody() data: unknown,
+  // message for text
+  @SubscribeMessage('message:text')
+  private async handleMessageText(
+    @MessageBody() data: Uint8Array,
     @ConnectedSocket() client: Socket,
-  ) {}
+  ) {
+    const message = this.protoService.getMessageTextFromProto(data);
+
+    switch (message.session) {
+      case ModuleIM.Common.Session.Single: {
+        // single message
+        await this.eventsService.createOneForMessage(message);
+        return this.makeAckResponse();
+      }
+      case ModuleIM.Common.Session.Group: {
+        // group message
+        return;
+      }
+      default:
+        // dont need do anything
+        this.logger.debug(`Unknown message session type: ${message.session}`);
+        return;
+    }
+  }
+
+  // message for image
+  @SubscribeMessage('message:image')
+  private handleMessageImage(
+    @MessageBody() data: Uint8Array,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const message = this.protoService.getMessageImageFromProto(data);
+
+    switch (message.session) {
+      case ModuleIM.Common.Session.Single: {
+        // single message
+        return;
+      }
+      case ModuleIM.Common.Session.Group: {
+        // group message
+        return;
+      }
+      default:
+        // dont need do anything
+        this.logger.debug(`Unknown message session type: ${message.session}`);
+        return;
+    }
+  }
 
   @Process('im-message')
   private async handleMessageTask(job: Job<ModuleIM.Core.MessageAll>) {
@@ -187,5 +230,12 @@ export class EventsGateway
     );
 
     return Promise.race([promise, timeout]);
+  }
+
+  private makeAckResponse() {
+    return this.protoService.setAckToProto({
+      statusCode: HttpStatus.OK,
+      message: 'Successfully.',
+    });
   }
 }

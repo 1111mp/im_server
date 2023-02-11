@@ -45,6 +45,21 @@ enum NotifyStatus {
   Rejected,
 }
 
+// need keep same with ModuleIM.Common.MsgStatus
+enum MsgStatus {
+  Initial = 1,
+  Received,
+  Readed,
+}
+
+// need keep same with ModuleIM.Common.MsgType
+enum MsgType {
+  Text = 'text',
+  Image = 'image',
+  Video = 'video',
+  Audio = 'audio',
+}
+
 @Type.d()
 export class Notify extends Message<Notify> {
   @Field.d(1, 'string', 'required')
@@ -70,4 +85,45 @@ export class Notify extends Message<Notify> {
 
   @Field.d(8, 'string', 'required')
   public ext?: string;
+}
+
+class MessageBasic extends Message<MessageBasic> {
+  @Field.d(1, 'string', 'required')
+  public id: string;
+
+  @Field.d(2, 'int32', 'required')
+  public session: ModuleIM.Common.Session;
+
+  @Field.d(3, Sender)
+  public sender: Omit<User.UserAttributes, 'pwd'>;
+
+  @Field.d(4, 'int32', 'required')
+  public receiver: number;
+
+  @Field.d(7, MsgStatus, 'required')
+  public status: ModuleIM.Common.MsgStatus;
+
+  @Field.d(8, 'string', 'required')
+  public timer: string;
+
+  @Field.d(9, 'string', 'required')
+  public ext?: string;
+}
+
+@Type.d()
+export class MessageText extends MessageBasic {
+  @Field.d(5, MsgType.Text, 'required')
+  public type: ModuleIM.Common.MsgType.Text;
+
+  @Field.d(5, 'string', 'required')
+  public text: string;
+}
+
+@Type.d()
+export class MessageImage extends MessageBasic {
+  @Field.d(5, MsgType.Image, 'required')
+  public type: ModuleIM.Common.MsgType.Image;
+
+  @Field.d(5, 'string', 'required')
+  public text: string;
 }
