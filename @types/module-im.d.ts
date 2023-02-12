@@ -22,6 +22,14 @@ namespace ModuleIM {
 
     type MessageAll = MessageText | MessageImage;
 
+    type MessageRead = {
+      id: string;
+      session: Common.Session;
+      sender: number;
+      receiver: number; // userId or groupId
+      status: Common.MsgStatus;
+    };
+
     type Notify = {
       id: string;
       type: Common.Notifys;
@@ -50,9 +58,10 @@ namespace ModuleIM {
       Big, // 2000
     }
 
-    const enum MessageType {
-      Message = 'message',
-      Notify = 'notify',
+    const enum MessageEventNames {
+      Message = 'on-message',
+      Notify = 'on-notify',
+      Read = 'on-message:read',
     }
 
     const enum Notifys {

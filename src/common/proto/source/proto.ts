@@ -45,6 +45,12 @@ enum NotifyStatus {
   Rejected,
 }
 
+// need keep same with ModuleIM.Common.Session
+enum Session {
+  Single = 1,
+  Group,
+}
+
 // need keep same with ModuleIM.Common.MsgStatus
 enum MsgStatus {
   Initial = 1,
@@ -91,7 +97,7 @@ class MessageBasic extends Message<MessageBasic> {
   @Field.d(1, 'string', 'required')
   public id: string;
 
-  @Field.d(2, 'int32', 'required')
+  @Field.d(2, Session, 'required')
   public session: ModuleIM.Common.Session;
 
   @Field.d(3, Sender)
@@ -100,13 +106,13 @@ class MessageBasic extends Message<MessageBasic> {
   @Field.d(4, 'int32', 'required')
   public receiver: number;
 
-  @Field.d(7, MsgStatus, 'required')
+  @Field.d(7, MsgStatus)
   public status: ModuleIM.Common.MsgStatus;
 
   @Field.d(8, 'string', 'required')
   public timer: string;
 
-  @Field.d(9, 'string', 'required')
+  @Field.d(9, 'string')
   public ext?: string;
 }
 
@@ -115,7 +121,7 @@ export class MessageText extends MessageBasic {
   @Field.d(5, MsgType.Text, 'required')
   public type: ModuleIM.Common.MsgType.Text;
 
-  @Field.d(5, 'string', 'required')
+  @Field.d(6, 'string', 'required')
   public text: string;
 }
 
@@ -124,6 +130,24 @@ export class MessageImage extends MessageBasic {
   @Field.d(5, MsgType.Image, 'required')
   public type: ModuleIM.Common.MsgType.Image;
 
-  @Field.d(5, 'string', 'required')
-  public text: string;
+  @Field.d(6, 'string', 'required')
+  public image: string;
+}
+
+@Type.d()
+export class MessageRead extends Message<MessageRead> {
+  @Field.d(1, 'string', 'required')
+  public id: string;
+
+  @Field.d(2, Session, 'required')
+  public session: ModuleIM.Common.Session;
+
+  @Field.d(3, 'int32', 'required')
+  public sender: number;
+
+  @Field.d(4, 'int32', 'required')
+  public receiver: number;
+
+  @Field.d(5, MsgStatus)
+  public status: ModuleIM.Common.MsgStatus;
 }

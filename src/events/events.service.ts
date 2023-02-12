@@ -4,6 +4,7 @@ import { InjectQueue } from '@nestjs/bull';
 
 import { Notify } from './models/notify.model';
 import { Message as MessageModel } from './models/message.model';
+import { MessageRead as MessageReadModel } from './models/message-read.model';
 import { CreateNotifyDto } from './dto/create-notify.dto';
 import { IMQueueName } from './constants';
 
@@ -17,7 +18,9 @@ export class EventsService {
     private readonly notifyModel: typeof Notify,
     @InjectModel(MessageModel)
     private readonly messageModel: typeof MessageModel,
-    @InjectQueue(IMQueueName) private readonly imQueue: Queue,
+    @InjectModel(MessageReadModel)
+    private readonly messageReadModel: typeof MessageReadModel,
+    @InjectQueue(IMQueueName) private readonly imQueue: Queue<unknown>,
   ) {}
 
   public createNotify(notify: CreateNotifyDto, trans: Transaction = null) {
@@ -34,6 +37,24 @@ export class EventsService {
   }
 
   /**
+   * @description: Add a send message:all task to IMQueue
+   * @param ModuleIM.Core.MessageAll
+   * @returns Promise<void>
+   */
+  public addMessageTaskToQueue(message: ModuleIM.Core.MessageAll) {
+    return this.imQueue.add('send-message:all', message);
+  }
+
+  /**
+   * @description: Add a send message:read task to IMQueue
+   * @param ModuleIM.Core.MessageRead
+   * @returns Promise<void>
+   */
+  public addMessageReadTaskToQueue(message: ModuleIM.Core.MessageRead) {
+    return this.imQueue.add('send-message:read', message);
+  }
+
+  /**
    * @description: update notify status
    * @param {string} id
    * @param {ModuleIM} status
@@ -43,6 +64,11 @@ export class EventsService {
     return this.notifyModel.update({ status }, { where: { id } });
   }
 
+  /**
+   * @description: Create one Message
+   * @param message ModuleIM.Core.MessageAll
+   * @returns Promise<MessageModel>
+   */
   public createOneForMessage(message: ModuleIM.Core.MessageAll) {
     const { sender, type } = message;
     let content = '';
@@ -59,6 +85,59 @@ export class EventsService {
         break;
     }
 
-    return this.messageModel.create({ ...message, sender: sender.id, content });
+    return this.messageModel.create({
+      ...message,
+      sender: sender.id,
+      status: ModuleIM.Common.MsgStatus.Initial,
+      content,
+    });
+  }
+
+  /**
+   * @description: Update message status
+   * @param id string
+   * @param status ModuleIM.Common.MsgStatus
+   * @returns Promise<[affectedCount: number]>
+   */
+  public updateMessageStatus(id: string, status: ModuleIM.Common.MsgStatus) {
+    return this.messageModel.update({ status }, { where: { id } });
+  }
+
+  /**
+   * @description: Update message:read status
+   * @param id string
+   * @param status ModuleIM.Common.MsgStatus
+   * @returns Promise<[affectedCount: number]>
+   */
+  public updateMessageReadStatus(
+    id: string,
+    status: ModuleIM.Common.MsgStatus,
+  ) {
+    return this.messageReadModel.update({ status }, { where: { id } });
+  }
+
+  public async handleForMessageRead(
+    message: ModuleIM.Core.MessageRead,
+  ): Promise<[affectedCount: number]> {
+    const trans = await this.messageReadModel.sequelize.transaction();
+    let result: [affectedCount: number];
+    try {
+      await this.messageReadModel.create(
+        { ...message, status: ModuleIM.Common.MsgStatus.Initial },
+        { transaction: trans },
+      );
+
+      result = await this.messageModel.update(
+        { status: ModuleIM.Common.MsgStatus.Readed },
+        { where: { id: message.id }, transaction: trans },
+      );
+
+      await trans.commit();
+
+      return result;
+    } catch (err) {
+      await trans.rollback();
+      return [0];
+    }
   }
 }

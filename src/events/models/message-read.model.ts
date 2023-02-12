@@ -1,10 +1,22 @@
-import { Model, Table, Column, DataType } from 'sequelize-typescript';
+import {
+  Model,
+  Table,
+  Column,
+  DataType,
+  ForeignKey,
+  BelongsTo,
+} from 'sequelize-typescript';
 import * as dayjs from 'dayjs';
+import { Message } from './message.model';
 
 @Table
-export class Message extends Model<Message> {
+export class MessageRead extends Model<MessageRead> {
+  @ForeignKey(() => Message)
   @Column({ primaryKey: true, type: DataType.UUIDV4 })
   id: string;
+
+  @BelongsTo(() => Message)
+  message: Message;
 
   @Column({
     type: DataType.INTEGER,
@@ -14,15 +26,6 @@ export class Message extends Model<Message> {
     },
   })
   session: ModuleIM.Common.Session;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-    validate: {
-      isIn: [['text', 'image', 'video', 'audio']], // ModuleIM.Common.MsgType
-    },
-  })
-  type: ModuleIM.Common.MsgType;
 
   @Column({
     type: DataType.INTEGER,
@@ -46,9 +49,6 @@ export class Message extends Model<Message> {
     },
   })
   status: ModuleIM.Common.MsgStatus;
-
-  @Column({ type: DataType.STRING })
-  content: string;
 
   @Column({
     type: DataType.DATE,
