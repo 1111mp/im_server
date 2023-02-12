@@ -5,6 +5,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   HttpStatus,
   InternalServerErrorException,
   NotFoundException,
@@ -48,6 +49,7 @@ export class UsersController {
   @Public()
   @UseGuards(LocalAuthGuard)
   @Post('login')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'User login',
     description: 'User login',
@@ -81,6 +83,7 @@ export class UsersController {
 
   @Public()
   @Post('create')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Create user',
     description: 'Create user',
@@ -237,6 +240,7 @@ export class UsersController {
   }
 
   @Post('logout')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'User logout',
     description: 'User logout',

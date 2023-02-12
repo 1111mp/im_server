@@ -93,7 +93,8 @@ export class Notify extends Message<Notify> {
   public ext?: string;
 }
 
-class MessageBasic extends Message<MessageBasic> {
+@Type.d()
+export class MessageText extends Message<MessageText> {
   @Field.d(1, 'string', 'required')
   public id: string;
 
@@ -106,6 +107,12 @@ class MessageBasic extends Message<MessageBasic> {
   @Field.d(4, 'int32', 'required')
   public receiver: number;
 
+  @Field.d(5, MsgType.Text, 'required')
+  public type: ModuleIM.Common.MsgType.Text;
+
+  @Field.d(6, 'string', 'required')
+  public text: string;
+
   @Field.d(7, MsgStatus)
   public status: ModuleIM.Common.MsgStatus;
 
@@ -117,21 +124,33 @@ class MessageBasic extends Message<MessageBasic> {
 }
 
 @Type.d()
-export class MessageText extends MessageBasic {
-  @Field.d(5, MsgType.Text, 'required')
-  public type: ModuleIM.Common.MsgType.Text;
+export class MessageImage extends Message<MessageImage> {
+  @Field.d(1, 'string', 'required')
+  public id: string;
 
-  @Field.d(6, 'string', 'required')
-  public text: string;
-}
+  @Field.d(2, Session, 'required')
+  public session: ModuleIM.Common.Session;
 
-@Type.d()
-export class MessageImage extends MessageBasic {
+  @Field.d(3, Sender)
+  public sender: Omit<User.UserAttributes, 'pwd'>;
+
+  @Field.d(4, 'int32', 'required')
+  public receiver: number;
+
   @Field.d(5, MsgType.Image, 'required')
   public type: ModuleIM.Common.MsgType.Image;
 
   @Field.d(6, 'string', 'required')
   public image: string;
+
+  @Field.d(7, MsgStatus)
+  public status: ModuleIM.Common.MsgStatus;
+
+  @Field.d(8, 'string', 'required')
+  public timer: string;
+
+  @Field.d(9, 'string')
+  public ext?: string;
 }
 
 @Type.d()

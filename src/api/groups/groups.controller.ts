@@ -8,6 +8,7 @@ import {
   Param,
   Get,
   Put,
+  HttpCode,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -33,6 +34,7 @@ export class GroupsController {
   constructor(private readonly groupsService: GroupsService) {}
 
   @Post()
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Create a im group',
     description: 'Create a im group',
@@ -133,6 +135,7 @@ export class GroupsController {
   }
 
   @Post(':id')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Add members to group',
     description: 'Add members to group',

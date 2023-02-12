@@ -12,7 +12,7 @@ import { Message } from './message.model';
 @Table
 export class MessageRead extends Model<MessageRead> {
   @ForeignKey(() => Message)
-  @Column({ primaryKey: true, type: DataType.UUIDV4 })
+  @Column({ primaryKey: true, type: DataType.STRING })
   id: string;
 
   @BelongsTo(() => Message)

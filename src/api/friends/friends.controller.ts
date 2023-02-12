@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Post,
   Put,
@@ -27,7 +29,8 @@ import { CreateFriendDto, UpdateFriendDto } from './dto/create-friend-dto';
 export class FriendsController {
   constructor(private readonly friendsService: FriendsService) {}
 
-  @Post('')
+  @Post()
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Add a friend',
     description: 'Add a friend',

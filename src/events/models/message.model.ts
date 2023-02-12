@@ -3,7 +3,7 @@ import * as dayjs from 'dayjs';
 
 @Table
 export class Message extends Model<Message> {
-  @Column({ primaryKey: true, type: DataType.UUIDV4 })
+  @Column({ primaryKey: true, type: DataType.STRING })
   id: string;
 
   @Column({

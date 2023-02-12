@@ -4,7 +4,7 @@ import * as dayjs from 'dayjs';
 
 @Table
 export class Notify extends Model<Notify> {
-  @Column({ primaryKey: true, type: DataType.UUIDV4 })
+  @Column({ primaryKey: true, type: DataType.STRING })
   id: string;
 
   @ApiProperty({ type: 'number', required: true })
