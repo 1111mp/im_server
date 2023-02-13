@@ -10,11 +10,11 @@
 
 已支持:
 
-  [JSON Web Token](https://jwt.io/)
+[JSON Web Token](https://jwt.io/)
 
-  [protocol-buffers](https://github.com/protobufjs/protobuf.js/)
-  
-  [Api Data Cache](https://github.com/1111mp/im_server/blob/nestjs/src/cache/interceptors/cache.interceptor.ts)
+[protocol-buffers](https://github.com/protobufjs/protobuf.js/)
+
+[Api Data Cache](https://github.com/1111mp/im_server/blob/nestjs/src/cache/interceptors/cache.interceptor.ts)
 
 ## Installation
 
@@ -48,6 +48,142 @@ $ yarn run test:e2e
 
 # test coverage
 $ yarn run test:cov
+```
+
+## IM Protocol
+
+[Socket.io](https://socket.io/zh-CN/)
+
+#### Message
+
+```
+type MessageBasic = {
+  id: string;
+  session: Common.Session; // single or group
+  sender: Omit<User.UserAttributes, 'pwd'>; // user info
+  receiver: number; // userId or groupId
+  status: Common.MsgStatus;
+  timer: string;
+  ext?: string; // reserved field
+};
+
+type MessageText = MessageBasic & {
+  type: Common.MsgType.Text;
+  text: string;
+};
+
+type MessageImage = MessageBasic & {
+  type: Common.MsgType.Image;
+  image: string;
+};
+
+```
+
+```
+interface AckResponse {
+  statusCode: HttpStatus;
+  message?: string;
+}
+
+const enum MessageEventNames {
+  MessageText = 'on-message:text',
+  MessageImage = 'on-message:image',
+  Notify = 'on-notify',
+  Read = 'on-message:read',
+}
+```
+
+Message Events:
+
+`on-message:text`: send a text message.
+`on-message:image`: send a image message.
+
+example:
+
+```
+const message: MessageText = {
+   id: string;
+   session: Common.Session; // single or group
+   sender: Omit<User.UserAttributes, 'pwd'>; // user info
+   receiver: number; // userId or groupId
+   status: Common.MsgStatus;
+   type: Common.MsgType.Text;
+   text: string;
+   timer: string;
+   ext?: string; // reserved field
+}
+
+const buffer = setMessageTextToProto(message);
+
+client.socket.emit("on-message:text", buffer, (result: AckResponse) => {
+   console.log(result);
+   // result.statusCode === 200 ===> successed
+})
+```
+
+Client listener:
+
+```
+  // on-message:text
+  client.socket.on(MessageEventNames.MessageText, (msg: Uint8Array, callback: (resp: AckResponse) => void) => {
+    const message: MessageText = getMessageTextFromProto(msg);
+    console.log(message);
+    callback({
+      statusCode: 200,
+      message: "..."
+    })
+  })
+```
+
+#### Notify
+
+```
+type Notify = {
+  id: string;
+  type: Common.Notifys;
+  sender: Omit<User.UserAttributes, 'pwd'>;
+  receiver: number;
+  status: Common.NotifyStatus;
+  timer: string;
+  remark?: string;
+  ext?: string;
+};
+```
+
+example:
+
+```
+const notify: Notify = {
+    id: string;
+    type: Common.Notifys;
+    sender: Omit<User.UserAttributes, 'pwd'>;
+    receiver: number;
+    status: Common.NotifyStatus;
+    timer: string;
+    remark?: string;
+    ext?: string;
+}
+
+const buffer = setNotifyToProto(notify);
+
+client.socket.emit("on-notify", buffer, (result: AckResponse) => {
+   console.log(result);
+   // result.statusCode === 200 ===> successed
+})
+```
+
+Client listener:
+
+```
+  // on-notify
+  client.socket.on(MessageEventNames.Notify, (msg: Uint8Array, callback: (resp: AckResponse) => void) => {
+    const notify: Notify = getNotifyFromProto(msg);
+    console.log(notify);
+    callback({
+      statusCode: 200,
+      message: "..."
+    })
+  })
 ```
 
 ## Notes
