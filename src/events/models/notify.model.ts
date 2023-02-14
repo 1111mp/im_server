@@ -1,6 +1,14 @@
-import { Model, Table, Column, DataType } from 'sequelize-typescript';
+import {
+  Model,
+  Table,
+  Column,
+  DataType,
+  ForeignKey,
+  BelongsTo,
+} from 'sequelize-typescript';
 import { ApiProperty } from '@nestjs/swagger';
 import * as dayjs from 'dayjs';
+import { User as UserModel } from 'src/api/users/models/user.model';
 
 @Table
 export class Notify extends Model<Notify> {
@@ -18,12 +26,16 @@ export class Notify extends Model<Notify> {
   type: ModuleIM.Common.Notifys;
 
   @ApiProperty({ type: 'number', required: true })
+  @ForeignKey(() => UserModel)
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
     comment: "sender's userid",
   })
   sender: number;
+
+  @BelongsTo(() => UserModel, { foreignKey: 'sender', targetKey: 'id' })
+  senderInfo: UserModel;
 
   @ApiProperty({ type: 'number', required: true })
   @Column({

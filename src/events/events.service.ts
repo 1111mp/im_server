@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  HttpStatus,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { InjectQueue } from '@nestjs/bull';
 
@@ -34,6 +38,49 @@ export class EventsService {
    */
   public addNotifyTaskToQueue(notify: ModuleIM.Core.Notify) {
     return this.imQueue.add('send-notify', notify);
+  }
+
+  /**
+   * @description: Get user all offline notifys
+   * @param userId number
+   * @return Promise<IMServerResponse.JsonResponse<ModuleIM.Core.Notify[]> & { count: number }>
+   */
+  public async getOfflineNotify(
+    userId: number,
+  ): Promise<
+    IMServerResponse.JsonResponse<ModuleIM.Core.Notify[]> & { count: number }
+  > {
+    try {
+      const { rows, count } = await this.notifyModel.findAndCountAll({
+        where: {
+          receiver: userId,
+          status: ModuleIM.Common.NotifyStatus.Initial,
+        },
+      });
+
+      const notifys = await Promise.all(
+        rows.map(async (notify) => {
+          const info = await notify.$get('senderInfo', {
+            attributes: { exclude: ['pwd'] },
+          });
+
+          return {
+            ...notify.toJSON(),
+            sender: info.toJSON(),
+          };
+        }),
+      );
+
+      return {
+        statusCode: HttpStatus.OK,
+        count,
+        data: notifys,
+      };
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `[Database error] ${err.name}: ${err.message}`,
+      );
+    }
   }
 
   /**

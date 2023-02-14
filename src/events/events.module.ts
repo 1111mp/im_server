@@ -2,6 +2,7 @@ import { Global, Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { BullModule } from '@nestjs/bull';
 
+import { EventsController } from './events.controller';
 import { Message } from './models/message.model';
 import { MessageRead } from './models/message-read.model';
 import { Notify } from './models/notify.model';
@@ -18,6 +19,7 @@ import { IMQueueName } from './constants';
       name: IMQueueName,
     }),
   ],
+  controllers: [EventsController],
   providers: [EventsService, ProtoService, EventsGateway],
   exports: [EventsService],
 })

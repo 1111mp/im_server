@@ -58,6 +58,7 @@ if (process.env.NODE_ENV === 'dev') {
       },
       inject: [ConfigService],
     }),
+    redisModule,
     BullModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {
@@ -73,10 +74,9 @@ if (process.env.NODE_ENV === 'dev') {
       },
       inject: [ConfigService],
     }),
-    redisModule,
-    EventsModule,
     LoggerModule,
     PermissionModule,
+    EventsModule,
     UsersModule,
     FriendsModule,
     GroupsModule,
