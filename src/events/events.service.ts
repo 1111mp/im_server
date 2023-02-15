@@ -31,6 +31,10 @@ export class EventsService {
     return this.notifyModel.create(notify, { transaction: trans });
   }
 
+  public findNotifyById(id: string) {
+    return this.notifyModel.findOne({ where: { id } });
+  }
+
   /**
    * @description: Add a send notify task to IMQueue
    * @param ModuleIM.Core.Notify
@@ -107,8 +111,15 @@ export class EventsService {
    * @param {ModuleIM} status
    * @return {Promise<[affectedCount:number]>}
    */
-  public updateNotifyStatus(id: string, status: ModuleIM.Common.NotifyStatus) {
-    return this.notifyModel.update({ status }, { where: { id } });
+  public updateNotifyStatus(
+    id: string,
+    status: ModuleIM.Common.NotifyStatus,
+    trans?: Transaction,
+  ) {
+    return this.notifyModel.update(
+      { status },
+      { where: { id }, transaction: trans },
+    );
   }
 
   /**

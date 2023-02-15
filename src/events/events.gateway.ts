@@ -284,6 +284,17 @@ export class EventsGateway
     }
 
     if (statusCode === HttpStatus.OK) {
+      const { id, type, status } = job.data;
+      if (
+        type === ModuleIM.Common.Notifys.AddFriend &&
+        (status === ModuleIM.Common.NotifyStatus.Fulfilled ||
+          status === ModuleIM.Common.NotifyStatus.Rejected)
+      ) {
+        // dont need to do anything
+        this.logger.debug(`[${id}] Send notify task completed`);
+        return;
+      }
+
       // received
       const [count] = await this.eventsService.updateNotifyStatus(
         job.data.id,
@@ -297,7 +308,7 @@ export class EventsGateway
       }
     }
 
-    this.logger.debug('Send notify task completed');
+    this.logger.debug(`[${job.data.id}] Send notify task completed`);
   }
 
   /***************************** Utils ***********************************/

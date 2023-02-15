@@ -21,3 +21,8 @@ export class UpdateFriendDto {
   @ApiProperty({ type: 'boolean' })
   block?: boolean;
 }
+
+export class AgreeOrRejectDto {
+  @ApiProperty({ type: 'string', required: true })
+  notifyId: string;
+}

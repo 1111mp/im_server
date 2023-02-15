@@ -21,7 +21,11 @@ import {
 import { FriendsService } from './friends.service';
 import { User as UserModel } from '../users/models/user.model';
 import { FriendSetting } from './models/friend-setting.model';
-import { CreateFriendDto, UpdateFriendDto } from './dto/create-friend-dto';
+import {
+  AgreeOrRejectDto,
+  CreateFriendDto,
+  UpdateFriendDto,
+} from './dto/create-friend-dto';
 
 @ApiTags('Friends')
 @ApiExtraModels(FriendSetting)
@@ -193,5 +197,33 @@ export class FriendsController {
   })
   getAll(@Request() req: IMServerRequest.RequestForAuthed) {
     return this.friendsService.getAll(req.user.id);
+  }
+
+  @Post('agree')
+  @ApiOperation({
+    summary: 'Agree to add yourself as a friend',
+    description: 'Agree to add yourself as a friend',
+  })
+  @ApiBearerAuth('token')
+  @ApiBearerAuth('userid')
+  agree(
+    @Request() req: IMServerRequest.RequestForAuthed,
+    @Body() agreeDto: AgreeOrRejectDto,
+  ) {
+    return this.friendsService.handleAgree(req.user, agreeDto);
+  }
+
+  @Post('reject')
+  @ApiOperation({
+    summary: 'Reject to add yourself as a friend',
+    description: 'Reject to add yourself as a friend',
+  })
+  @ApiBearerAuth('token')
+  @ApiBearerAuth('userid')
+  reject(
+    @Request() req: IMServerRequest.RequestForAuthed,
+    @Body() rejectDto: AgreeOrRejectDto,
+  ) {
+    return this.friendsService.handleReject(req.user, rejectDto);
   }
 }

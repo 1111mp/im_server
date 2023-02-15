@@ -12,7 +12,11 @@ import { v4 } from 'uuid';
 import { Friend } from './models/friend.model';
 import { FriendSetting } from './models/friend-setting.model';
 import { EventsService } from 'src/events/events.service';
-import { CreateFriendDto, UpdateFriendDto } from './dto/create-friend-dto';
+import {
+  AgreeOrRejectDto,
+  CreateFriendDto,
+  UpdateFriendDto,
+} from './dto/create-friend-dto';
 
 @Injectable()
 export class FriendsService {
@@ -240,6 +244,152 @@ export class FriendsService {
         },
       };
     } catch (err) {
+      throw new InternalServerErrorException('Database Error.');
+    }
+  }
+
+  /**
+   * @description: Agree to add yourself as a friend
+   * @param user User.UserInfo
+   * @param agreeDto AgreeOrRejectDto
+   * @returns Promise<IMServerResponse.JsonResponse<unknown>>
+   */
+  public async handleAgree(
+    user: User.UserInfo,
+    agreeDto: AgreeOrRejectDto,
+  ): Promise<IMServerResponse.JsonResponse<unknown>> {
+    const { notifyId } = agreeDto;
+
+    const notify = await this.eventsService.findNotifyById(notifyId);
+    if (
+      !notify ||
+      notify.status === ModuleIM.Common.NotifyStatus.Fulfilled ||
+      notify.status === ModuleIM.Common.NotifyStatus.Rejected
+    ) {
+      throw new NotFoundException('Request has expired.');
+    }
+
+    const relation = await this.getFriendRelation(user.id, notify.sender);
+    if (relation) {
+      throw new ForbiddenException(
+        "It's already a friend relationship, don't repeat submit.",
+      );
+    }
+
+    const trans = await this.friendModel.sequelize.transaction();
+
+    try {
+      const [count] = await this.eventsService.updateNotifyStatus(
+        notifyId,
+        ModuleIM.Common.NotifyStatus.Fulfilled,
+        trans,
+      );
+
+      if (count !== 1) {
+        throw new InternalServerErrorException();
+      }
+
+      const { sender } = notify;
+
+      await this.friendModel.create(
+        { userId: user.id, friendId: sender },
+        { transaction: trans },
+      );
+
+      await Promise.all([
+        this.friendSettingModel.create(
+          {
+            userId: user.id,
+            friendId: sender,
+          },
+          { transaction: trans },
+        ),
+        this.friendSettingModel.create(
+          {
+            userId: sender,
+            friendId: user.id,
+          },
+          { transaction: trans },
+        ),
+      ]);
+
+      await trans.commit();
+
+      await this.eventsService.addNotifyTaskToQueue({
+        ...notify.toJSON(),
+        receiver: sender,
+        sender: user,
+        status: ModuleIM.Common.NotifyStatus.Fulfilled,
+      });
+
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Successfully.',
+      };
+    } catch (err) {
+      await trans.rollback();
+
+      throw new InternalServerErrorException('Database Error.');
+    }
+  }
+
+  /**
+   * @description: Reject to add yourself as a friend
+   * @param user User.UserInfo
+   * @param rejectDto AgreeOrRejectDto
+   * @returns Promise<IMServerResponse.JsonResponse<unknown>>
+   */
+  public async handleReject(
+    user: User.UserInfo,
+    rejectDto: AgreeOrRejectDto,
+  ): Promise<IMServerResponse.JsonResponse<unknown>> {
+    const { notifyId } = rejectDto;
+
+    const notify = await this.eventsService.findNotifyById(notifyId);
+    if (
+      !notify ||
+      notify.status === ModuleIM.Common.NotifyStatus.Fulfilled ||
+      notify.status === ModuleIM.Common.NotifyStatus.Rejected
+    ) {
+      throw new NotFoundException('Request has expired.');
+    }
+
+    const relation = await this.getFriendRelation(user.id, notify.sender);
+    if (relation) {
+      throw new ForbiddenException(
+        "It's already a friend relationship, don't repeat submit.",
+      );
+    }
+
+    const trans = await this.friendModel.sequelize.transaction();
+
+    try {
+      const [count] = await this.eventsService.updateNotifyStatus(
+        notifyId,
+        ModuleIM.Common.NotifyStatus.Rejected,
+        trans,
+      );
+
+      if (count !== 1) {
+        throw new InternalServerErrorException();
+      }
+
+      await trans.commit();
+
+      await this.eventsService.addNotifyTaskToQueue({
+        ...notify.toJSON(),
+        receiver: notify.sender,
+        sender: user,
+        status: ModuleIM.Common.NotifyStatus.Rejected,
+      });
+
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Successfully.',
+      };
+    } catch (err) {
+      await trans.rollback();
+
       throw new InternalServerErrorException('Database Error.');
     }
   }
