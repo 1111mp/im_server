@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateNotifyDto {
   @ApiProperty({
@@ -28,4 +29,11 @@ export class CreateNotifyDto {
 
   @ApiProperty({ type: 'string', example: '' })
   ext?: string;
+}
+
+export class updateNotifyStatusDto {
+  @ApiProperty({ type: 'string', required: true })
+  @IsString()
+  @IsNotEmpty()
+  notifyId: string;
 }

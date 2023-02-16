@@ -1,15 +1,21 @@
 import {
+  BadRequestException,
   HttpStatus,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { InjectQueue } from '@nestjs/bull';
+import { validate } from 'class-validator';
 
 import { Notify } from './models/notify.model';
 import { Message as MessageModel } from './models/message.model';
 import { MessageRead as MessageReadModel } from './models/message-read.model';
-import { CreateNotifyDto } from './dto/create-notify.dto';
+import {
+  CreateNotifyDto,
+  updateNotifyStatusDto,
+} from './dto/create-notify.dto';
 import { IMQueueName } from './constants';
 
 import type { Queue } from 'bull';
@@ -84,6 +90,76 @@ export class EventsService {
       throw new InternalServerErrorException(
         `[Database error] ${err.name}: ${err.message}`,
       );
+    }
+  }
+
+  /**
+   * @description: Notify received
+   * @param receivedNotifyDto: updateNotifyStatusDto,
+   * @return Promise<IMServerResponse.JsonResponse<unknown>>
+   */
+  public async receivedNotify(
+    receivedNotifyDto: updateNotifyStatusDto,
+  ): Promise<IMServerResponse.JsonResponse<unknown>> {
+    const errors = await validate(receivedNotifyDto);
+    if (errors.length) {
+      throw new BadRequestException('Incorrect request parameter.');
+    }
+
+    const notify = await this.notifyModel.findOne({
+      where: { id: receivedNotifyDto.notifyId },
+    });
+
+    if (!notify || notify.status !== ModuleIM.Common.NotifyStatus.Initial) {
+      throw new NotFoundException('Request has expired.');
+    }
+
+    const [count] = await this.updateNotifyStatus(
+      receivedNotifyDto.notifyId,
+      ModuleIM.Common.NotifyStatus.Received,
+    );
+
+    if (count === 1) {
+      return { statusCode: HttpStatus.OK, message: 'Successfully.' };
+    } else if (count === 0) {
+      throw new NotFoundException('No resources are updated.');
+    } else {
+      throw new InternalServerErrorException('Database error.');
+    }
+  }
+
+  /**
+   * @description: Notify Readed
+   * @param receivedNotifyDto: updateNotifyStatusDto,
+   * @return Promise<IMServerResponse.JsonResponse<unknown>>
+   */
+  public async readedNotify(
+    readedNotifyDto: updateNotifyStatusDto,
+  ): Promise<IMServerResponse.JsonResponse<unknown>> {
+    const errors = await validate(readedNotifyDto);
+    if (errors.length) {
+      throw new BadRequestException('Incorrect request parameter.');
+    }
+
+    const notify = await this.notifyModel.findOne({
+      where: { id: readedNotifyDto.notifyId },
+    });
+
+    if (!notify || notify.status !== ModuleIM.Common.NotifyStatus.Received) {
+      throw new NotFoundException('Request has expired.');
+    }
+
+    const [count] = await this.updateNotifyStatus(
+      readedNotifyDto.notifyId,
+      ModuleIM.Common.NotifyStatus.Readed,
+    );
+
+    if (count === 1) {
+      return { statusCode: HttpStatus.OK, message: 'Successfully.' };
+    } else if (count === 0) {
+      throw new NotFoundException('No resources are updated.');
+    } else {
+      throw new InternalServerErrorException('Database error.');
     }
   }
 

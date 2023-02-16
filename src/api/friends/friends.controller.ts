@@ -200,12 +200,30 @@ export class FriendsController {
   }
 
   @Post('agree')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Agree to add yourself as a friend',
     description: 'Agree to add yourself as a friend',
   })
   @ApiBearerAuth('token')
   @ApiBearerAuth('userid')
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully.',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: {
+          type: 'number',
+          example: 200,
+        },
+        message: {
+          type: 'string',
+          example: 'Successfully.',
+        },
+      },
+    },
+  })
   agree(
     @Request() req: IMServerRequest.RequestForAuthed,
     @Body() agreeDto: AgreeOrRejectDto,
@@ -214,12 +232,30 @@ export class FriendsController {
   }
 
   @Post('reject')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Reject to add yourself as a friend',
     description: 'Reject to add yourself as a friend',
   })
   @ApiBearerAuth('token')
   @ApiBearerAuth('userid')
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully.',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: {
+          type: 'number',
+          example: 200,
+        },
+        message: {
+          type: 'string',
+          example: 'Successfully.',
+        },
+      },
+    },
+  })
   reject(
     @Request() req: IMServerRequest.RequestForAuthed,
     @Body() rejectDto: AgreeOrRejectDto,
