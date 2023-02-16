@@ -31,7 +31,7 @@ export class EventsGateway
     private readonly eventsService: EventsService,
     private readonly protoService: ProtoService,
   ) {
-    this.users = new Map();
+    this.users = new Map<number, User.UserInfo & { socketId: string }>();
   }
 
   @WebSocketServer()
@@ -315,13 +315,15 @@ export class EventsGateway
 
   private async sendMessageForSingle(message: ModuleIM.Core.MessageAll) {
     const { type, receiver } = message;
-    let buffer: Uint8Array;
+    let buffer: Uint8Array, eventName: ModuleIM.Common.MessageEventNames;
     switch (type) {
       case ModuleIM.Common.MsgType.Text: {
+        eventName = ModuleIM.Common.MessageEventNames.MessageText;
         buffer = this.protoService.setMessageTextToProto(message);
         break;
       }
       case ModuleIM.Common.MsgType.Image: {
+        eventName = ModuleIM.Common.MessageEventNames.MessageImage;
         buffer = this.protoService.setMessageImageToProto(message);
         break;
       }
@@ -335,11 +337,7 @@ export class EventsGateway
     const userStatus = this.getStatus(receiver);
     if (userStatus) {
       // online
-      return await this.send(
-        `${receiver}`,
-        ModuleIM.Common.MessageEventNames.Message,
-        buffer,
-      );
+      return await this.send(`${receiver}`, eventName, buffer);
     } else {
       // offline, dont need do anything
       return { statusCode: HttpStatus.NO_CONTENT, message: 'User is offline' };
@@ -392,7 +390,7 @@ export class EventsGateway
 
   private async send(
     receiver: string,
-    evtName: string,
+    evtName: ModuleIM.Common.MessageEventNames,
     message: Uint8Array,
     timer: number = 6000,
   ) {

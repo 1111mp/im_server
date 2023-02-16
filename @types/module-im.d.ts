@@ -60,6 +60,8 @@ namespace ModuleIM {
 
     const enum MessageEventNames {
       Message = 'on-message',
+      MessageText = 'on-message:text',
+      MessageImage = 'on-message:image',
       Notify = 'on-notify',
       Read = 'on-message:read',
     }
