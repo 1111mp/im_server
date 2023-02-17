@@ -19,7 +19,7 @@ import type { Job } from 'bull';
 @UsePipes(new ValidationPipe())
 @Processor(IMQueueName)
 @WebSocketGateway({
-  namespace: 'socket/v1/IM',
+  // namespace: '/socket/v1/IM/',
 })
 export class EventsGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
@@ -75,6 +75,11 @@ export class EventsGateway
       await this.eventsService.createOneForMessage(message);
 
       await this.eventsService.addMessageTaskToQueue(message);
+
+      console.log({
+        statusCode: HttpStatus.OK,
+        message: 'Successfully.',
+      });
 
       return this.protoService.setAckToProto({
         statusCode: HttpStatus.OK,

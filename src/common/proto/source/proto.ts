@@ -1,9 +1,9 @@
 import { HttpStatus } from '@nestjs/common';
 import { Message, Type, Field, OneOf } from 'protobufjs/light';
 
-@Type.d('SuperAckMessage')
+@Type.d()
 export class AckMessage extends Message<AckMessage> {
-  @Field.d(1, 'int32', 'required', HttpStatus.OK)
+  @Field.d(1, 'int32', 'required')
   public statusCode: HttpStatus;
 
   @Field.d(2, 'string', 'optional')
@@ -94,7 +94,7 @@ export class Notify extends Message<Notify> {
 }
 
 @Type.d()
-export class MessageText extends Message<MessageText> {
+export class MessageTextForSender extends Message<MessageTextForSender> {
   @Field.d(1, 'string', 'required')
   public id: string;
 
@@ -107,7 +107,37 @@ export class MessageText extends Message<MessageText> {
   @Field.d(4, 'int32', 'required')
   public receiver: number;
 
-  @Field.d(5, MsgType.Text, 'required')
+  @Field.d(5, 'string', 'required')
+  public type: ModuleIM.Common.MsgType.Text;
+
+  @Field.d(6, 'string', 'required')
+  public text: string;
+
+  @Field.d(7, MsgStatus)
+  public status: ModuleIM.Common.MsgStatus;
+
+  @Field.d(8, 'string', 'required')
+  public timer: string;
+
+  @Field.d(9, 'string')
+  public ext?: string;
+}
+
+@Type.d()
+export class MessageTextForReceived extends Message<MessageTextForReceived> {
+  @Field.d(1, 'string', 'required')
+  public id: string;
+
+  @Field.d(2, Session, 'required')
+  public session: ModuleIM.Common.Session;
+
+  @Field.d(3, 'int32', 'required')
+  public sender: number;
+
+  @Field.d(4, 'int32', 'required')
+  public receiver: number;
+
+  @Field.d(5, 'string', 'required')
   public type: ModuleIM.Common.MsgType.Text;
 
   @Field.d(6, 'string', 'required')
@@ -137,7 +167,7 @@ export class MessageImage extends Message<MessageImage> {
   @Field.d(4, 'int32', 'required')
   public receiver: number;
 
-  @Field.d(5, MsgType.Image, 'required')
+  @Field.d(5, 'string', 'required')
   public type: ModuleIM.Common.MsgType.Image;
 
   @Field.d(6, 'string', 'required')

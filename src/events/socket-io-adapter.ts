@@ -19,7 +19,11 @@ export class SocketIOAdapter extends IoAdapter {
     const clientPort = parseInt(this.configService.get('PORT'));
 
     const cors = {
-      origin: [`http://127.0.0.1:${clientPort}`],
+      origin: [
+        `http://127.0.0.1:${clientPort}`,
+        `http://127.0.0.1:1212`,
+        'http://localhost:1212',
+      ],
     };
 
     this.logger.log('Configuring SocketIO server with custom CORS options', {
@@ -29,16 +33,14 @@ export class SocketIOAdapter extends IoAdapter {
     const optionsWithCORS: ServerOptions = {
       ...options,
       cors,
+      path: '/socket/v1/IM/',
     };
 
     const server: Server = super.createIOServer(port, optionsWithCORS);
 
     const authService = this.app.get(AuthService);
 
-    server
-      .use(createTokenMiddleware(authService, this.logger))
-      .of('socket/v1/IM')
-      .use(createTokenMiddleware(authService, this.logger));
+    server.use(createTokenMiddleware(authService, this.logger));
 
     return server;
   }
@@ -47,7 +49,9 @@ export class SocketIOAdapter extends IoAdapter {
 const createTokenMiddleware =
   (authService: AuthService, logger: Logger) =>
   async (socket: Socket, next: (err?: Error) => void) => {
+    console.log(socket.handshake.headers);
     const { userid, authorization } = socket.handshake.headers;
+    console.log(userid);
 
     if (!userid || !authorization)
       return next(new Error('Authentication error'));
