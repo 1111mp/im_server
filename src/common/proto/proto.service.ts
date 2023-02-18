@@ -4,7 +4,8 @@ import {
   Notify,
   MessageTextForSender,
   MessageTextForReceived,
-  MessageImage,
+  MessageImageForSender,
+  MessageImageForReceived,
   MessageRead,
 } from './source/proto';
 
@@ -38,12 +39,12 @@ export class ProtoService {
   }
 
   public setMessageImageToProto(messageImage: ModuleIM.Core.MessageImage) {
-    const message = new MessageImage(messageImage);
-    return MessageImage.encode(message).finish();
+    const message = new MessageImageForSender(messageImage);
+    return MessageImageForSender.encode(message).finish();
   }
 
   public getMessageImageFromProto(buffer: Uint8Array) {
-    return MessageImage.decode(buffer);
+    return MessageImageForReceived.decode(buffer);
   }
 
   public setMessageReadToProto(messageRead: ModuleIM.Core.MessageRead) {

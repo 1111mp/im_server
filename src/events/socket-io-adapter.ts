@@ -49,9 +49,7 @@ export class SocketIOAdapter extends IoAdapter {
 const createTokenMiddleware =
   (authService: AuthService, logger: Logger) =>
   async (socket: Socket, next: (err?: Error) => void) => {
-    console.log(socket.handshake.headers);
     const { userid, authorization } = socket.handshake.headers;
-    console.log(userid);
 
     if (!userid || !authorization)
       return next(new Error('Authentication error'));

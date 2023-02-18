@@ -16,11 +16,17 @@ import { IMQueueName } from './constants';
 import type { Server, Socket } from 'socket.io';
 import type { Job } from 'bull';
 
+type AckCallback = (resp: Uint8Array) => void;
+
+type ListenEvents = {};
+type EmitEvents = Record<
+  ModuleIM.Common.MessageEventNames,
+  (buffer: Uint8Array, cb: AckCallback) => void
+>;
+
 @UsePipes(new ValidationPipe())
 @Processor(IMQueueName)
-@WebSocketGateway({
-  // namespace: '/socket/v1/IM/',
-})
+@WebSocketGateway()
 export class EventsGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
@@ -35,7 +41,7 @@ export class EventsGateway
   }
 
   @WebSocketServer()
-  private io: Server;
+  private io: Server<ListenEvents, EmitEvents>;
 
   // Gateway initialized (provided in module and instantiated)
   afterInit(): void {
@@ -76,11 +82,6 @@ export class EventsGateway
 
       await this.eventsService.addMessageTaskToQueue(message);
 
-      console.log({
-        statusCode: HttpStatus.OK,
-        message: 'Successfully.',
-      });
-
       return this.protoService.setAckToProto({
         statusCode: HttpStatus.OK,
         message: 'Successfully.',
@@ -101,7 +102,10 @@ export class EventsGateway
     @MessageBody() data: Uint8Array,
     @ConnectedSocket() client: Socket,
   ) {
-    const message = this.protoService.getMessageImageFromProto(data);
+    const message = {
+      ...this.protoService.getMessageImageFromProto(data),
+      sender: client.decoded.user,
+    };
 
     switch (message.session) {
       case ModuleIM.Common.Session.Single: {
@@ -342,7 +346,7 @@ export class EventsGateway
     const userStatus = this.getStatus(receiver);
     if (userStatus) {
       // online
-      return await this.send(`${receiver}`, eventName, buffer);
+      return await this.send(receiver, eventName, buffer);
     } else {
       // offline, dont need do anything
       return { statusCode: HttpStatus.NO_CONTENT, message: 'User is offline' };
@@ -358,7 +362,7 @@ export class EventsGateway
     if (userStatus) {
       // online
       return await this.send(
-        `${receiver}`,
+        receiver,
         ModuleIM.Common.MessageEventNames.Read,
         buffer,
       );
@@ -381,7 +385,7 @@ export class EventsGateway
       // online
       const message = this.protoService.setNotifyToProto(notify);
       const result = await this.send(
-        `${receiver}`,
+        receiver,
         ModuleIM.Common.MessageEventNames.Notify,
         message,
       );
@@ -394,30 +398,29 @@ export class EventsGateway
   }
 
   private async send(
-    receiver: string,
+    receiver: number,
     evtName: ModuleIM.Common.MessageEventNames,
     message: Uint8Array,
-    timer: number = 6000,
-  ) {
-    const promise: Promise<IMServerResponse.AckResponse> = new Promise(
-      (resolve) => {
-        this.io.to(receiver).emit(evtName, message, (data: Uint8Array) => {
-          resolve(this.protoService.getAckFromProto(data));
+    timer: number = 6000, // milliseconds
+  ): Promise<IMServerResponse.AckResponse> {
+    return new Promise((resolve) => {
+      const { socketId } = this.users.get(receiver);
+      this.io
+        .to(socketId)
+        .timeout(timer)
+        .emit(evtName, message, (err, respBuffer) => {
+          console.log(respBuffer);
+          resolve(
+            err
+              ? {
+                  statusCode: HttpStatus.REQUEST_TIMEOUT,
+                  message: 'timeout',
+                }
+              : (this.protoService
+                  .getAckFromProto(respBuffer[0])
+                  .toJSON() as IMServerResponse.AckResponse),
+          );
         });
-      },
-    );
-
-    const timeout: Promise<IMServerResponse.AckResponse> = new Promise(
-      (resolve) => {
-        setTimeout(() => {
-          resolve({
-            statusCode: HttpStatus.REQUEST_TIMEOUT,
-            message: 'timeout',
-          });
-        }, timer);
-      },
-    );
-
-    return Promise.race([promise, timeout]);
+    });
   }
 }
