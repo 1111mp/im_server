@@ -1,33 +1,22 @@
 namespace ModuleIM {
   namespace Core {
     type MessageBasic = {
-      id: string;
-      session: Common.Session;
+      id: bigint;
+      msgId: string;
+      type: Common.MsgType;
       sender: Omit<User.UserAttributes, 'pwd'>;
+      groupId?: number;
       receiver: number; // userId or groupId
-      status: Common.MsgStatus;
+      content: string;
       timer: string;
       ext?: string; // reserved field
     };
 
-    type MessageText = MessageBasic & {
-      type: Common.MsgType.Text;
-      text: string;
-    };
-
-    type MessageImage = MessageBasic & {
-      type: Common.MsgType.Image;
-      image: string;
-    };
-
-    type MessageAll = MessageText | MessageImage;
-
     type MessageRead = {
-      id: string;
-      session: Common.Session;
+      id: bigint;
       sender: number;
-      receiver: number; // userId or groupId
-      status: Common.MsgStatus;
+      groupId?: number;
+      receiver: number;
     };
 
     type Notify = {
@@ -60,8 +49,6 @@ namespace ModuleIM {
 
     const enum MessageEventNames {
       Message = 'on-message',
-      MessageText = 'on-message:text',
-      MessageImage = 'on-message:image',
       Notify = 'on-notify',
       Read = 'on-message:read',
     }

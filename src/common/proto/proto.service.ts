@@ -2,10 +2,12 @@ import { Injectable } from '@nestjs/common';
 import {
   AckMessage,
   Notify,
-  MessageTextForSender,
-  MessageTextForReceived,
-  MessageImageForSender,
-  MessageImageForReceived,
+  MessageForSender,
+  MessageForReceiver,
+  // MessageTextForSender,
+  // MessageTextForReceived,
+  // MessageImageForSender,
+  // MessageImageForReceived,
   MessageRead,
 } from './source/proto';
 
@@ -26,33 +28,26 @@ export class ProtoService {
   }
 
   public getNotifyFromProto(buffer: Uint8Array) {
-    return Notify.decode(buffer);
+    return Notify.decode(buffer).toJSON() as ModuleIM.Core.Notify;
   }
 
-  public setMessageTextToProto(messageText: ModuleIM.Core.MessageText) {
-    const message = new MessageTextForSender(messageText);
-    return MessageTextForSender.encode(message).finish();
+  public setMessageToProto(msg: ModuleIM.Core.MessageBasic) {
+    const message = new MessageForSender(msg);
+    return MessageForSender.encode(message).finish();
   }
 
-  public getMessageTextFromProto(buffer: Uint8Array) {
-    return MessageTextForReceived.decode(buffer);
+  public getMessageFromProto(buffer: Uint8Array) {
+    return MessageForReceiver.decode(
+      buffer,
+    ).toJSON() as ModuleIM.Core.MessageBasic;
   }
 
-  public setMessageImageToProto(messageImage: ModuleIM.Core.MessageImage) {
-    const message = new MessageImageForSender(messageImage);
-    return MessageImageForSender.encode(message).finish();
-  }
-
-  public getMessageImageFromProto(buffer: Uint8Array) {
-    return MessageImageForReceived.decode(buffer);
-  }
-
-  public setMessageReadToProto(messageRead: ModuleIM.Core.MessageRead) {
-    const message = new MessageRead(messageRead);
+  public setMessageReadToProto(msg: ModuleIM.Core.MessageRead) {
+    const message = new MessageRead(msg);
     return MessageRead.encode(message).finish();
   }
 
   public getMessageReadFromProto(buffer: Uint8Array) {
-    return MessageRead.decode(buffer);
+    return MessageRead.decode(buffer).toJSON() as ModuleIM.Core.MessageRead;
   }
 }

@@ -4,7 +4,8 @@ import { BullModule } from '@nestjs/bull';
 
 import { EventsController } from './events.controller';
 import { Message } from './models/message.model';
-import { MessageRead } from './models/message-read.model';
+import { MessageExt } from './models/message-ext.model';
+// import { MessageRead } from './models/message-read.model';
 import { Notify } from './models/notify.model';
 import { EventsService } from './events.service';
 import { ProtoService } from 'src/common/proto/proto.service';
@@ -14,7 +15,7 @@ import { IMQueueName } from './constants';
 @Global()
 @Module({
   imports: [
-    SequelizeModule.forFeature([Message, MessageRead, Notify]),
+    SequelizeModule.forFeature([Message, MessageExt, Notify]),
     BullModule.registerQueueAsync({
       name: IMQueueName,
     }),

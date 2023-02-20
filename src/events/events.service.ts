@@ -11,6 +11,7 @@ import { validate } from 'class-validator';
 
 import { Notify } from './models/notify.model';
 import { Message as MessageModel } from './models/message.model';
+import { MessageExt as MessageExtModel } from './models/message-ext.model';
 import { MessageRead as MessageReadModel } from './models/message-read.model';
 import {
   CreateNotifyDto,
@@ -19,7 +20,7 @@ import {
 import { IMQueueName } from './constants';
 
 import type { Queue } from 'bull';
-import type { Transaction } from 'sequelize';
+import { Transaction, where } from 'sequelize';
 
 @Injectable()
 export class EventsService {
@@ -28,6 +29,8 @@ export class EventsService {
     private readonly notifyModel: typeof Notify,
     @InjectModel(MessageModel)
     private readonly messageModel: typeof MessageModel,
+    @InjectModel(MessageExtModel)
+    private readonly messageExtModel: typeof MessageExtModel,
     @InjectModel(MessageReadModel)
     private readonly messageReadModel: typeof MessageReadModel,
     @InjectQueue(IMQueueName) private readonly imQueue: Queue<unknown>,
@@ -168,8 +171,8 @@ export class EventsService {
    * @param ModuleIM.Core.MessageAll
    * @returns Promise<void>
    */
-  public addMessageTaskToQueue(message: ModuleIM.Core.MessageAll) {
-    return this.imQueue.add('send-message:all', message);
+  public addMessageTaskToQueue(message: ModuleIM.Core.MessageBasic) {
+    return this.imQueue.add('send-message', message);
   }
 
   /**
@@ -203,38 +206,33 @@ export class EventsService {
    * @param message ModuleIM.Core.MessageAll
    * @returns Promise<MessageModel>
    */
-  public createOneForMessage(message: ModuleIM.Core.MessageAll) {
-    const { sender, type } = message;
-    let content = '';
-    switch (type) {
-      case ModuleIM.Common.MsgType.Text: {
-        content = message.text;
-        break;
-      }
-      case ModuleIM.Common.MsgType.Image: {
-        content = message.image;
-        break;
-      }
-      default:
-        break;
-    }
+  public createOneForMessage(message: ModuleIM.Core.MessageBasic) {
+    const { sender } = message;
 
     return this.messageModel.create({
       ...message,
       sender: sender.id,
-      status: ModuleIM.Common.MsgStatus.Initial,
-      content,
     });
   }
 
   /**
    * @description: Update message status
-   * @param id string
-   * @param status ModuleIM.Common.MsgStatus
-   * @returns Promise<[affectedCount: number]>
+   * @param info { sender: number; receiver: number; lastAck: bigint; }
+   * @returns Promise<[MessageExtModel, boolean]>
    */
-  public updateMessageStatus(id: string, status: ModuleIM.Common.MsgStatus) {
-    return this.messageModel.update({ status }, { where: { id } });
+  public updateAckMessage({
+    sender,
+    receiver,
+    lastAck,
+  }: {
+    sender: number;
+    receiver: number;
+    lastAck: bigint;
+  }) {
+    return this.messageExtModel.upsert(
+      { sender, receiver, lastAck },
+      { fields: ['lastAck'] },
+    );
   }
 
   /**
@@ -252,26 +250,12 @@ export class EventsService {
 
   public async handleForMessageRead(
     message: ModuleIM.Core.MessageRead,
-  ): Promise<[affectedCount: number]> {
-    const trans = await this.messageReadModel.sequelize.transaction();
-    let result: [affectedCount: number];
-    try {
-      await this.messageReadModel.create(
-        { ...message, status: ModuleIM.Common.MsgStatus.Initial },
-        { transaction: trans },
-      );
+  ): Promise<[MessageExtModel, boolean]> {
+    const { id, ...other } = message;
 
-      result = await this.messageModel.update(
-        { status: ModuleIM.Common.MsgStatus.Readed },
-        { where: { id: message.id }, transaction: trans },
-      );
-
-      await trans.commit();
-
-      return result;
-    } catch (err) {
-      await trans.rollback();
-      return [0];
-    }
+    return this.messageExtModel.upsert(
+      { ...other, lastRead: id },
+      { fields: ['lastRead'] },
+    );
   }
 }

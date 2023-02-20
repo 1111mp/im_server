@@ -64,109 +64,78 @@ export class EventsGateway
 
   /****************************** for message ***********************************/
 
-  // message for text
-  @SubscribeMessage('on-message:text')
-  private async handleMessageText(
+  @SubscribeMessage('on-message')
+  private async handleMessage(
     @MessageBody() data: Uint8Array,
     @ConnectedSocket() client: Socket,
   ): Promise<Uint8Array> {
-    try {
-      // There is no sender's info when the server receives the message.
-      const message = {
-        ...this.protoService.getMessageTextFromProto(data),
-        sender: client.decoded.user,
-      };
+    // There is no sender's info when the server receives the message.
+    const message = {
+      ...this.protoService.getMessageFromProto(data),
+      sender: client.decoded.user,
+    };
 
+    try {
       // create one message in db
       await this.eventsService.createOneForMessage(message);
-
-      await this.eventsService.addMessageTaskToQueue(message);
-
-      return this.protoService.setAckToProto({
-        statusCode: HttpStatus.OK,
-        message: 'Successfully.',
-      });
     } catch (err) {
       // something error
       this.logger.error(`[message:text] ${err.name}: ${err.message}`);
       return this.protoService.setAckToProto({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: 'Something Error.',
+        message: 'Database Error.',
       });
     }
-  }
 
-  // message for image
-  @SubscribeMessage('on-message:image')
-  private handleMessageImage(
-    @MessageBody() data: Uint8Array,
-    @ConnectedSocket() client: Socket,
-  ) {
-    const message = {
-      ...this.protoService.getMessageImageFromProto(data),
-      sender: client.decoded.user,
-    };
+    await this.eventsService.addMessageTaskToQueue(message);
 
-    switch (message.session) {
-      case ModuleIM.Common.Session.Single: {
-        // single message
-        return;
-      }
-      case ModuleIM.Common.Session.Group: {
-        // group message
-        return;
-      }
-      default:
-        // dont need do anything
-        this.logger.debug(`Unknown message session type: ${message.session}`);
-        return;
-    }
+    return this.protoService.setAckToProto({
+      statusCode: HttpStatus.OK,
+      message: 'Successfully.',
+    });
   }
 
   // send message:all task
-  @Process('send-message:all')
-  private async handleMessageTask(job: Job<ModuleIM.Core.MessageAll>) {
+  @Process('send-message')
+  private async handleMessageTask(job: Job<ModuleIM.Core.MessageBasic>) {
     this.logger.debug('Start send message task...');
 
-    const { session } = job.data;
+    const { id, groupId, sender, receiver } = job.data;
 
-    switch (session) {
-      case ModuleIM.Common.Session.Single: {
-        // single message
-        const { statusCode } = await this.sendMessageForSingle(job.data);
+    if (groupId !== void 0) {
+      // group message
+    } else {
+      // single message
+      const { statusCode } = await this.sendMessageForSingle(job.data);
 
-        if (statusCode === HttpStatus.REQUEST_TIMEOUT) {
-          // timeout
-          const { id, sender, receiver } = job.data;
-          this.logger.debug(
-            `[id]: ${id} [sender]: ${sender.id} [receiver]: ${receiver}. Message send timeout.`,
-          );
-        }
+      if (statusCode === HttpStatus.REQUEST_TIMEOUT) {
+        // timeout
+        // set lastAck--, prevent message lossed.
+        // msgId+1 msgId+2 msgId+3...
+        // if msgId+2 missed & msgId+3 successed, lastAck is msgId+3. Will loss mesgId+2.
+        // timeout callback to set lastAck: msgId+2 - 1 (msgId+1).
+        // msgId+3 will repeat, but client will deduplication based on msgId.
+        const [_messageExt, _created] =
+          await this.eventsService.updateAckMessage({
+            sender: sender.id,
+            receiver,
+            lastAck: id - BigInt(1),
+          });
 
-        if (statusCode === HttpStatus.OK) {
-          // received
-          const [count] = await this.eventsService.updateMessageStatus(
-            job.data.id,
-            ModuleIM.Common.MsgStatus.Received,
-          );
-
-          if (count !== 1) {
-            this.logger.error(
-              `[Database Error] unknown error when update notify(${job.data.id}) status.`,
-            );
-          }
-        }
-
-        break;
+        this.logger.debug(
+          `[id]: ${id} [sender]: ${sender.id} [receiver]: ${receiver}. Message send timeout.`,
+        );
       }
-      case ModuleIM.Common.Session.Group: {
-        // group message
-        break;
+
+      if (statusCode === HttpStatus.OK) {
+        // received
+        const [_messageExt, _created] =
+          await this.eventsService.updateAckMessage({
+            sender: sender.id,
+            receiver,
+            lastAck: id,
+          });
       }
-      default:
-        // dont need do anything
-        this.logger.debug(`Unknown message session type: ${session}`);
-        break;
     }
 
     this.logger.debug('Send message task completed');
@@ -182,9 +151,11 @@ export class EventsGateway
   ): Promise<Uint8Array> {
     const message = this.protoService.getMessageReadFromProto(data);
 
-    const [count] = await this.eventsService.handleForMessageRead(message);
+    const [_instance, _created] = await this.eventsService.handleForMessageRead(
+      message,
+    );
 
-    if (count !== 1) {
+    if (!_instance) {
       this.logger.error(
         `[Message Read] Database error when update message(${message.id}) status.`,
       );
@@ -208,44 +179,25 @@ export class EventsGateway
   private async handleMessageReadTask(job: Job<ModuleIM.Core.MessageRead>) {
     this.logger.debug('Start send message:read task...');
 
-    const { session } = job.data;
+    const { groupId } = job.data;
 
-    switch (session) {
-      case ModuleIM.Common.Session.Single: {
-        // single message
-        const { statusCode } = await this.sendMessageForRead(job.data);
+    if (groupId !== void 0) {
+      // group message
+    } else {
+      // single message
+      const { statusCode } = await this.sendMessageForRead(job.data);
 
-        if (statusCode === HttpStatus.REQUEST_TIMEOUT) {
-          // timeout
-          const { id, sender, receiver } = job.data;
-          this.logger.debug(
-            `[id]: ${id} [sender]: ${sender} [receiver]: ${receiver}. Message send timeout.`,
-          );
-        }
-
-        if (statusCode === HttpStatus.OK) {
-          // received
-          const [count] = await this.eventsService.updateMessageReadStatus(
-            job.data.id,
-            ModuleIM.Common.MsgStatus.Received,
-          );
-
-          if (count !== 1) {
-            this.logger.error(
-              `[Database Error] unknown error when update notify(${job.data.id}) status.`,
-            );
-          }
-        }
-        break;
+      if (statusCode === HttpStatus.REQUEST_TIMEOUT) {
+        // timeout
+        const { id, sender, receiver } = job.data;
+        this.logger.debug(
+          `[id]: ${id} [sender]: ${sender} [receiver]: ${receiver}. Message send timeout.`,
+        );
       }
-      case ModuleIM.Common.Session.Group: {
-        // group message
-        break;
-      }
-      default:
-        // dont need do anything
-        this.logger.debug(`Unknown message:read session type: ${session}`);
-        break;
+
+      // if (statusCode === HttpStatus.OK) {
+      //   // successfully received
+      // }
     }
 
     this.logger.debug('Send message:read task completed');
@@ -322,31 +274,17 @@ export class EventsGateway
 
   /***************************** Utils ***********************************/
 
-  private async sendMessageForSingle(message: ModuleIM.Core.MessageAll) {
-    const { type, receiver } = message;
-    let buffer: Uint8Array, eventName: ModuleIM.Common.MessageEventNames;
-    switch (type) {
-      case ModuleIM.Common.MsgType.Text: {
-        eventName = ModuleIM.Common.MessageEventNames.MessageText;
-        buffer = this.protoService.setMessageTextToProto(message);
-        break;
-      }
-      case ModuleIM.Common.MsgType.Image: {
-        eventName = ModuleIM.Common.MessageEventNames.MessageImage;
-        buffer = this.protoService.setMessageImageToProto(message);
-        break;
-      }
-      default:
-        return {
-          statusCode: HttpStatus.BAD_GATEWAY,
-          message: `Unknown message type: ${type}`,
-        };
-    }
-
+  private async sendMessageForSingle(message: ModuleIM.Core.MessageBasic) {
+    const { receiver } = message;
     const userStatus = this.getStatus(receiver);
+
     if (userStatus) {
       // online
-      return await this.send(receiver, eventName, buffer);
+      return await this.send(
+        receiver,
+        ModuleIM.Common.MessageEventNames.Message,
+        this.protoService.setMessageToProto(message),
+      );
     } else {
       // offline, dont need do anything
       return { statusCode: HttpStatus.NO_CONTENT, message: 'User is offline' };
@@ -355,16 +293,14 @@ export class EventsGateway
 
   private async sendMessageForRead(message: ModuleIM.Core.MessageRead) {
     const { receiver } = message;
-
-    const buffer = this.protoService.setMessageReadToProto(message);
-
     const userStatus = this.getStatus(receiver);
+
     if (userStatus) {
       // online
       return await this.send(
         receiver,
         ModuleIM.Common.MessageEventNames.Read,
-        buffer,
+        this.protoService.setMessageReadToProto(message),
       );
     } else {
       // offline, dont need do anything

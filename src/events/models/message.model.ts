@@ -3,17 +3,16 @@ import * as dayjs from 'dayjs';
 
 @Table
 export class Message extends Model<Message> {
-  @Column({ primaryKey: true, type: DataType.STRING })
-  id: string;
-
   @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-    validate: {
-      isIn: [[1, 2]], // ModuleIM.Common.Session
-    },
+    type: DataType.BIGINT,
+    primaryKey: true,
+    autoIncrement: true,
+    unique: true,
   })
-  session: ModuleIM.Common.Session;
+  id: bigint;
+
+  @Column({ type: DataType.STRING, unique: true, allowNull: false })
+  msgId: string;
 
   @Column({
     type: DataType.STRING,
@@ -33,19 +32,17 @@ export class Message extends Model<Message> {
 
   @Column({
     type: DataType.INTEGER,
-    allowNull: false,
-    comment: "receiver's userid",
+    allowNull: true,
+    comment: 'groupId',
   })
-  receiver: number;
+  groupId: number;
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    validate: {
-      isIn: [[1, 2, 3]], // ModuleIM.Common.MsgStatus
-    },
+    comment: "receiver's userid",
   })
-  status: ModuleIM.Common.MsgStatus;
+  receiver: number;
 
   @Column({ type: DataType.STRING })
   content: string;

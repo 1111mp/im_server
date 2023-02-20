@@ -1,5 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
-import { Message, Type, Field, OneOf } from 'protobufjs/light';
+import { Message, Type, Field } from 'protobufjs/light';
 
 @Type.d()
 export class AckMessage extends Message<AckMessage> {
@@ -45,26 +45,26 @@ enum NotifyStatus {
   Rejected,
 }
 
-// need keep same with ModuleIM.Common.Session
-enum Session {
-  Single = 1,
-  Group,
-}
+// // need keep same with ModuleIM.Common.Session
+// enum Session {
+//   Single = 1,
+//   Group,
+// }
 
-// need keep same with ModuleIM.Common.MsgStatus
-enum MsgStatus {
-  Initial = 1,
-  Received,
-  Readed,
-}
+// // need keep same with ModuleIM.Common.MsgStatus
+// enum MsgStatus {
+//   Initial = 1,
+//   Received,
+//   Readed,
+// }
 
-// need keep same with ModuleIM.Common.MsgType
-enum MsgType {
-  Text = 'text',
-  Image = 'image',
-  Video = 'video',
-  Audio = 'audio',
-}
+// // need keep same with ModuleIM.Common.MsgType
+// enum MsgType {
+//   Text = 'text',
+//   Image = 'image',
+//   Video = 'video',
+//   Audio = 'audio',
+// }
 
 @Type.d()
 export class Notify extends Message<Notify> {
@@ -93,88 +93,28 @@ export class Notify extends Message<Notify> {
   public ext?: string;
 }
 
-@Type.d()
-export class MessageTextForSender extends Message<MessageTextForSender> {
-  @Field.d(1, 'string', 'required')
-  public id: string;
+@Type.d('MessageForSender')
+export class MessageForSender extends Message<MessageForSender> {
+  @Field.d(1, 'int64', 'required')
+  public id: bigint;
 
-  @Field.d(2, Session, 'required')
-  public session: ModuleIM.Common.Session;
-
-  @Field.d(3, Sender)
-  public sender: Omit<User.UserAttributes, 'pwd'>;
-
-  @Field.d(4, 'int32', 'required')
-  public receiver: number;
-
-  @Field.d(5, 'string', 'required')
-  public type: ModuleIM.Common.MsgType.Text;
-
-  @Field.d(6, 'string', 'required')
-  public text: string;
-
-  @Field.d(7, MsgStatus)
-  public status: ModuleIM.Common.MsgStatus;
-
-  @Field.d(8, 'string', 'required')
-  public timer: string;
-
-  @Field.d(9, 'string')
-  public ext?: string;
-}
-
-@Type.d()
-export class MessageTextForReceived extends Message<MessageTextForReceived> {
-  @Field.d(1, 'string', 'required')
-  public id: string;
-
-  @Field.d(2, Session, 'required')
-  public session: ModuleIM.Common.Session;
-
-  @Field.d(3, 'int32', 'required')
-  public sender: number;
-
-  @Field.d(4, 'int32', 'required')
-  public receiver: number;
-
-  @Field.d(5, 'string', 'required')
-  public type: ModuleIM.Common.MsgType.Text;
-
-  @Field.d(6, 'string', 'required')
-  public text: string;
-
-  @Field.d(7, MsgStatus)
-  public status: ModuleIM.Common.MsgStatus;
-
-  @Field.d(8, 'string', 'required')
-  public timer: string;
-
-  @Field.d(9, 'string')
-  public ext?: string;
-}
-
-@Type.d()
-export class MessageImageForSender extends Message<MessageImageForSender> {
-  @Field.d(1, 'string', 'required')
-  public id: string;
-
-  @Field.d(2, Session, 'required')
-  public session: ModuleIM.Common.Session;
+  @Field.d(2, 'string', 'required')
+  public msgId: string;
 
   @Field.d(3, Sender)
   public sender: Omit<User.UserAttributes, 'pwd'>;
 
-  @Field.d(4, 'int32', 'required')
+  @Field.d(4, 'int32', 'optional')
+  public groupId?: number;
+
+  @Field.d(5, 'int32', 'required')
   public receiver: number;
 
-  @Field.d(5, 'string', 'required')
-  public type: ModuleIM.Common.MsgType.Image;
-
   @Field.d(6, 'string', 'required')
-  public image: string;
+  public type: ModuleIM.Common.MsgType;
 
-  @Field.d(7, MsgStatus)
-  public status: ModuleIM.Common.MsgStatus;
+  @Field.d(7, 'string', 'required')
+  public content: string;
 
   @Field.d(8, 'string', 'required')
   public timer: string;
@@ -183,28 +123,28 @@ export class MessageImageForSender extends Message<MessageImageForSender> {
   public ext?: string;
 }
 
-@Type.d()
-export class MessageImageForReceived extends Message<MessageImageForReceived> {
-  @Field.d(1, 'string', 'required')
-  public id: string;
+@Type.d('MessageForReceiver')
+export class MessageForReceiver extends Message<MessageForReceiver> {
+  @Field.d(1, 'int64', 'required')
+  public id: bigint;
 
-  @Field.d(2, Session, 'required')
-  public session: ModuleIM.Common.Session;
+  @Field.d(2, 'string', 'required')
+  public msgId: string;
 
   @Field.d(3, 'int32', 'required')
   public sender: number;
 
-  @Field.d(4, 'int32', 'required')
+  @Field.d(4, 'int32', 'optional')
+  public groupId?: number;
+
+  @Field.d(5, 'int32', 'required')
   public receiver: number;
 
-  @Field.d(5, 'string', 'required')
-  public type: ModuleIM.Common.MsgType.Image;
-
   @Field.d(6, 'string', 'required')
-  public image: string;
+  public type: ModuleIM.Common.MsgType;
 
-  @Field.d(7, MsgStatus)
-  public status: ModuleIM.Common.MsgStatus;
+  @Field.d(7, 'string', 'required')
+  public content: string;
 
   @Field.d(8, 'string', 'required')
   public timer: string;
@@ -215,18 +155,15 @@ export class MessageImageForReceived extends Message<MessageImageForReceived> {
 
 @Type.d()
 export class MessageRead extends Message<MessageRead> {
-  @Field.d(1, 'string', 'required')
-  public id: string;
+  @Field.d(1, 'int64', 'required')
+  public id: bigint;
 
-  @Field.d(2, Session, 'required')
-  public session: ModuleIM.Common.Session;
-
-  @Field.d(3, 'int32', 'required')
+  @Field.d(2, 'int32', 'required')
   public sender: number;
+
+  @Field.d(3, 'int32', 'optional')
+  public groupId?: number;
 
   @Field.d(4, 'int32', 'required')
   public receiver: number;
-
-  @Field.d(5, MsgStatus)
-  public status: ModuleIM.Common.MsgStatus;
 }
