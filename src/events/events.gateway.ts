@@ -96,7 +96,7 @@ export class EventsGateway
   }
 
   // send message:all task
-  @Process('send-message')
+  @Process({ name: 'send-message', concurrency: 100 })
   private async handleMessageTask(job: Job<ModuleIM.Core.MessageBasic>) {
     this.logger.debug('Start send message task...');
 
@@ -175,7 +175,7 @@ export class EventsGateway
   }
 
   // send message:read task
-  @Process('send-message:read')
+  @Process({ name: 'send-message:read', concurrency: 50 })
   private async handleMessageReadTask(job: Job<ModuleIM.Core.MessageRead>) {
     this.logger.debug('Start send message:read task...');
 
@@ -229,7 +229,7 @@ export class EventsGateway
   }
 
   // send notify task
-  @Process('send-notify')
+  @Process({ name: 'send-notify', concurrency: 25 })
   private async handleNotifyTask(job: Job<ModuleIM.Core.Notify>) {
     console.log(job);
     this.logger.debug('Start send notify task...');

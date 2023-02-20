@@ -62,6 +62,10 @@ $ yarn run test:cov
 
 [求教 IM 离线消息，单聊和群聊是存一张表好还是分开存？](http://www.52im.net/forum.php?mod=viewthread&tid=4102&highlight=%B5%A5%C1%C4%BA%CD%C8%BA%C1%C4%2B%D2%BB%D5%C5%B1%ED)
 
+[如何保证 IM 实时消息的“时序性”与“一致性”？](http://www.52im.net/thread-714-1-1.html)
+
+[IM 群聊消息如此复杂，如何保证不丢不重？](http://www.52im.net/thread-753-1-1.html)
+
 ## 单聊（保证消息不丢和用户不在线时的离线消息，以及解决大量离线消息时需要逐条向服务器发送 ack 已收到消息的回执）：
 
 ```
@@ -87,6 +91,16 @@ type MessageBasic = {
   lastAck: bigint; // last ack msgId
   lastRead: bigint; // last read msgId
 }
+```
+
+#### Notes：
+
+本服务器队列使用 [@nestjs/bull](https://docs.nestjs.cn/9/techniques?id=%e9%98%9f%e5%88%97) [bull](https://github.com/OptimalBits/bull) 实现
+
+队列中的任务并发执行，目前设置服务器发送消息的队列的并发量为 100：
+
+```
+@Process({ name: 'send-message', concurrency: 100 })
 ```
 
 ```
@@ -125,6 +139,7 @@ this.messageExtModel.upsert(
 3. 此时，对于客户端 B 来说，如果离线，那么可以在下次登录通过 `select * from Messages where id > lastAck` 来获取所有的离线消息。在线时，那么消息会实时送达。此时整个消息的发送接收阶段结束。
 
 #### 举例解释一下刚刚为什么在服务端向客户端 B 推送消息失败或者超时情况加要把 lastAck 强制设置为 (msgId+1) - 1 ：
+##### （此方案存在问题，当消息连续失败时，仍然会出现消息丢失的问题，但是已经解决，参见下文）
 
 如果客户端 A 向客户端 B（在线）发送了三条消息（客户端 B 离线则不存在这种消息丢失的问题）：`msgId+1 msgId+2 msgId+3`，到了服务端向客户端 B 推送消息时此时`msgId+1 和 msgId+3`成功，`msgId+2`失败或者超时，那么推送`msgId+3`消息成功时会将 lastAck 设置为 `msgId+3`，那么`msgId+2`消息会丢失，因为通过 `id > lastAck` 不能判断出`msgId+2`丢失了（下次用户在线离线消息也没有该消息）。
 
@@ -210,9 +225,21 @@ select * from MessageExt where sender = sender & groupId = groupId & lastRead <=
 select * from MessageExt where sender = sender & groupId = groupId & lastRead > msgId;
 ```
 
-## 遗留问题
+## 遗留问题（已解决）
 
-当消息连续推送失败时，强制设置 lastAck 为当前 `msgId - 1` 方案存在问题。待解决。
+#### 当消息连续推送失败时，强制设置 lastAck 为当前 `msgId - 1` 方案存在问题。待解决。已解决。
+
+解决方案：当消息连续推送失败时，强制设置 lastAck 为当前 `msgId - 1` 改为强制设置 lastAck 为当前任务执行时读取到的 lastAck 的值。
+
+还是这个例子：
+
+约定此时 lastAck 值为 `msgId`。
+
+如果客户端 A 向客户端 B（在线）发送了三条消息（客户端 B 离线则不存在这种消息丢失的问题）：`msgId+1 msgId+2 msgId+3`，到了服务端向客户端 B 推送消息时此时`msgId+1 和 msgId+3`成功，`msgId+2`失败或者超时，那么推送`msgId+3`消息成功时会将 lastAck 设置为 `msgId+3`，那么`msgId+2`消息会丢失，因为通过 `id > lastAck` 不能判断出`msgId+2`丢失了（下次用户在线离线消息也没有该消息）。
+
+所以需要在推送失败或者超时情况下强制将 lastAck 设置任务开始执行时读取到的 lastAck 的值为 `msgId`，那么此时可以通过`id > lastAck`再拿到`msgId+2`消息。不过此时会出现`msgId+1 msgId+3`重复的情况，但是客户端接收消息时通过对消息的`id`做去重处理即可解决重复问题。用户重新拉取消息时会拿到`[msgId+1, msgId+2, msgId+3]`消息列表，然后客户端通过 ack 回执告知服务器将 lastAck 设置为最后一条消息`msgId+3`，此时保证了不丢消息，也不需要在大量离线消息时需要逐条向服务器发送 ack 已收到消息的回执。
+
+此时就算 `msgId3` 也失败或超时也不会出现消息丢失的问题
 
 ### Message
 
