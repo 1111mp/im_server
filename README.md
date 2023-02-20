@@ -65,6 +65,31 @@ $ yarn run test:cov
 ## 单聊（保证消息不丢和用户不在线时的离线消息，以及解决大量离线消息时需要逐条向服务器发送 ack 已收到消息的回执）：
 
 ```
+两张表
+// Message Model
+type MessageBasic = {
+  id: bigint;
+  msgId: string;
+  type: Common.MsgType;
+  sender: Omit<User.UserAttributes, 'pwd'>;
+  groupId?: number; // if group message
+  receiver: number; // userId or groupId
+  content: string;
+  timer: string;
+  ext?: string; // reserved field
+};
+
+// MessageExt Model
+{
+  sender: number;
+  receiver: number;
+  groupId?: number; // if group message
+  lastAck: bigint; // last ack msgId
+  lastRead: bigint; // last read msgId
+}
+```
+
+```
 单聊和群聊的消息都放在一张表中（先不考虑客户端成功确认收到消息 ack 之后删除消息的动作，即消息一直存在数据库中）：
 ```
 
@@ -224,7 +249,7 @@ export class Message extends Model<Message> {
 {
   sender: number;
   receiver: number;
-  groupId: number; // if group message
+  groupId?: number; // if group message
   lastAck: bigint; // last ack msgId
   lastRead: bigint; // last read msgId
 }
