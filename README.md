@@ -62,7 +62,7 @@ $ yarn run test:cov
 
 [求教 IM 离线消息，单聊和群聊是存一张表好还是分开存？](http://www.52im.net/forum.php?mod=viewthread&tid=4102&highlight=%B5%A5%C1%C4%BA%CD%C8%BA%C1%C4%2B%D2%BB%D5%C5%B1%ED)
 
-#### 表设计
+### 表设计
 
 `Message Model`: id 字段递增 保证消息的“偏序”特性，实现只存 1 份消息即可
 
@@ -72,7 +72,7 @@ type MessageBasic = {
   msgId: string;
   type: Common.MsgType;
   sender: Omit<User.UserAttributes, 'pwd'>;
-  groupId?: number;
+  groupId?: number; // if group message
   receiver: number; // userId or groupId
   content: string;
   timer: string;
@@ -237,7 +237,7 @@ export class MessageExt extends Model<MessageExt> {
 
 ```
 
-单聊（保证消息不丢和用户不在线时的离线消息，以及解决大量离线消息时需要逐条向服务器发送 ack 已收到消息的回执）：
+### 单聊（保证消息不丢和用户不在线时的离线消息，以及解决大量离线消息时需要逐条向服务器发送 ack 已收到消息的回执）：
 
 ```
 单聊和群聊的消息都放在一张表中（先不考虑客户端成功确认收到消息 ack 之后删除消息的动作，即消息一直存在数据库中）：
@@ -246,14 +246,18 @@ export class MessageExt extends Model<MessageExt> {
 判断哪些消息是离线消息：
 
 ```
-单聊的消息不存在写、读扩散的问题，每次发送服务端只需要存一条消息，用户登录时服务器通过判断 所有 msgId > lastAck 指向的 msgId 的消息为客户端未收到的离线消息
-select * from Messages where id > lastAck
+单聊的消息不存在写、读扩散的问题，每次发送服务端只需要存一条消息，用户登录时服务器通过判断 所有 msgId < lastAck 指向的 msgId 的消息为客户端未收到的离线消息
+select * from Messages where id < lastAck
 ```
 
 简述消息 send 到 receive 的整个过程：
 
 ```
-约定此时 lastAck 值为 msgId
+约定此时 lastAck 值为 msgId， 更新 lastAck:
+this.messageExtModel.upsert(
+  { sender, receiver, lastAck },
+  { fields: ['lastAck'] },
+);
 ```
 
 如客户端 A 向客户端 B 发送消息 msgId+1 消息。
@@ -264,15 +268,35 @@ select * from Messages where id > lastAck
 
    用户不在线时，不需要做任何事直接结束当前任务。
 
-   用户在线时，服务端 emit 消息事件向客户端 B 推送 msgId+1 消息，客户端 B 通过 ack 告知服务端是否成功接收，如成功接收服务端更新 lastAck 为 msgId+1，失败或者超时情况下将 lastAck 设置为 (msgId+1) - 1 (这一步很重要，后续会解释为什么会这样处理)。
+   用户在线时，服务端 emit 消息事件向客户端 B 推送 msgId+1 消息，客户端 B 通过 ack 告知服务端是否成功接收，如成功接收服务端更新 lastAck 为 `msgId+1`，失败或者超时情况下将 lastAck 设置为 `(msgId+1) - 1` (这一步很重要，后续会解释为什么会这样处理)。
 
 3. 此时，对于客户端 B 来说，如果离线，那么可以在下次登录通过 `select * from Messages where id > lastAck` 来获取所有的离线消息。在线时，那么消息会实时送达。此时整个消息的发送接收阶段结束。
 
 #### 举例解释一下刚刚为什么在服务端向客户端 B 推送消息失败或者超时情况加要把 lastAck 强制设置为 (msgId+1) - 1 ：
 
-如果客户端 A 向客户端 B（在线）发送了三条消息（客户端离线则不存在这种消息丢失的问题）：`msgId+1 msgId+2 msgId+3`，到了服务端向客户端 B 推送消息时此时`msgId+1 和 msgId+3`成功，`msgId+2`失败或者超时，那么推送`msgId+3`消息成功时会将 lastAck 设置为 `msgId+3`，那么`msgId+2`消息会丢失，因为通过 `id > lastAck` 不能判断出`msgId+2`丢失了（下次用户在线离线消息也没有该消息）。
+如果客户端 A 向客户端 B（在线）发送了三条消息（客户端 B 离线则不存在这种消息丢失的问题）：`msgId+1 msgId+2 msgId+3`，到了服务端向客户端 B 推送消息时此时`msgId+1 和 msgId+3`成功，`msgId+2`失败或者超时，那么推送`msgId+3`消息成功时会将 lastAck 设置为 `msgId+3`，那么`msgId+2`消息会丢失，因为通过 `id < lastAck` 不能判断出`msgId+2`丢失了（下次用户在线离线消息也没有该消息）。
 
-所以需要在推送失败或者超时情况下强制将 lastAck 设置为 `(msgId+2) - 1`，那么此时可以通过`id > lastAck`再拿到`msgId+2`消息。不过此时会出现`msgId+3`重复的情况，但是客户端接收消息时通过消息的`id`做去重处理即可。用户重新拉取消息时会拿到`[msgId+2, msgId+3]`消息列表，然后客户端通过 ack 回执告知服务器将 lastAck 设置为最后一条消息`msgId+3`，此时保证了不丢消息，也不需要在大量离线消息时需要逐条向服务器发送 ack 已收到消息的回执。
+所以需要在推送失败或者超时情况下强制将 lastAck 设置为 `(msgId+2) - 1`，那么此时可以通过`id < lastAck`再拿到`msgId+2`消息。不过此时会出现`msgId+3`重复的情况，但是客户端接收消息时通过对消息的`id`做去重处理即可解决重复问题。用户重新拉取消息时会拿到`[msgId+2, msgId+3]`消息列表，然后客户端通过 ack 回执告知服务器将 lastAck 设置为最后一条消息`msgId+3`，此时保证了不丢消息，也不需要在大量离线消息时需要逐条向服务器发送 ack 已收到消息的回执。
+
+#### 单聊消息的已读功能和保证消息不丢的 lastAck 机制相同，新增 lastRead 字段，为最后该用户最后已读消息的 id 字段，客户端通过消息的 `id < lastRead` 来判断当前消息是否已读。
+
+但是单聊消息的已读过程比 lastAck 机制稍简单一些：
+
+1. 客户端 B 在已读`msgId`消息时，向服务端发送一条已读消息，服务端更新 lastRead 为 `msgId` & 向队列加入一个给客户端 A 推送已读消息的任务，然后通过 ack 告知客户端 B 发送已读消息成功，此时客户端 B 发送已读消息成功。
+
+2. 然后服务器进入到队列中执行向客户端 A 推送`msgId`客户端 B 得已读消息。
+
+   客户端 A 不在线时，不需要做任何处理，结束该任务。
+
+   客户端 A 在线时，向客户端 A 推送这条已读消息，在推送成功、失败或者超时情况下都不需要做任何处理。
+
+3. 对于客户端 A 来说存在如下情况：
+
+   在线并成功接收到已读消息：客户端直接通过 `id < lastRead` 判断当前消息是否已读。
+
+   离线：下次在线时，客户端向服务端查询获取 lastRead ，然后通过`id < lastRead` 判断消息是否已读。
+
+   在线但是推送失败（客户端未接收到已读消息）：不需要做任何处理，因为消息的已读未读的实效性要求并不那么高，可以通过下一条消息的已读消息来更新，或者下次登录时查询最新的 lastRead 来更新。
 
 #### Message
 
