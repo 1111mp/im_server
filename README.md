@@ -52,6 +52,8 @@ $ yarn run test:cov
 
 ## IM Protocol
 
+以下可访问我的[掘金文档](https://juejin.cn/post/7202583557751865401)，阅读体验更好
+
 [Socket.io](https://socket.io/zh-CN/)
 
 #### 参考
