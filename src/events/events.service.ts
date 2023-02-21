@@ -11,7 +11,7 @@ import { validate } from 'class-validator';
 
 import { Notify } from './models/notify.model';
 import { Message as MessageModel } from './models/message.model';
-import { MessageExt as MessageExtModel } from './models/message-ext.model';
+import { MessageAck as MessageAckModel } from './models/message-ack.model';
 import { MessageRead as MessageReadModel } from './models/message-read.model';
 import {
   CreateNotifyDto,
@@ -29,8 +29,8 @@ export class EventsService {
     private readonly notifyModel: typeof Notify,
     @InjectModel(MessageModel)
     private readonly messageModel: typeof MessageModel,
-    @InjectModel(MessageExtModel)
-    private readonly messageExtModel: typeof MessageExtModel,
+    @InjectModel(MessageAckModel)
+    private readonly messageAckModel: typeof MessageAckModel,
     @InjectModel(MessageReadModel)
     private readonly messageReadModel: typeof MessageReadModel,
     @InjectQueue(IMQueueName) private readonly imQueue: Queue<unknown>,
@@ -215,47 +215,43 @@ export class EventsService {
     });
   }
 
-  /**
-   * @description: Update message status
-   * @param info { sender: number; receiver: number; lastAck: bigint; }
-   * @returns Promise<[MessageExtModel, boolean]>
-   */
-  public updateAckMessage({
-    sender,
-    receiver,
-    lastAck,
-  }: {
-    sender: number;
-    receiver: number;
-    lastAck: bigint;
-  }) {
-    return this.messageExtModel.upsert(
-      { sender, receiver, lastAck },
-      { fields: ['lastAck'] },
-    );
+  public getAckInfo(receiver: number) {
+    return this.messageAckModel.findOne({
+      where: {
+        receiver,
+      },
+    });
   }
 
-  /**
-   * @description: Update message:read status
-   * @param id string
-   * @param status ModuleIM.Common.MsgStatus
-   * @returns Promise<[affectedCount: number]>
-   */
-  public updateMessageReadStatus(
-    id: string,
-    status: ModuleIM.Common.MsgStatus,
-  ) {
-    return this.messageReadModel.update({ status }, { where: { id } });
+  public upsertAck({
+    receiver,
+    lastAck,
+    lastAckErr,
+  }: {
+    receiver: number;
+    lastAck: bigint;
+    lastAckErr: bigint;
+  }) {
+    return this.messageAckModel.upsert(
+      { receiver, lastAck, lastAckErr },
+      { fields: ['lastAck', 'lastAckErr'] },
+    );
   }
 
   public async handleForMessageRead(
     message: ModuleIM.Core.MessageRead,
-  ): Promise<[MessageExtModel, boolean]> {
-    const { id, ...other } = message;
-
-    return this.messageExtModel.upsert(
-      { ...other, lastRead: id },
-      { fields: ['lastRead'] },
-    );
+  ): Promise<[MessageReadModel, boolean]> {
+    const { id, groupId, sender, receiver } = message;
+    if (groupId !== void 0) {
+      return this.messageReadModel.upsert(
+        { sender: groupId, receiver, lastRead: id },
+        { fields: ['lastRead'] },
+      );
+    } else {
+      return this.messageReadModel.upsert(
+        { sender, receiver, lastRead: id },
+        { fields: ['lastRead'] },
+      );
+    }
   }
 }

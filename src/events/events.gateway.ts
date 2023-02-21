@@ -107,35 +107,36 @@ export class EventsGateway
     } else {
       // single message
       const { statusCode } = await this.sendMessageForSingle(job.data);
+      const { lastAck = null, lastAckErr = null } =
+        await this.eventsService.getAckInfo(receiver);
 
-      if (statusCode === HttpStatus.REQUEST_TIMEOUT) {
-        // timeout
-        // set lastAck--, prevent message lossed.
-        // msgId+1 msgId+2 msgId+3...
-        // if msgId+2 missed & msgId+3 successed, lastAck is msgId+3. Will loss mesgId+2.
-        // timeout callback to set lastAck: msgId+2 - 1 (msgId+1).
-        // msgId+3 will repeat, but client will deduplication based on msgId.
-        const [_messageExt, _created] =
-          await this.eventsService.updateAckMessage({
-            sender: sender.id,
-            receiver,
-            lastAck: id - BigInt(1),
-          });
-
-        this.logger.debug(
-          `[id]: ${id} [sender]: ${sender.id} [receiver]: ${receiver}. Message send timeout.`,
-        );
-      }
+      let newLastAck: bigint = lastAck,
+        newLastAckErr: bigint = lastAckErr;
 
       if (statusCode === HttpStatus.OK) {
-        // received
-        const [_messageExt, _created] =
-          await this.eventsService.updateAckMessage({
-            sender: sender.id,
-            receiver,
-            lastAck: id,
-          });
+        // successfully
+        if (lastAckErr === null) {
+          id > lastAck && (newLastAck = id);
+        } else {
+          id < lastAckErr && (newLastAck = id);
+        }
+      } else {
+        // failed
+        if (lastAckErr === null) {
+          // 更新 lastAckErr 为当前 message.id
+          newLastAckErr = id;
+          id <= lastAck && (newLastAck = id - BigInt(1));
+        } else {
+          id <= lastAckErr && (newLastAckErr = id);
+          id <= lastAck && (newLastAck = id - BigInt(1));
+        }
       }
+
+      await this.eventsService.upsertAck({
+        receiver,
+        lastAck: newLastAck,
+        lastAckErr: newLastAckErr,
+      });
     }
 
     this.logger.debug('Send message task completed');

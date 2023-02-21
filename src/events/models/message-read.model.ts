@@ -1,36 +1,21 @@
-import {
-  Model,
-  Table,
-  Column,
-  DataType,
-  ForeignKey,
-  BelongsTo,
-} from 'sequelize-typescript';
+// Record the read status of the message
+
+import { Model, Table, Column, DataType } from 'sequelize-typescript';
 import * as dayjs from 'dayjs';
-import { Message } from './message.model';
 
-@Table
-export class MessageRead extends Model<MessageRead> {
-  @ForeignKey(() => Message)
-  @Column({ primaryKey: true, type: DataType.STRING })
-  id: string;
-
-  @BelongsTo(() => Message)
-  message: Message;
-
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-    validate: {
-      isIn: [[1, 2]], // ModuleIM.Common.Session
+@Table({
+  indexes: [
+    {
+      using: 'BTREE',
+      fields: ['sender', 'receiver', 'lastRead'],
     },
-  })
-  session: ModuleIM.Common.Session;
-
+  ],
+})
+export class MessageRead extends Model<MessageRead> {
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    comment: "sender's userid",
+    comment: "sender's userId or groupId",
   })
   sender: number;
 
@@ -41,14 +26,8 @@ export class MessageRead extends Model<MessageRead> {
   })
   receiver: number;
 
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-    validate: {
-      isIn: [[1, 2, 3]], // ModuleIM.Common.MsgStatus
-    },
-  })
-  status: ModuleIM.Common.MsgStatus;
+  @Column({ type: DataType.BIGINT, allowNull: true })
+  lastRead: bigint;
 
   @Column({
     type: DataType.DATE,
