@@ -47,7 +47,7 @@
     "protobufjs": "^7.2.2",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.0",
-    "sequelize": "^6.28.0",
+    "sequelize": "^6.28.2",
     "sequelize-typescript": "^2.1.5",
     "swagger-ui-express": "^4.6.0",
     "uuid": "^9.0.0"
