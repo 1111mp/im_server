@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Observable, map, of } from 'rxjs';
-import { CacheApiInfo, CacheApiKey } from '../decotators/cache.decorator';
+import { CacheApiInfo, CacheApiKey } from '../decotators/cache-api.decorator';
 import { IORedisKey } from 'src/common/redis/redis.module';
 import type { Redis } from 'ioredis';
 
@@ -38,9 +38,9 @@ export class CacheApiInterceptor implements NestInterceptor {
 
     const { expire, key = url } = cacheInfo;
 
-    const data = await this.redisClient.get(key);
-    if (data) {
-      return of(data);
+    const cache = await this.redisClient.get(key);
+    if (cache) {
+      return of(JSON.parse(cache));
     } else {
       return next.handle().pipe(
         map(async (data) => {

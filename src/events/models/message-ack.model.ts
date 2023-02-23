@@ -15,6 +15,7 @@ export class MessageAck extends Model<MessageAck> {
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
+    unique: true,
     comment: "receiver's userid",
   })
   receiver: number;

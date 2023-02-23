@@ -13,6 +13,7 @@ import { Process, Processor } from '@nestjs/bull';
 import { EventsService } from './events.service';
 import { ProtoService } from 'src/common/proto/proto.service';
 import { IMQueueName } from './constants';
+
 import type { Server, Socket } from 'socket.io';
 import type { Job } from 'bull';
 
@@ -95,20 +96,21 @@ export class EventsGateway
     });
   }
 
-  // send message:all task
+  // send message task
   @Process({ name: 'send-message', concurrency: 100 })
   private async handleMessageTask(job: Job<ModuleIM.Core.MessageBasic>) {
     this.logger.debug('Start send message task...');
 
-    const { id, groupId, sender, receiver } = job.data;
+    const { id, groupId, receiver } = job.data;
 
     if (groupId !== void 0) {
       // group message
+      await this.sendMessageForGroup(job.data);
     } else {
       // single message
       const { statusCode } = await this.sendMessageForSingle(job.data);
       const { lastAck = null, lastAckErr = null } =
-        await this.eventsService.getAckInfo(receiver);
+        await this.eventsService.getLastAck(receiver);
 
       let newLastAck: bigint = lastAck,
         newLastAckErr: bigint = lastAckErr;
@@ -132,7 +134,7 @@ export class EventsGateway
         }
       }
 
-      await this.eventsService.upsertAck({
+      await this.eventsService.upsertLastAck({
         receiver,
         lastAck: newLastAck,
         lastAckErr: newLastAckErr,
@@ -152,11 +154,11 @@ export class EventsGateway
   ): Promise<Uint8Array> {
     const message = this.protoService.getMessageReadFromProto(data);
 
-    const [_instance, _created] = await this.eventsService.handleForMessageRead(
+    const [instance, affectedCount] = await this.eventsService.upsertLastRead(
       message,
     );
 
-    if (!_instance) {
+    if (!instance && !affectedCount) {
       this.logger.error(
         `[Message Read] Database error when update message(${message.id}) status.`,
       );
@@ -176,7 +178,7 @@ export class EventsGateway
   }
 
   // send message:read task
-  @Process({ name: 'send-message:read', concurrency: 50 })
+  @Process({ name: 'send-message:read', concurrency: 100 })
   private async handleMessageReadTask(job: Job<ModuleIM.Core.MessageRead>) {
     this.logger.debug('Start send message:read task...');
 
@@ -195,6 +197,8 @@ export class EventsGateway
           `[id]: ${id} [sender]: ${sender} [receiver]: ${receiver}. Message send timeout.`,
         );
       }
+
+      // dont need do anything
 
       // if (statusCode === HttpStatus.OK) {
       //   // successfully received
@@ -274,6 +278,12 @@ export class EventsGateway
   }
 
   /***************************** Utils ***********************************/
+
+  private async sendMessageForGroup(message: ModuleIM.Core.MessageBasic) {
+    const { groupId } = message;
+
+    const members = await this.eventsService.getGroupMembersById(groupId);
+  }
 
   private async sendMessageForSingle(message: ModuleIM.Core.MessageBasic) {
     const { receiver } = message;

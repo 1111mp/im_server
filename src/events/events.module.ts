@@ -3,6 +3,8 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { BullModule } from '@nestjs/bull';
 
 import { EventsController } from './events.controller';
+import { Member } from './models/member.model';
+import { Group } from './models/group.model';
 import { Message } from './models/message.model';
 import { MessageAck } from './models/message-ack.model';
 import { MessageRead } from './models/message-read.model';
@@ -15,7 +17,14 @@ import { IMQueueName } from './constants';
 @Global()
 @Module({
   imports: [
-    SequelizeModule.forFeature([Message, MessageAck, MessageRead, Notify]),
+    SequelizeModule.forFeature([
+      Group,
+      Member,
+      Message,
+      MessageAck,
+      MessageRead,
+      Notify,
+    ]),
     BullModule.registerQueueAsync({
       name: IMQueueName,
     }),

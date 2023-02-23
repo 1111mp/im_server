@@ -35,7 +35,7 @@ import {
   UpdateUserDto,
 } from './dto/create-user.dto';
 import { Public } from 'src/common/auth/decorators/jwt.decorator';
-import { CacheApi } from 'src/common/cache/decotators/cache.decorator';
+import { CacheApi } from 'src/common/cache/decotators/cache-api.decorator';
 
 @ApiTags('User')
 @ApiExtraModels(UserModel)

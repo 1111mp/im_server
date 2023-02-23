@@ -9,7 +9,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Group } from './models/group.model';
+import { Group } from 'src/events/models/group.model';
 import { UsersService } from '../users/users.service';
 import {
   AddMembersDto,
