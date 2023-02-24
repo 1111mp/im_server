@@ -101,44 +101,14 @@ export class EventsGateway
   private async handleMessageTask(job: Job<ModuleIM.Core.MessageBasic>) {
     this.logger.debug('Start send message task...');
 
-    const { id, groupId, receiver } = job.data;
+    const { groupId, receiver } = job.data;
 
     if (groupId !== void 0) {
       // group message
       await this.sendMessageForGroup(job.data);
     } else {
       // single message
-      const { statusCode } = await this.sendMessageForSingle(job.data);
-      const { lastAck = null, lastAckErr = null } =
-        await this.eventsService.getLastAck(receiver);
-
-      let newLastAck: bigint = lastAck,
-        newLastAckErr: bigint = lastAckErr;
-
-      if (statusCode === HttpStatus.OK) {
-        // successfully
-        if (lastAckErr === null) {
-          id > lastAck && (newLastAck = id);
-        } else {
-          id < lastAckErr && (newLastAck = id);
-        }
-      } else {
-        // failed
-        if (lastAckErr === null) {
-          // 更新 lastAckErr 为当前 message.id
-          newLastAckErr = id;
-          id <= lastAck && (newLastAck = id - BigInt(1));
-        } else {
-          id <= lastAckErr && (newLastAckErr = id);
-          id <= lastAck && (newLastAck = id - BigInt(1));
-        }
-      }
-
-      await this.eventsService.upsertLastAck({
-        receiver,
-        lastAck: newLastAck,
-        lastAckErr: newLastAckErr,
-      });
+      await this.sendMessage(receiver, job.data);
     }
 
     this.logger.debug('Send message task completed');
@@ -186,6 +156,8 @@ export class EventsGateway
 
     if (groupId !== void 0) {
       // group message
+      // Push read messages of group chat messages in real time?
+      // todo
     } else {
       // single message
       const { statusCode } = await this.sendMessageForRead(job.data);
@@ -283,10 +255,60 @@ export class EventsGateway
     const { groupId } = message;
 
     const members = await this.eventsService.getGroupMembersById(groupId);
+
+    await Promise.all(
+      members.map(async ({ id }) => {
+        // user.id;
+        await this.sendMessage(id, message);
+      }),
+    );
   }
 
-  private async sendMessageForSingle(message: ModuleIM.Core.MessageBasic) {
-    const { receiver } = message;
+  private async sendMessage(
+    receiver: number,
+    message: ModuleIM.Core.MessageBasic,
+  ) {
+    const { statusCode } = await this.sendMessageForSingle(receiver, message);
+
+    if (statusCode === HttpStatus.NO_CONTENT) return;
+
+    const { id } = message;
+    const { lastAck = null, lastAckErr = null } =
+      await this.eventsService.getLastAck(receiver);
+
+    let newLastAck: bigint = lastAck,
+      newLastAckErr: bigint = lastAckErr;
+
+    if (statusCode === HttpStatus.OK) {
+      // successfully
+      if (lastAckErr === null) {
+        id > lastAck && (newLastAck = id);
+      } else {
+        id < lastAckErr && (newLastAck = id);
+      }
+    } else {
+      // failed
+      if (lastAckErr === null) {
+        // 更新 lastAckErr 为当前 message.id
+        newLastAckErr = id;
+        id <= lastAck && (newLastAck = id - BigInt(1));
+      } else {
+        id <= lastAckErr && (newLastAckErr = id);
+        id <= lastAck && (newLastAck = id - BigInt(1));
+      }
+    }
+
+    await this.eventsService.upsertLastAck({
+      receiver,
+      lastAck: newLastAck,
+      lastAckErr: newLastAckErr,
+    });
+  }
+
+  private async sendMessageForSingle(
+    receiver: number,
+    message: ModuleIM.Core.MessageBasic,
+  ) {
     const userStatus = this.getStatus(receiver);
 
     if (userStatus) {

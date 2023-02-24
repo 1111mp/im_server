@@ -11,8 +11,8 @@ import { ApiProperty } from '@nestjs/swagger';
 import { hashSync } from 'bcrypt';
 import * as dayjs from 'dayjs';
 import { Role } from 'src/common/permission/models/role.model';
-import { Group } from 'src/api/groups/models/group.model';
-import { Member } from 'src/api/groups/models/member.model';
+import { Group } from 'src/events/models/group.model';
+import { Member } from 'src/events/models/member.model';
 
 @Table({
   initialAutoIncrement: '10000',
@@ -22,7 +22,7 @@ import { Member } from 'src/api/groups/models/member.model';
 export class User extends Model<User> {
   @ApiProperty({ type: 'number', example: 10001, description: 'userid' })
   @Column({ primaryKey: true, autoIncrement: true, type: DataType.INTEGER })
-  id;
+  id: number;
 
   @ApiProperty({ example: '176xxxxxxxx', description: '账号 手机号' })
   @Column({
@@ -33,7 +33,7 @@ export class User extends Model<User> {
     unique: 'account',
     comment: '账号 手机号',
   })
-  account;
+  account: string;
 
   @Column({
     type: DataType.STRING,
@@ -45,11 +45,11 @@ export class User extends Model<User> {
     },
     comment: '用户密码',
   })
-  pwd;
+  pwd: string;
 
   @ApiProperty({ type: 'string' })
   @Column({ type: DataType.STRING, allowNull: true, comment: '用户头像' })
-  avatar;
+  avatar: string;
 
   @ApiProperty({ type: 'string' })
   @Column({
@@ -61,7 +61,7 @@ export class User extends Model<User> {
     },
     comment: '用户邮箱',
   })
-  email;
+  email: string;
 
   @ApiProperty({ type: 'string' })
   @Column({
@@ -73,7 +73,7 @@ export class User extends Model<User> {
       );
     },
   })
-  regisTime;
+  regisTime: string;
 
   @ApiProperty({ type: 'string' })
   @Column({
@@ -85,7 +85,7 @@ export class User extends Model<User> {
       );
     },
   })
-  updateTime;
+  updateTime: string;
 
   @ForeignKey(() => Role)
   @Column(DataType.INTEGER)
