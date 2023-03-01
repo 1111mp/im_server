@@ -24,7 +24,7 @@ import {
   CreateGroupDto,
   UpdateGroupDto,
 } from './dto/create-group.dto';
-import { Group as GroupModel } from 'src/events/models/group.model';
+import { Group as GroupModel } from 'src/api/groups/models/group.model';
 import { User } from '../users/models/user.model';
 
 @ApiTags('Groups')

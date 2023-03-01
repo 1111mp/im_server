@@ -11,8 +11,8 @@ import { ApiProperty } from '@nestjs/swagger';
 import { hashSync } from 'bcrypt';
 import * as dayjs from 'dayjs';
 import { Role } from 'src/common/permission/models/role.model';
-import { Group } from 'src/events/models/group.model';
-import { Member } from 'src/events/models/member.model';
+import { Group } from 'src/api/groups/models/group.model';
+import { Member } from 'src/api/groups/models/member.model';
 
 @Table({
   initialAutoIncrement: '10000',

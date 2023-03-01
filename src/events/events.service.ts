@@ -11,7 +11,8 @@ import { InjectQueue } from '@nestjs/bull';
 import { validate } from 'class-validator';
 
 import { Notify } from './models/notify.model';
-import { Group as GroupModel } from './models/group.model';
+import { GroupsService } from 'src/api/groups/groups.service';
+import { IORedisKey } from 'src/common/redis/redis.module';
 import { Message as MessageModel } from './models/message.model';
 import { MessageAck as MessageAckModel } from './models/message-ack.model';
 import { MessageRead as MessageReadModel } from './models/message-read.model';
@@ -21,7 +22,6 @@ import {
 } from './dto/create-notify.dto';
 import { IMQueueName } from './constants';
 import { CacheFnResult } from 'src/common/cache/decotators/cache-fn.decorator';
-import { IORedisKey } from 'src/common/redis/redis.module';
 
 import type { Redis } from 'ioredis';
 import type { Queue } from 'bull';
@@ -32,8 +32,6 @@ export class EventsService {
   constructor(
     @InjectModel(Notify)
     private readonly notifyModel: typeof Notify,
-    @InjectModel(GroupModel)
-    private readonly groupModel: typeof GroupModel,
     @InjectModel(MessageModel)
     private readonly messageModel: typeof MessageModel,
     @InjectModel(MessageAckModel)
@@ -41,6 +39,7 @@ export class EventsService {
     @InjectModel(MessageReadModel)
     private readonly messageReadModel: typeof MessageReadModel,
     @InjectQueue(IMQueueName) private readonly imQueue: Queue<unknown>,
+    private readonly groupService: GroupsService,
     @Inject(IORedisKey) private readonly redisClient: Redis,
   ) {}
 
@@ -229,12 +228,8 @@ export class EventsService {
    * @return Promise<User[]>
    */
   @CacheFnResult()
-  public async getGroupMembersById(groupId: number) {
-    const group = await this.groupModel.findOne({ where: { id: groupId } });
-    const members = (await group.$get('members', { attributes: ['id'] })).map(
-      (userModel) => userModel.toJSON(),
-    );
-    return members;
+  public getGroupMembersById(groupId: number) {
+    return this.groupService.getGroupMembersById(groupId);
   }
 
   /**

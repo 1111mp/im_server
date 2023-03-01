@@ -9,7 +9,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Group } from 'src/events/models/group.model';
+import { Group } from 'src/api/groups/models/group.model';
 import { UsersService } from '../users/users.service';
 import {
   AddMembersDto,
@@ -224,5 +224,13 @@ export class GroupsService {
         `[Database error]: ${err.name} ${err.message}`,
       );
     }
+  }
+
+  public async getGroupMembersById(groupId: number) {
+    const group = await this.groupModel.findOne({ where: { id: groupId } });
+    const members = (await group.$get('members', { attributes: ['id'] })).map(
+      (userModel) => userModel.toJSON(),
+    );
+    return members;
   }
 }
