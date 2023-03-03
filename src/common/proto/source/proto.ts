@@ -11,8 +11,8 @@ export class AckMessage extends Message<AckMessage> {
 }
 
 class Sender extends Message<Sender> {
-  @Field.d(1, 'string', 'required')
-  public id: string;
+  @Field.d(1, 'int32', 'required')
+  public id: number;
 
   @Field.d(2, 'string', 'required')
   public account: string;
@@ -119,13 +119,13 @@ export class MessageForSender extends Message<MessageForSender> {
   @Field.d(8, 'string', 'required')
   public timer: string;
 
-  @Field.d(9, 'string')
+  @Field.d(9, 'string', 'optional')
   public ext?: string;
 }
 
 @Type.d('MessageForReceiver')
 export class MessageForReceiver extends Message<MessageForReceiver> {
-  @Field.d(1, 'int64', 'required')
+  @Field.d(1, 'int64', 'optional')
   public id: bigint;
 
   @Field.d(2, 'string', 'required')

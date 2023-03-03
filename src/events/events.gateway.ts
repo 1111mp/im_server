@@ -78,17 +78,17 @@ export class EventsGateway
 
     try {
       // create one message in db
-      await this.eventsService.createOneForMessage(message);
+      const { id } = await this.eventsService.createOneForMessage(message);
+
+      await this.eventsService.addMessageTaskToQueue({ ...message, id });
     } catch (err) {
       // something error
-      this.logger.error(`[message:text] ${err.name}: ${err.message}`);
+      this.logger.error(`[message] ${err.name}: ${err.message}`);
       return this.protoService.setAckToProto({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         message: 'Database Error.',
       });
     }
-
-    await this.eventsService.addMessageTaskToQueue(message);
 
     return this.protoService.setAckToProto({
       statusCode: HttpStatus.OK,
@@ -100,7 +100,6 @@ export class EventsGateway
   @Process({ name: 'send-message', concurrency: 100 })
   private async handleMessageTask(job: Job<ModuleIM.Core.MessageBasic>) {
     this.logger.debug('Start send message task...');
-
     const { groupId, receiver } = job.data;
 
     if (groupId !== void 0) {
@@ -206,7 +205,7 @@ export class EventsGateway
   }
 
   // send notify task
-  @Process({ name: 'send-notify', concurrency: 25 })
+  @Process({ name: 'send-notify', concurrency: 50 })
   private async handleNotifyTask(job: Job<ModuleIM.Core.Notify>) {
     console.log(job);
     this.logger.debug('Start send notify task...');
@@ -270,11 +269,13 @@ export class EventsGateway
   ) {
     const { statusCode } = await this.sendMessageForSingle(receiver, message);
 
+    console.log(statusCode);
+
     if (statusCode === HttpStatus.NO_CONTENT) return;
 
     const { id } = message;
     const { lastAck = null, lastAckErr = null } =
-      await this.eventsService.getLastAck(receiver);
+      (await this.eventsService.getLastAck(receiver)) || {};
 
     let newLastAck: bigint = lastAck,
       newLastAckErr: bigint = lastAckErr;
@@ -378,16 +379,13 @@ export class EventsGateway
         .to(socketId)
         .timeout(timer)
         .emit(evtName, message, (err, respBuffer) => {
-          console.log(respBuffer);
           resolve(
             err
               ? {
                   statusCode: HttpStatus.REQUEST_TIMEOUT,
                   message: 'timeout',
                 }
-              : (this.protoService
-                  .getAckFromProto(respBuffer[0])
-                  .toJSON() as IMServerResponse.AckResponse),
+              : this.protoService.getAckFromProto(respBuffer[0]),
           );
         });
     });

@@ -19,7 +19,7 @@ export class ProtoService {
   }
 
   public getAckFromProto(buffer: Uint8Array) {
-    return AckMessage.decode(buffer);
+    return AckMessage.decode(buffer).toJSON() as IMServerResponse.AckResponse;
   }
 
   public setNotifyToProto(notify: ModuleIM.Core.Notify) {
