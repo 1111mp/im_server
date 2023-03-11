@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Query,
   Request,
 } from '@nestjs/common';
 import { EventsService } from './events.service';
@@ -17,10 +18,13 @@ import {
   getSchemaPath,
 } from '@nestjs/swagger';
 import { Notify as NotifyModel } from './models/notify.model';
+import { Message as MessageModel } from './models/message.model';
 import { updateNotifyStatusDto } from './dto/create-notify.dto';
+import { MsgReceivedDto } from './dto/create-message.dto';
 
 @ApiTags('Events')
 @ApiExtraModels(NotifyModel)
+@ApiExtraModels(MessageModel)
 @Controller('events')
 export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
@@ -35,7 +39,7 @@ export class EventsController {
   @ApiBearerAuth('userid')
   @ApiResponse({
     status: 200,
-    description: 'Successfully deleted.',
+    description: 'Successfully.',
     schema: {
       type: 'object',
       properties: {
@@ -115,5 +119,79 @@ export class EventsController {
   })
   readed(@Body() readedNotifyDto: updateNotifyStatusDto) {
     return this.eventsService.readedNotify(readedNotifyDto);
+  }
+
+  // 83586a58-8510-42b3-a364-0e21439b2e90
+  @Get('message')
+  @ApiOperation({
+    // operationId: 'notify',
+    summary: 'Get user all offline messages',
+    description: 'Get user all offline messages',
+  })
+  @ApiBearerAuth('token')
+  @ApiBearerAuth('userid')
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully.',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: {
+          type: 'number',
+          example: 200,
+        },
+        count: {
+          type: 'number',
+        },
+        data: {
+          type: 'array',
+          items: {
+            $ref: getSchemaPath(MessageModel),
+          },
+        },
+      },
+    },
+  })
+  getOfflineMsgs(
+    @Request() req: IMServerRequest.RequestForAuthed,
+    @Query('currentPage') currentPage: string,
+    @Query('pageSize') pageSize: string,
+  ) {
+    return this.eventsService.getOfflineMsgs(req.user.id, {
+      currentPage: currentPage ? parseInt(currentPage) : 1,
+      pageSize: pageSize ? parseInt(pageSize) : 100,
+    });
+  }
+
+  @Post('message/received')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Message received',
+    description: 'Message received',
+  })
+  @ApiBearerAuth('token')
+  @ApiBearerAuth('userid')
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully.',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: {
+          type: 'number',
+          example: 200,
+        },
+        message: {
+          type: 'string',
+          example: 'Successfully.',
+        },
+      },
+    },
+  })
+  msgReceived(
+    @Request() req: IMServerRequest.RequestForAuthed,
+    @Body() msgReceivedDto: MsgReceivedDto,
+  ) {
+    return this.eventsService.msgReceived(req.user.id, msgReceivedDto);
   }
 }

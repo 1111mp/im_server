@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   HttpStatus,
-  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -12,20 +11,20 @@ import { validate } from 'class-validator';
 
 import { Notify } from './models/notify.model';
 import { GroupsService } from 'src/api/groups/groups.service';
-import { IORedisKey } from 'src/common/redis/redis.module';
 import { Message as MessageModel } from './models/message.model';
 import { MessageAck as MessageAckModel } from './models/message-ack.model';
 import { MessageRead as MessageReadModel } from './models/message-read.model';
+import { User as UserModel } from 'src/api/users/models/user.model';
 import {
   CreateNotifyDto,
   updateNotifyStatusDto,
 } from './dto/create-notify.dto';
+import { GetOfflineMsgsDto, MsgReceivedDto } from './dto/create-message.dto';
 import { IMQueueName } from './constants';
 import { CacheFnResult } from 'src/common/cache/decotators/cache-fn.decorator';
+import { Op, Transaction } from 'sequelize';
 
-import type { Redis } from 'ioredis';
 import type { Queue } from 'bull';
-import type { Transaction } from 'sequelize';
 
 @Injectable()
 export class EventsService {
@@ -40,7 +39,6 @@ export class EventsService {
     private readonly messageReadModel: typeof MessageReadModel,
     @InjectQueue(IMQueueName) private readonly imQueue: Queue<unknown>,
     private readonly groupService: GroupsService,
-    @Inject(IORedisKey) private readonly redisClient: Redis,
   ) {}
 
   public createNotify(notify: CreateNotifyDto, trans: Transaction = null) {
@@ -174,6 +172,87 @@ export class EventsService {
   }
 
   /**
+   * @description: Get user all offline messages
+   * @param userId number
+   * @param getOfflineMsgsDto GetOfflineMsgsDto,
+   * @return Promise<IMServerResponse.JsonResponse<unknown> & { count: number }>
+   */
+  public async getOfflineMsgs(
+    userId: number,
+    getOfflineMsgsDto: GetOfflineMsgsDto,
+  ): Promise<IMServerResponse.JsonResponse<unknown> & { count: number }> {
+    const { currentPage, pageSize } = getOfflineMsgsDto;
+
+    try {
+      const { lastAck = 0 } = (await this.getLastAck(userId)) || {};
+      const userGroups = await UserModel.build({ id: userId }).$get('groups', {
+        raw: true,
+        attributes: ['id'],
+        // @ts-ignore
+        joinTableAttributes: [],
+      });
+
+      const { rows, count } = await this.messageModel.findAndCountAll({
+        raw: true,
+        where: {
+          id: {
+            [Op.gt]: lastAck,
+          },
+          [Op.or]: [
+            { receiver: userId },
+            {
+              groupId: userGroups.map(({ id }) => id),
+            },
+          ],
+        },
+        attributes: {
+          exclude: ['createdAt', 'updatedAt'],
+        },
+        offset: (currentPage - 1) * pageSize,
+        limit: pageSize,
+      });
+
+      return {
+        statusCode: HttpStatus.OK,
+        count,
+        data: rows,
+      };
+    } catch (err) {
+      throw new InternalServerErrorException('Database error.');
+    }
+  }
+
+  /**
+   * @description: messsage received
+   * @param userId number,
+   * @param msgReceivedDto MsgReceivedDto,
+   * @return Promise<IMServerResponse.JsonResponse<unknown>>
+   */
+  public async msgReceived(
+    userId: number,
+    msgReceivedDto: MsgReceivedDto,
+  ): Promise<IMServerResponse.JsonResponse<unknown>> {
+    const { id } = msgReceivedDto;
+
+    try {
+      await this.upsertLastAck({
+        receiver: userId,
+        lastAck: id,
+        lastAckErr: null,
+      });
+
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Successfully',
+      };
+    } catch (err) {
+      throw new InternalServerErrorException(
+        `[Database error] ${err.name}: ${err.message}`,
+      );
+    }
+  }
+
+  /**
    * @description: Add a send message:all task to IMQueue
    * @param ModuleIM.Core.MessageAll
    * @returns Promise<void>
@@ -237,11 +316,13 @@ export class EventsService {
    * @param receiver  number
    * @return Promise<MessageAckModel>
    */
-  public getLastAck(receiver: number) {
+  public getLastAck(receiver: number, trans?: Transaction) {
     return this.messageAckModel.findOne({
+      raw: true,
       where: {
         receiver,
       },
+      transaction: trans,
     });
   }
 

@@ -8,9 +8,10 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { literal } from 'sequelize';
 import { InjectModel } from '@nestjs/sequelize';
-import { Group } from 'src/api/groups/models/group.model';
-import { UsersService } from '../users/users.service';
+import { Group } from './models/group.model';
+import { User as UserModel } from 'src/api/users/models/user.model';
 import {
   AddMembersDto,
   CreateGroupDto,
@@ -24,7 +25,6 @@ export class GroupsService {
   constructor(
     @InjectModel(Group)
     private readonly groupModel: typeof Group,
-    private readonly userService: UsersService,
   ) {}
 
   /**
@@ -211,13 +211,29 @@ export class GroupsService {
     user: User.UserInfo,
   ): Promise<IMServerResponse.JsonResponse<ModuleIM.Core.Group[]>> {
     try {
-      const userModel = await this.userService.getUserModel(user.id);
-
-      const groups = await userModel.$get('groups');
+      const groups = await UserModel.build({ id: user.id }).$get('groups', {
+        attributes: {
+          include: [
+            [
+              literal(
+                `(
+                  SELECT COUNT(*)
+                  FROM Members AS Member
+                  WHERE
+                    Member.groupId = Group.id
+                )`,
+              ),
+              'count',
+            ],
+          ],
+        },
+        // @ts-ignore
+        joinTableAttributes: [],
+      });
 
       return {
         statusCode: HttpStatus.OK,
-        data: groups.map((group) => group.toJSON()),
+        data: groups,
       };
     } catch (err) {
       throw new InternalServerErrorException(
@@ -228,9 +244,10 @@ export class GroupsService {
 
   public async getGroupMembersById(groupId: number) {
     const group = await this.groupModel.findOne({ where: { id: groupId } });
-    const members = (await group.$get('members', { attributes: ['id'] })).map(
-      (userModel) => userModel.toJSON(),
-    );
+    const members = await group.$get('members', {
+      raw: true,
+      attributes: ['id'],
+    });
     return members;
   }
 }

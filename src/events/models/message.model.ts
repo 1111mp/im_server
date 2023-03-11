@@ -1,8 +1,10 @@
 import { Model, Table, Column, DataType } from 'sequelize-typescript';
+import { ApiProperty } from '@nestjs/swagger';
 import * as dayjs from 'dayjs';
 
 @Table
 export class Message extends Model<Message> {
+  @ApiProperty({ type: 'bigint' })
   @Column({
     type: DataType.BIGINT,
     primaryKey: true,
@@ -11,9 +13,11 @@ export class Message extends Model<Message> {
   })
   id: bigint;
 
+  @ApiProperty({ type: 'string' })
   @Column({ type: DataType.STRING, unique: true, allowNull: false })
   msgId: string;
 
+  @ApiProperty({ enum: ['text', 'image', 'video', 'audio'] })
   @Column({
     type: DataType.STRING,
     allowNull: false,
@@ -23,6 +27,7 @@ export class Message extends Model<Message> {
   })
   type: ModuleIM.Common.MsgType;
 
+  @ApiProperty({ type: 'number' })
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
@@ -30,6 +35,7 @@ export class Message extends Model<Message> {
   })
   sender: number;
 
+  @ApiProperty({ type: 'number' })
   @Column({
     type: DataType.INTEGER,
     allowNull: true,
@@ -37,6 +43,7 @@ export class Message extends Model<Message> {
   })
   groupId: number;
 
+  @ApiProperty({ type: 'number' })
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
@@ -44,8 +51,13 @@ export class Message extends Model<Message> {
   })
   receiver: number;
 
+  @ApiProperty({ type: 'string' })
   @Column({ type: DataType.STRING })
   content: string;
+
+  // @ApiProperty({ type: 'string' })
+  // @Column({ type: DataType.STRING, allowNull: false })
+  // timer: string;
 
   @Column({
     type: DataType.DATE,
