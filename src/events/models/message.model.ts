@@ -55,9 +55,9 @@ export class Message extends Model<Message> {
   @Column({ type: DataType.STRING })
   content: string;
 
-  // @ApiProperty({ type: 'string' })
-  // @Column({ type: DataType.STRING, allowNull: false })
-  // timer: string;
+  @ApiProperty({ type: 'string' })
+  @Column({ type: DataType.STRING, allowNull: false })
+  timer: string;
 
   @Column({
     type: DataType.DATE,

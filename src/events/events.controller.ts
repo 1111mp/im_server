@@ -8,7 +8,6 @@ import {
   Query,
   Request,
 } from '@nestjs/common';
-import { EventsService } from './events.service';
 import {
   ApiBearerAuth,
   ApiExtraModels,
@@ -17,6 +16,7 @@ import {
   ApiTags,
   getSchemaPath,
 } from '@nestjs/swagger';
+import { EventsService } from './events.service';
 import { Notify as NotifyModel } from './models/notify.model';
 import { Message as MessageModel } from './models/message.model';
 import { updateNotifyStatusDto } from './dto/create-notify.dto';
@@ -121,7 +121,6 @@ export class EventsController {
     return this.eventsService.readedNotify(readedNotifyDto);
   }
 
-  // 83586a58-8510-42b3-a364-0e21439b2e90
   @Get('message')
   @ApiOperation({
     // operationId: 'notify',

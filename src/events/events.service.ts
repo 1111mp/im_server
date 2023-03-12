@@ -5,6 +5,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
+import { Op } from 'sequelize';
 import { InjectModel } from '@nestjs/sequelize';
 import { InjectQueue } from '@nestjs/bull';
 import { validate } from 'class-validator';
@@ -22,8 +23,8 @@ import {
 import { GetOfflineMsgsDto, MsgReceivedDto } from './dto/create-message.dto';
 import { IMQueueName } from './constants';
 import { CacheFnResult } from 'src/common/cache/decotators/cache-fn.decorator';
-import { Op, Transaction } from 'sequelize';
 
+import type { Transaction } from 'sequelize';
 import type { Queue } from 'bull';
 
 @Injectable()
