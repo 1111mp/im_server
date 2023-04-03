@@ -261,11 +261,7 @@ export class FriendsService {
     const { notifyId } = agreeDto;
 
     const notify = await this.eventsService.findNotifyById(notifyId);
-    if (
-      !notify ||
-      notify.status === ModuleIM.Common.NotifyStatus.Fulfilled ||
-      notify.status === ModuleIM.Common.NotifyStatus.Rejected
-    ) {
+    if (!notify || notify.status > ModuleIM.Common.NotifyStatus.Readed) {
       throw new NotFoundException('Request has expired.');
     }
 
@@ -346,11 +342,7 @@ export class FriendsService {
     const { notifyId } = rejectDto;
 
     const notify = await this.eventsService.findNotifyById(notifyId);
-    if (
-      !notify ||
-      notify.status === ModuleIM.Common.NotifyStatus.Fulfilled ||
-      notify.status === ModuleIM.Common.NotifyStatus.Rejected
-    ) {
+    if (!notify || notify.status > ModuleIM.Common.NotifyStatus.Readed) {
       throw new NotFoundException('Request has expired.');
     }
 

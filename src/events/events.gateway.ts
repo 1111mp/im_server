@@ -212,36 +212,38 @@ export class EventsGateway
 
     const { statusCode } = await this.sendNotify(job.data);
 
-    if (statusCode === HttpStatus.REQUEST_TIMEOUT) {
-      // timeout
-      const { id, sender, receiver } = job.data;
-      this.logger.debug(
-        `[id]: ${id} [sender]: ${sender.id} [receiver]: ${receiver}. Notify send timeout.`,
-      );
-    }
-
-    if (statusCode === HttpStatus.OK) {
-      const { id, type, status } = job.data;
-      if (
-        type === ModuleIM.Common.Notifys.AddFriend &&
-        (status === ModuleIM.Common.NotifyStatus.Fulfilled ||
-          status === ModuleIM.Common.NotifyStatus.Rejected)
-      ) {
-        // dont need to do anything
-        this.logger.debug(`[${id}] Send notify task completed`);
-        return;
-      }
-
-      // received
-      const [count] = await this.eventsService.updateNotifyStatus(
-        job.data.id,
-        ModuleIM.Common.NotifyStatus.Received,
-      );
-
-      if (count !== 1) {
-        this.logger.error(
-          `[Database Error] unknown error when update notify(${job.data.id}) status.`,
+    switch (statusCode) {
+      case HttpStatus.REQUEST_TIMEOUT: {
+        // timeout
+        const { id, sender, receiver } = job.data;
+        this.logger.debug(
+          `[id]: ${id} [sender]: ${sender.id} [receiver]: ${receiver}. Notify send timeout.`,
         );
+
+        break;
+      }
+      case HttpStatus.OK: {
+        const { status } = job.data;
+        if (status !== ModuleIM.Common.NotifyStatus.Initial) break;
+
+        // received
+        const [count] = await this.eventsService.updateNotifyStatus(
+          job.data.id,
+          ModuleIM.Common.NotifyStatus.Received,
+        );
+
+        if (count !== 1) {
+          this.logger.error(
+            `[Database Error] unknown error when update notify(${job.data.id}) status.`,
+          );
+        }
+
+        break;
+      }
+      case HttpStatus.NO_CONTENT:
+      default: {
+        // offline, dont need do anything
+        break;
       }
     }
 
@@ -255,6 +257,7 @@ export class EventsGateway
 
     const members = await this.eventsService.getGroupMembersById(groupId);
 
+    //? Optimization: Should the task be split into multiple queues if the number of members is too large
     await Promise.all(
       members.map(async ({ id }) => {
         // user.id;
@@ -268,8 +271,6 @@ export class EventsGateway
     message: ModuleIM.Core.MessageBasic,
   ) {
     const { statusCode } = await this.sendMessageForSingle(receiver, message);
-
-    console.log(statusCode);
 
     if (statusCode === HttpStatus.NO_CONTENT) return;
 

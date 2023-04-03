@@ -141,11 +141,13 @@ export class GroupsService {
 
     if (count === 1) {
       return { statusCode: HttpStatus.OK, message: 'Update successed.' };
-    } else if (count === 0) {
-      throw new NotFoundException('No resources are updated.');
-    } else {
-      throw new InternalServerErrorException('Database error.');
     }
+
+    if (count === 0) {
+      throw new NotFoundException('No resources are updated.');
+    }
+
+    throw new InternalServerErrorException('Database error.');
   }
 
   public async addMembers(
