@@ -4,10 +4,6 @@ import {
   Notify,
   MessageForSender,
   MessageForReceiver,
-  // MessageTextForSender,
-  // MessageTextForReceived,
-  // MessageImageForSender,
-  // MessageImageForReceived,
   MessageRead,
 } from './source/proto';
 

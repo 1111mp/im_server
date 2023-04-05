@@ -32,13 +32,13 @@ export class EventsGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
   private readonly logger = new Logger(EventsGateway.name);
-  private users: Map<number, User.UserInfo & { socketId: string }>;
+  private users: Map<number, string>;
 
   constructor(
     private readonly eventsService: EventsService,
     private readonly protoService: ProtoService,
   ) {
-    this.users = new Map<number, User.UserInfo & { socketId: string }>();
+    this.users = new Map();
   }
 
   @WebSocketServer()
@@ -51,7 +51,7 @@ export class EventsGateway
 
   handleConnection(client: Socket) {
     const { user } = client.decoded;
-    this.users.set(user.id, { ...user, socketId: client.id });
+    this.users.set(user.id, client.id);
   }
 
   handleDisconnect(client: Socket) {
@@ -207,7 +207,6 @@ export class EventsGateway
   // send notify task
   @Process({ name: 'send-notify', concurrency: 50 })
   private async handleNotifyTask(job: Job<ModuleIM.Core.Notify>) {
-    console.log(job);
     this.logger.debug('Start send notify task...');
 
     const { statusCode } = await this.sendNotify(job.data);
@@ -375,7 +374,7 @@ export class EventsGateway
     timer: number = 6000, // milliseconds
   ): Promise<IMServerResponse.AckResponse> {
     return new Promise((resolve) => {
-      const { socketId } = this.users.get(receiver);
+      const socketId = this.users.get(receiver);
       this.io
         .to(socketId)
         .timeout(timer)

@@ -45,27 +45,6 @@ enum NotifyStatus {
   Rejected,
 }
 
-// // need keep same with ModuleIM.Common.Session
-// enum Session {
-//   Single = 1,
-//   Group,
-// }
-
-// // need keep same with ModuleIM.Common.MsgStatus
-// enum MsgStatus {
-//   Initial = 1,
-//   Received,
-//   Readed,
-// }
-
-// // need keep same with ModuleIM.Common.MsgType
-// enum MsgType {
-//   Text = 'text',
-//   Image = 'image',
-//   Video = 'video',
-//   Audio = 'audio',
-// }
-
 @Type.d()
 export class Notify extends Message<Notify> {
   @Field.d(1, 'string', 'required')

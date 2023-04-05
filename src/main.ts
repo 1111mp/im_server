@@ -11,6 +11,9 @@ async function bootstrap() {
     bufferLogs: true,
   });
 
+  const configService = app.get(ConfigService);
+  const port = configService.get<number>('PORT');
+
   app.setGlobalPrefix('api');
   app.enableVersioning({
     type: VersioningType.URI,
@@ -19,16 +22,13 @@ async function bootstrap() {
   });
 
   app.enableCors({
-    origin: ['http://localhost:1212'],
+    origin: configService.get('CLIENTORIGIN').split('___'),
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Accept', 'authorization', 'userid'],
     exposedHeaders: ['authorization', 'userid'],
     maxAge: 60, //指定本次预检请求的有效期，单位为秒。
     credentials: true, //是否允许发送Cookie
   });
-
-  const configService = app.get(ConfigService);
-  const port = configService.get('PORT');
 
   app.useLogger(app.get(LoggerService));
   app.useWebSocketAdapter(new SocketIOAdapter(app, configService));
