@@ -111,9 +111,8 @@ export class EventsService {
     receivedNotifyDto: updateNotifyStatusDto,
   ): Promise<IMServerResponse.JsonResponse<unknown>> {
     const errors = await validate(receivedNotifyDto);
-    if (errors.length) {
+    if (errors.length)
       throw new BadRequestException('Incorrect request parameter.');
-    }
 
     const notify = await this.notifyModel.findOne({
       where: { id: receivedNotifyDto.notifyId },
@@ -128,13 +127,12 @@ export class EventsService {
       ModuleIM.Common.NotifyStatus.Received,
     );
 
-    if (count === 1) {
+    if (count === 1)
       return { statusCode: HttpStatus.OK, message: 'Successfully.' };
-    } else if (count === 0) {
-      throw new NotFoundException('No resources are updated.');
-    } else {
-      throw new InternalServerErrorException('Database error.');
-    }
+
+    if (count === 0) throw new NotFoundException('No resources are updated.');
+
+    throw new InternalServerErrorException('Database error.');
   }
 
   /**
@@ -146,9 +144,8 @@ export class EventsService {
     readedNotifyDto: updateNotifyStatusDto,
   ): Promise<IMServerResponse.JsonResponse<unknown>> {
     const errors = await validate(readedNotifyDto);
-    if (errors.length) {
+    if (errors.length)
       throw new BadRequestException('Incorrect request parameter.');
-    }
 
     const notify = await this.notifyModel.findOne({
       where: { id: readedNotifyDto.notifyId },
@@ -163,13 +160,12 @@ export class EventsService {
       ModuleIM.Common.NotifyStatus.Readed,
     );
 
-    if (count === 1) {
+    if (count === 1)
       return { statusCode: HttpStatus.OK, message: 'Successfully.' };
-    } else if (count === 0) {
-      throw new NotFoundException('No resources are updated.');
-    } else {
-      throw new InternalServerErrorException('Database error.');
-    }
+
+    if (count === 0) throw new NotFoundException('No resources are updated.');
+
+    throw new InternalServerErrorException('Database error.');
   }
 
   /**
@@ -341,43 +337,40 @@ export class EventsService {
     lastAck: bigint;
     lastAckErr: bigint;
   }) {
-    return this.messageAckModel.upsert(
-      { receiver, lastAck, lastAckErr },
-      { fields: ['lastAck', 'lastAckErr'] },
-    );
+    return this.messageAckModel.upsert({ receiver, lastAck, lastAckErr });
   }
 
   /**
    * @description: update or insert message MessageReadModel
    * @param message ModuleIM.Core.MessageRead
-   * @return Promise<[instance:MessageReadModel, affectedCount:number]>
+   * @return Promise<[instance:MessageReadModel | null, affectedCount:number | null]>
    */
   public async upsertLastRead(
     message: ModuleIM.Core.MessageRead,
-  ): Promise<[instance: MessageReadModel, affectedCount: number]> {
+  ): Promise<[MessageReadModel | null, number | null]> {
     const { id, groupId, sender, receiver } = message;
-    const where = { sender: groupId !== void 0 ? groupId : sender, receiver };
+    const where = { sender: groupId ? groupId : sender, receiver };
 
     const exist = await this.messageReadModel.count({
       where,
     });
 
-    let instance: MessageReadModel, count: number;
     if (exist) {
       // update
-      const result = await this.messageReadModel.update(
+      const [affectedCount] = await this.messageReadModel.update(
         { lastRead: id },
         { where },
       );
-      count = result[0];
-    } else {
-      // insert
-      instance = await this.messageReadModel.create({
-        ...where,
-        lastRead: id,
-      });
+
+      return [null, affectedCount];
     }
 
-    return [instance, count];
+    // insert
+    const instance = await this.messageReadModel.create({
+      ...where,
+      lastRead: id,
+    });
+
+    return [instance, null];
   }
 }

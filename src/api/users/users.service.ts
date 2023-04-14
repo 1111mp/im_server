@@ -134,13 +134,15 @@ export class UsersService {
         statusCode: HttpStatus.OK,
         message: 'Successfully.',
       };
-    } else if (count === 0) {
+    }
+
+    if (count === 0) {
       await t.rollback();
       throw new NotFoundException('No resources deleted.');
-    } else {
-      await t.rollback();
-      throw new InternalServerErrorException('Something error.');
     }
+
+    await t.rollback();
+    throw new InternalServerErrorException('Something error.');
   }
 
   async updateOne(
@@ -153,10 +155,12 @@ export class UsersService {
 
     if (count === 1) {
       return { statusCode: HttpStatus.OK, message: 'Update successed.' };
-    } else if (count === 0) {
-      throw new NotFoundException('No resources are updated.');
-    } else {
-      throw new InternalServerErrorException('Database error.');
     }
+
+    if (count === 0) {
+      throw new NotFoundException('No resources are updated.');
+    }
+
+    throw new InternalServerErrorException('Database error.');
   }
 }

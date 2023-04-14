@@ -102,12 +102,17 @@ export class EventsGateway
     this.logger.debug('Start send message task...');
     const { groupId, receiver } = job.data;
 
-    if (groupId !== void 0) {
-      // group message
-      await this.sendMessageForGroup(job.data);
-    } else {
-      // single message
-      await this.sendMessage(receiver, job.data);
+    switch (groupId) {
+      case void 0: {
+        // single message
+        await this.sendMessage(receiver, job.data);
+        break;
+      }
+      default: {
+        // group message
+        await this.sendMessageForGroup(job.data);
+        break;
+      }
     }
 
     this.logger.debug('Send message task completed');
@@ -153,27 +158,26 @@ export class EventsGateway
 
     const { groupId } = job.data;
 
-    if (groupId !== void 0) {
-      // group message
-      // Push read messages of group chat messages in real time?
-      // todo
-    } else {
-      // single message
-      const { statusCode } = await this.sendMessageForRead(job.data);
+    switch (groupId) {
+      case void 0: {
+        // single message
+        const { statusCode } = await this.sendMessageForRead(job.data);
 
-      if (statusCode === HttpStatus.REQUEST_TIMEOUT) {
         // timeout
-        const { id, sender, receiver } = job.data;
-        this.logger.debug(
-          `[id]: ${id} [sender]: ${sender} [receiver]: ${receiver}. Message send timeout.`,
-        );
+        statusCode === HttpStatus.REQUEST_TIMEOUT &&
+          this.logger.debug(
+            `[id]: ${job.data.id} [sender]: ${job.data.sender} [receiver]: ${job.data.receiver}. Message send timeout.`,
+          );
+
+        // statusCode === HttpStatus.OK: dont need do anything
+        break;
       }
-
-      // dont need do anything
-
-      // if (statusCode === HttpStatus.OK) {
-      //   // successfully received
-      // }
+      default: {
+        // group message
+        // Push read messages of group chat messages in real time?
+        // todo
+        break;
+      }
     }
 
     this.logger.debug('Send message:read task completed');
@@ -231,11 +235,10 @@ export class EventsGateway
           ModuleIM.Common.NotifyStatus.Received,
         );
 
-        if (count !== 1) {
+        count !== 1 &&
           this.logger.error(
             `[Database Error] unknown error when update notify(${job.data.id}) status.`,
           );
-        }
 
         break;
       }
@@ -257,12 +260,7 @@ export class EventsGateway
     const members = await this.eventsService.getGroupMembersById(groupId);
 
     //? Optimization: Should the task be split into multiple queues if the number of members is too large
-    await Promise.all(
-      members.map(async ({ id }) => {
-        // user.id;
-        await this.sendMessage(id, message);
-      }),
-    );
+    await Promise.all(members.map(({ id }) => this.sendMessage(id, message)));
   }
 
   private async sendMessage(
@@ -280,22 +278,22 @@ export class EventsGateway
     let newLastAck: bigint = lastAck,
       newLastAckErr: bigint = lastAckErr;
 
-    if (statusCode === HttpStatus.OK) {
-      // successfully
-      if (lastAckErr === null) {
-        id > lastAck && (newLastAck = id);
-      } else {
-        id < lastAckErr && (newLastAck = id);
+    switch (statusCode) {
+      case HttpStatus.OK: {
+        // successfully
+        lastAckErr === null
+          ? id > lastAck && (newLastAck = id)
+          : id < lastAckErr && (newLastAck = id);
+        break;
       }
-    } else {
-      // failed
-      if (lastAckErr === null) {
-        // 更新 lastAckErr 为当前 message.id
-        newLastAckErr = id;
+      default: {
+        // failed
+        lastAckErr === null
+          ? (newLastAckErr = id)
+          : id <= lastAckErr && (newLastAckErr = id);
+
         id <= lastAck && (newLastAck = id - BigInt(1));
-      } else {
-        id <= lastAckErr && (newLastAckErr = id);
-        id <= lastAck && (newLastAck = id - BigInt(1));
+        break;
       }
     }
 
@@ -312,34 +310,32 @@ export class EventsGateway
   ) {
     const userStatus = this.getStatus(receiver);
 
-    if (userStatus) {
-      // online
-      return await this.send(
-        receiver,
-        ModuleIM.Common.MessageEventNames.Message,
-        this.protoService.setMessageToProto(message),
-      );
-    } else {
+    if (!userStatus)
       // offline, dont need do anything
       return { statusCode: HttpStatus.NO_CONTENT, message: 'User is offline' };
-    }
+
+    // online
+    return await this.send(
+      receiver,
+      ModuleIM.Common.MessageEventNames.Message,
+      this.protoService.setMessageToProto(message),
+    );
   }
 
   private async sendMessageForRead(message: ModuleIM.Core.MessageRead) {
     const { receiver } = message;
     const userStatus = this.getStatus(receiver);
 
-    if (userStatus) {
-      // online
-      return await this.send(
-        receiver,
-        ModuleIM.Common.MessageEventNames.Read,
-        this.protoService.setMessageReadToProto(message),
-      );
-    } else {
+    if (!userStatus)
       // offline, dont need do anything
       return { statusCode: HttpStatus.NO_CONTENT, message: 'User is offline' };
-    }
+
+    // online
+    return await this.send(
+      receiver,
+      ModuleIM.Common.MessageEventNames.Read,
+      this.protoService.setMessageReadToProto(message),
+    );
   }
 
   /**
@@ -351,20 +347,20 @@ export class EventsGateway
   ): Promise<IMServerResponse.AckResponse> {
     const { receiver } = notify;
     const userStatus = this.getStatus(receiver);
-    if (userStatus) {
-      // online
-      const message = this.protoService.setNotifyToProto(notify);
-      const result = await this.send(
-        receiver,
-        ModuleIM.Common.MessageEventNames.Notify,
-        message,
-      );
 
-      return result;
-    } else {
+    if (!userStatus)
       // offline, dont need do anything
       return { statusCode: HttpStatus.NO_CONTENT, message: 'User is offline' };
-    }
+
+    // online
+    const message = this.protoService.setNotifyToProto(notify);
+    const result = await this.send(
+      receiver,
+      ModuleIM.Common.MessageEventNames.Notify,
+      message,
+    );
+
+    return result;
   }
 
   private async send(

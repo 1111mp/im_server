@@ -13,6 +13,7 @@ import * as dayjs from 'dayjs';
 })
 export class MessageAck extends Model<MessageAck> {
   @Column({
+    primaryKey: true,
     type: DataType.INTEGER,
     allowNull: false,
     unique: true,
