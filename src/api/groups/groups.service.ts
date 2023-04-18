@@ -214,6 +214,7 @@ export class GroupsService {
   ): Promise<IMServerResponse.JsonResponse<ModuleIM.Core.Group[]>> {
     try {
       const groups = await UserModel.build({ id: user.id }).$get('groups', {
+        raw: true,
         attributes: {
           include: [
             [

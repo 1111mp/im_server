@@ -1133,6 +1133,14 @@
     "@types/qs" "*"
     "@types/serve-static" "*"
 
+"@types/fs-extra@^11.0.1":
+  version "11.0.1"
+  resolved "https://registry.yarnpkg.com/@types/fs-extra/-/fs-extra-11.0.1.tgz#f542ec47810532a8a252127e6e105f487e0a6ea5"
+  integrity sha512-MxObHvNl4A69ofaTRU8DFqvgzzv8s9yRtaPPm5gud9HDNvpB3GPQFvNuTWAI59B9huVGV5jXYJwbCsmBsOGYWA==
+  dependencies:
+    "@types/jsonfile" "*"
+    "@types/node" "*"
+
 "@types/geojson@^7946.0.10":
   version "7946.0.10"
   resolved "https://registry.yarnpkg.com/@types/geojson/-/geojson-7946.0.10.tgz#6dfbf5ea17142f7f9a043809f1cd4c448cb68249"
@@ -1176,6 +1184,13 @@
   version "7.0.11"
   resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.11.tgz#d421b6c527a3037f7c84433fd2c4229e016863d3"
   integrity sha512-wOuvG1SN4Us4rez+tylwwwCV1psiNVOkJeM3AUWUNWg/jDQY2+HE/444y5gc+jBmRqASOm2Oeh5c1axHobwRKQ==
+
+"@types/jsonfile@*":
+  version "6.1.1"
+  resolved "https://registry.yarnpkg.com/@types/jsonfile/-/jsonfile-6.1.1.tgz#ac84e9aefa74a2425a0fb3012bdea44f58970f1b"
+  integrity sha512-GSgiRCVeapDN+3pqA35IkQwasaCh/0YFH5dEF6S88iDvEn901DjOeH3/QPY+XYP1DFzDZPvIvfeEgk+7br5png==
+  dependencies:
+    "@types/node" "*"
 
 "@types/jsonwebtoken@*", "@types/jsonwebtoken@9.0.1":
   version "9.0.1"
@@ -2938,6 +2953,15 @@ fs-extra@^10.0.0:
   version "10.1.0"
   resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-10.1.0.tgz#02873cfbc4084dde127eaa5f9905eef2325d1abf"
   integrity sha512-oRXApq54ETRj4eMiFzGnHWGy+zo5raudjuxN0b8H7s/RU2oW0Wvsx9O0ACRN/kRq9E8Vu/ReskGB5o3ji+FzHQ==
+  dependencies:
+    graceful-fs "^4.2.0"
+    jsonfile "^6.0.1"
+    universalify "^2.0.0"
+
+fs-extra@^11.1.1:
+  version "11.1.1"
+  resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-11.1.1.tgz#da69f7c39f3b002378b0954bb6ae7efdc0876e2d"
+  integrity sha512-MGIE4HOvQCeUCzmlHs0vXpih4ysz4wg9qiSAu6cd42lVwPbTM1TjV7RusoyQqMmk/95gdQZX72u+YW+c3eEpFQ==
   dependencies:
     graceful-fs "^4.2.0"
     jsonfile "^6.0.1"

@@ -12,6 +12,7 @@ import { PermissionModule } from './common/permission/permission.module';
 import { UsersModule } from './api/users/users.module';
 import { FriendsModule } from './api/friends/friends.module';
 import { GroupsModule } from './api/groups/groups.module';
+import { ElectronModule } from './api/electron/electron.module';
 
 import { RolesGuard } from './common/permission/guards/roles.guard';
 import { JwtAuthGuard } from './common/auth/guards/jwt-auth.guard';
@@ -84,6 +85,7 @@ if (process.env.NODE_ENV === 'dev') {
     UsersModule,
     FriendsModule,
     GroupsModule,
+    ElectronModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },
