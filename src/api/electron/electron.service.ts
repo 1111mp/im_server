@@ -16,12 +16,15 @@ import { mkdirsSync, removeFiles } from 'src/utils/files';
 
 @Injectable()
 export class ElectronService {
+  private readonly uploadPath: string;
+
   constructor(
     private readonly configService: ConfigService,
     @InjectModel(ElectronModel)
     private readonly electronModel: typeof ElectronModel,
-    private readonly uploadPath: string = configService.get('MULTER_DEST'),
-  ) {}
+  ) {
+    this.uploadPath = this.configService.get("MULTER_DEST")
+  }
 
   /**
    * @description: full upload the files of Electron App
