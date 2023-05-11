@@ -4,8 +4,15 @@
 
 接口文档可在服务启动之后（[Swagger Ui](https://swagger.io/tools/swagger-ui/)），浏览器访问 `http://localhost:3000/api/docs` 查看
 
-数据库：mariadb、redis、sequelize 链接 mariadb 的配置文件：
+数据库：mariadb
 
+缓存：redis
+
+（本地需要安装数据库和redis）
+
+数据库ORM库：sequelize
+
+配置文件（用到的key）：
 `.env.dev`:
 ```
 PORT=3000
