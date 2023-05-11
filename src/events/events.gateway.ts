@@ -363,6 +363,14 @@ export class EventsGateway
     return result;
   }
 
+  /**
+   * @description: Push a message to client.
+   * @param receiver number
+   * @param evtName ModuleIM.Common.MessageEventNames
+   * @param message Uint8Array
+   * @param timer number = 6000
+   * @return Promise<IMServerResponse.AckResponse>
+   */
   private async send(
     receiver: number,
     evtName: ModuleIM.Common.MessageEventNames,
