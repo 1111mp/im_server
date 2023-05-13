@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { ExtractJwt, Strategy } from 'passport-jwt';
+import { Strategy } from 'passport-jwt';
 import { User } from '../../../api/users/models/user.model';
 import { IORedisKey } from 'src/common/redis/redis.module';
 import { ConfigService } from '@nestjs/config';

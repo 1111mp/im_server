@@ -5,7 +5,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { Op } from 'sequelize';
+import { Op, literal } from 'sequelize';
 import { InjectModel } from '@nestjs/sequelize';
 import { InjectQueue } from '@nestjs/bull';
 import { validate } from 'class-validator';
@@ -190,7 +190,7 @@ export class EventsService {
       });
 
       const { rows, count } = await this.messageModel.findAndCountAll({
-        raw: true,
+        // raw: true,
         where: {
           id: {
             [Op.gt]: lastAck,
@@ -201,6 +201,12 @@ export class EventsService {
               groupId: userGroups.map(({ id }) => id),
             },
           ],
+        },
+        include: {
+          model: UserModel,
+          attributes: {
+            exclude: ['pwd'],
+          },
         },
         attributes: {
           exclude: ['createdAt', 'updatedAt'],
@@ -215,6 +221,7 @@ export class EventsService {
         data: rows,
       };
     } catch (err) {
+      console.log(err);
       throw new InternalServerErrorException('Database error.');
     }
   }

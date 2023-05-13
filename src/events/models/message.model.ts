@@ -1,6 +1,14 @@
-import { Model, Table, Column, DataType } from 'sequelize-typescript';
+import {
+  Model,
+  Table,
+  Column,
+  DataType,
+  ForeignKey,
+  BelongsTo,
+} from 'sequelize-typescript';
 import { ApiProperty } from '@nestjs/swagger';
 import * as dayjs from 'dayjs';
+import { User } from 'src/api/users/models/user.model';
 
 @Table
 export class Message extends Model<Message> {
@@ -27,6 +35,7 @@ export class Message extends Model<Message> {
   })
   type: ModuleIM.Common.MsgType;
 
+  @ForeignKey(() => User)
   @ApiProperty({ type: 'number' })
   @Column({
     type: DataType.INTEGER,
@@ -34,6 +43,9 @@ export class Message extends Model<Message> {
     comment: "sender's userid",
   })
   sender: number;
+
+  @BelongsTo(() => User)
+  senderInfo: User;
 
   @ApiProperty({ type: 'number' })
   @Column({
