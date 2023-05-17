@@ -80,25 +80,28 @@ export class MessageForSender extends Message<MessageForSender> {
   @Field.d(2, 'string', 'required')
   public msgId: string;
 
-  @Field.d(3, Sender)
-  public sender: Omit<User.UserAttributes, 'pwd'>;
+  @Field.d(3, 'int32', 'optional')
+  public sender: number;
 
-  @Field.d(4, 'int32', 'optional')
+  @Field.d(4, Sender)
+  public senderInfo: Omit<User.UserAttributes, 'pwd'>;
+
+  @Field.d(5, 'int32', 'optional')
   public groupId?: number;
 
-  @Field.d(5, 'int32', 'required')
+  @Field.d(6, 'int32', 'required')
   public receiver: number;
 
-  @Field.d(6, 'string', 'required')
+  @Field.d(7, 'string', 'required')
   public type: ModuleIM.Common.MsgType;
 
-  @Field.d(7, 'string', 'required')
+  @Field.d(8, 'string', 'required')
   public content: string;
 
-  @Field.d(8, 'string', 'required')
+  @Field.d(9, 'string', 'required')
   public timer: string;
 
-  @Field.d(9, 'string', 'optional')
+  @Field.d(10, 'string', 'optional')
   public ext?: string;
 }
 

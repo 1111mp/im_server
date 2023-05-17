@@ -8,12 +8,13 @@
 
 缓存：redis
 
-（本地需要安装数据库和redis）
+（本地需要安装数据库和 redis）
 
-数据库ORM库：sequelize
+数据库 ORM 库：sequelize
 
-配置文件（用到的key）：
+配置文件（用到的 key）：
 `.env.dev`:
+
 ```
 PORT=3000
 SECRET_KEY=random_str
@@ -81,7 +82,7 @@ $ yarn run test:cov
 
 ## IM Protocol
 
-关于IM实现的设计可以查看[掘金文档](https://juejin.cn/post/7202583557751865401)，阅读体验更好
+关于 IM 实现的设计可以查看[掘金文档](https://juejin.cn/post/7202583557751865401)，阅读体验更好
 
 [Socket.io](https://socket.io/zh-CN/)
 
@@ -90,7 +91,8 @@ type MessageBasic = {
   id: bigint;
   msgId: string;
   type: Common.MsgType;
-  sender: Omit<User.UserAttributes, 'pwd'>;
+  sender: number;
+  senderInfo: Omit<User.UserAttributes, 'pwd'>;
   groupId?: number;
   receiver: number; // userId or groupId
   content: string;
@@ -125,7 +127,8 @@ example:
 const message: MessageBasic = {
   msgId: string;
   type: Common.MsgType;
-  sender: Omit<User.UserAttributes, 'pwd'>;
+  sender: number;
+  senderInfo: Omit<User.UserAttributes, 'pwd'>;
   groupId?: number; // if group message
   receiver: number; // userId or groupId
   content: string;

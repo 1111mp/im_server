@@ -71,16 +71,17 @@ export class EventsGateway
     @ConnectedSocket() client: Socket,
   ): Promise<Uint8Array> {
     // There is no sender's info when the server receives the message.
-    const message = {
-      ...this.protoService.getMessageFromProto(data),
-      sender: client.decoded.user,
-    };
+    const message = this.protoService.getMessageFromProto(data);
 
     try {
       // create one message in db
       const { id } = await this.eventsService.createOneForMessage(message);
 
-      await this.eventsService.addMessageTaskToQueue({ ...message, id });
+      await this.eventsService.addMessageTaskToQueue({
+        ...message,
+        id,
+        senderInfo: client.decoded.user,
+      });
     } catch (err) {
       // something error
       this.logger.error(`[message] ${err.name}: ${err.message}`);

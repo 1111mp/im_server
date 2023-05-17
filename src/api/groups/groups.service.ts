@@ -195,7 +195,10 @@ export class GroupsService {
 
     try {
       const members = await group.$get('members', {
+        raw: true,
         attributes: { exclude: ['pwd'] },
+        // @ts-ignore
+        joinTableAttributes: [],
       });
 
       return {

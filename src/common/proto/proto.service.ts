@@ -33,9 +33,10 @@ export class ProtoService {
   }
 
   public getMessageFromProto(buffer: Uint8Array) {
-    return MessageForReceiver.decode(
-      buffer,
-    ).toJSON() as ModuleIM.Core.MessageBasic;
+    return MessageForReceiver.decode(buffer).toJSON() as Omit<
+      ModuleIM.Core.MessageBasic,
+      'senderInfo'
+    >;
   }
 
   public setMessageReadToProto(msg: ModuleIM.Core.MessageRead) {

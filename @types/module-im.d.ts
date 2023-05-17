@@ -4,7 +4,8 @@ namespace ModuleIM {
       id: bigint;
       msgId: string;
       type: Common.MsgType;
-      sender: Omit<User.UserAttributes, 'pwd'>;
+      sender: number;
+      senderInfo: Omit<User.UserAttributes, 'pwd'>;
       groupId?: number;
       receiver: number; // userId or groupId
       content: string;

@@ -19,7 +19,7 @@ declare global {
         'id' | 'avatar' | 'email' | 'regisTime' | 'updateTime'
       > {}
 
-    interface UserInfo extends UserAttributes, RoleModel.Role {}
+    type UserInfo = Omit<UserAttributes, 'pwd'> & RoleModel.Role;
   }
 
   namespace Params {

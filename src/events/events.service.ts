@@ -5,7 +5,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { Op, literal } from 'sequelize';
+import { Op } from 'sequelize';
 import { InjectModel } from '@nestjs/sequelize';
 import { InjectQueue } from '@nestjs/bull';
 import { validate } from 'class-validator';
@@ -296,12 +296,11 @@ export class EventsService {
    * @param message ModuleIM.Core.MessageAll
    * @returns Promise<MessageModel>
    */
-  public createOneForMessage(message: ModuleIM.Core.MessageBasic) {
-    const { sender } = message;
-
+  public createOneForMessage(
+    message: Omit<ModuleIM.Core.MessageBasic, 'senderInfo'>,
+  ) {
     return this.messageModel.create({
       ...message,
-      sender: sender.id,
     });
   }
 
