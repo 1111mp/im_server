@@ -9,7 +9,7 @@ namespace ModuleIM {
       groupId?: number;
       receiver: number; // userId or groupId
       content: string;
-      timer: string;
+      timer: number;
       ext?: string; // reserved field
     };
 
@@ -26,7 +26,7 @@ namespace ModuleIM {
       sender: Omit<User.UserAttributes, 'pwd'>;
       receiver: number;
       status: Common.NotifyStatus;
-      timer: string;
+      timer: number;
       remark?: string;
       ext?: string;
     };

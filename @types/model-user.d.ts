@@ -19,7 +19,7 @@ declare global {
         'id' | 'avatar' | 'email' | 'regisTime' | 'updateTime'
       > {}
 
-    type UserInfo = Omit<UserAttributes, 'pwd'> & RoleModel.Role;
+    type UserInfo = UserAttributes & RoleModel.Role;
   }
 
   namespace Params {

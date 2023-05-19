@@ -50,7 +50,7 @@ export class FriendsService {
         sender,
         receiver: friendId,
         status: ModuleIM.Common.NotifyStatus.Initial,
-        timer: `${Date.now()}`,
+        timer: Date.now(),
         remark,
         ext,
       };
@@ -126,7 +126,7 @@ export class FriendsService {
         sender: user,
         receiver: friendId,
         status: ModuleIM.Common.NotifyStatus.Initial,
-        timer: `${Date.now()}`,
+        timer: Date.now(),
       };
 
       await this.eventsService.createNotify(

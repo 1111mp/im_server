@@ -21,8 +21,8 @@ export class CreateNotifyDto {
   @ApiProperty({ type: 'number', required: true, example: 1 })
   status: ModuleIM.Common.NotifyStatus;
 
-  @ApiProperty({ type: 'string', required: true, example: '' })
-  timer: string;
+  @ApiProperty({ type: 'number', required: true, example: '' })
+  timer: number;
 
   @ApiProperty({ type: 'string', example: '' })
   remark?: string;

@@ -55,9 +55,9 @@ export class Notify extends Model<Notify> {
   })
   status: ModuleIM.Common.NotifyStatus;
 
-  @ApiProperty({ type: 'string', required: true })
-  @Column({ type: DataType.STRING, allowNull: false })
-  timer: string;
+  @ApiProperty({ type: 'number', required: true })
+  @Column({ type: DataType.BIGINT, allowNull: false })
+  timer: number;
 
   @ApiProperty({ type: 'string' })
   @Column({ type: DataType.STRING })

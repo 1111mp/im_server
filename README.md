@@ -96,7 +96,7 @@ type MessageBasic = {
   groupId?: number;
   receiver: number; // userId or groupId
   content: string;
-  timer: string;
+  timer: number;
   ext?: string; // reserved field
 };
 
@@ -132,7 +132,7 @@ const message: MessageBasic = {
   groupId?: number; // if group message
   receiver: number; // userId or groupId
   content: string;
-  timer: string;
+  timer: number;
   ext?: string; // reserved field
 }
 
@@ -167,7 +167,7 @@ type Notify = {
   sender: Omit<User.UserAttributes, 'pwd'>;
   receiver: number;
   status: Common.NotifyStatus;
-  timer: string;
+  timer: number;
   remark?: string;
   ext?: string;
 };
@@ -182,7 +182,7 @@ const notify: Notify = {
     sender: Omit<User.UserAttributes, 'pwd'>;
     receiver: number;
     status: Common.NotifyStatus;
-    timer: string;
+    timer: number;
     remark?: string;
     ext?: string;
 }

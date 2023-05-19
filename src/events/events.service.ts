@@ -211,6 +211,7 @@ export class EventsService {
         attributes: {
           exclude: ['createdAt', 'updatedAt'],
         },
+        order: [['timer', 'DESC']],
         offset: (currentPage - 1) * pageSize,
         limit: pageSize,
       });

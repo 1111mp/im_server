@@ -3,7 +3,7 @@ import { Message, Type, Field } from 'protobufjs/light';
 
 @Type.d()
 export class AckMessage extends Message<AckMessage> {
-  @Field.d(1, 'int32', 'required')
+  @Field.d(1, 'int64', 'required')
   public statusCode: HttpStatus;
 
   @Field.d(2, 'string', 'optional')
@@ -11,7 +11,7 @@ export class AckMessage extends Message<AckMessage> {
 }
 
 class Sender extends Message<Sender> {
-  @Field.d(1, 'int32', 'required')
+  @Field.d(1, 'int64', 'required')
   public id: number;
 
   @Field.d(2, 'string', 'required')
@@ -56,14 +56,14 @@ export class Notify extends Message<Notify> {
   @Field.d(3, Sender)
   public sender: Omit<User.UserAttributes, 'pwd'>;
 
-  @Field.d(4, 'int32', 'required')
+  @Field.d(4, 'int64', 'required')
   public receiver: number;
 
   @Field.d(5, NotifyStatus, 'required')
   public status: ModuleIM.Common.NotifyStatus;
 
-  @Field.d(6, 'string', 'required')
-  public timer: string;
+  @Field.d(6, 'int64', 'required')
+  public timer: number;
 
   @Field.d(7, 'string', 'required')
   public remark?: string;
@@ -80,16 +80,16 @@ export class MessageForSender extends Message<MessageForSender> {
   @Field.d(2, 'string', 'required')
   public msgId: string;
 
-  @Field.d(3, 'int32', 'optional')
+  @Field.d(3, 'int64', 'optional')
   public sender: number;
 
   @Field.d(4, Sender)
   public senderInfo: Omit<User.UserAttributes, 'pwd'>;
 
-  @Field.d(5, 'int32', 'optional')
+  @Field.d(5, 'int64', 'optional')
   public groupId?: number;
 
-  @Field.d(6, 'int32', 'required')
+  @Field.d(6, 'int64', 'required')
   public receiver: number;
 
   @Field.d(7, 'string', 'required')
@@ -98,8 +98,8 @@ export class MessageForSender extends Message<MessageForSender> {
   @Field.d(8, 'string', 'required')
   public content: string;
 
-  @Field.d(9, 'string', 'required')
-  public timer: string;
+  @Field.d(9, 'int64', 'required')
+  public timer: number;
 
   @Field.d(10, 'string', 'optional')
   public ext?: string;
@@ -113,13 +113,13 @@ export class MessageForReceiver extends Message<MessageForReceiver> {
   @Field.d(2, 'string', 'required')
   public msgId: string;
 
-  @Field.d(3, 'int32', 'required')
+  @Field.d(3, 'int64', 'required')
   public sender: number;
 
-  @Field.d(4, 'int32', 'optional')
+  @Field.d(4, 'int64', 'optional')
   public groupId?: number;
 
-  @Field.d(5, 'int32', 'required')
+  @Field.d(5, 'int64', 'required')
   public receiver: number;
 
   @Field.d(6, 'string', 'required')
@@ -128,8 +128,8 @@ export class MessageForReceiver extends Message<MessageForReceiver> {
   @Field.d(7, 'string', 'required')
   public content: string;
 
-  @Field.d(8, 'string', 'required')
-  public timer: string;
+  @Field.d(8, 'int64', 'required')
+  public timer: number;
 
   @Field.d(9, 'string')
   public ext?: string;
@@ -140,12 +140,12 @@ export class MessageRead extends Message<MessageRead> {
   @Field.d(1, 'int64', 'required')
   public id: bigint;
 
-  @Field.d(2, 'int32', 'required')
+  @Field.d(2, 'int64', 'required')
   public sender: number;
 
-  @Field.d(3, 'int32', 'optional')
+  @Field.d(3, 'int64', 'optional')
   public groupId?: number;
 
-  @Field.d(4, 'int32', 'required')
+  @Field.d(4, 'int64', 'required')
   public receiver: number;
 }
