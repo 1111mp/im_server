@@ -19,7 +19,7 @@ export class Group extends Model<Group> {
   @ApiProperty({ type: 'string', example: 'name' })
   @Column({
     type: DataType.STRING,
-    allowNull: false,
+    allowNull: true,
     comment: '群组名称',
   })
   name: string;

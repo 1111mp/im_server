@@ -62,6 +62,7 @@ export class GroupsService {
         message: 'Create group successful.',
         data: {
           ...group.toJSON(),
+          count: members.length,
           members: [...membersInfo],
         },
       };
@@ -203,7 +204,7 @@ export class GroupsService {
 
       return {
         statusCode: HttpStatus.OK,
-        data: { ...group.toJSON(), members },
+        data: { ...group.toJSON(), count: members.length, members },
       };
     } catch (err) {
       throw new InternalServerErrorException(
