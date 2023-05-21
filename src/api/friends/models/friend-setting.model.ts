@@ -1,5 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Model, Table, Column, DataType } from 'sequelize-typescript';
+import {
+  Model,
+  Table,
+  Column,
+  DataType,
+  ForeignKey,
+  BelongsTo,
+} from 'sequelize-typescript';
+import { User as UserModel } from 'src/api/users/models/user.model';
 import * as dayjs from 'dayjs';
 
 @Table
@@ -17,12 +25,16 @@ export class FriendSetting extends Model<FriendSetting> {
   userId: number;
 
   @ApiProperty({ type: 'number' })
+  @ForeignKey(() => UserModel)
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
     comment: '好友id',
   })
   friendId: number;
+
+  @BelongsTo(() => UserModel, { as: 'info' })
+  friendInfo: UserModel;
 
   @ApiProperty({ type: 'string' })
   @Column({

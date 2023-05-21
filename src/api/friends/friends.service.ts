@@ -10,6 +10,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { v4 } from 'uuid';
 import { Friend } from './models/friend.model';
+import { User as UserModel } from 'src/api/users/models/user.model';
 import { FriendSetting } from './models/friend-setting.model';
 import { EventsService } from 'src/events/events.service';
 import {
@@ -209,32 +210,55 @@ export class FriendsService {
   }
 
   /**
-   * @description: Get user all friend, not include friend setting info
+   * @description: Get user all friend, include friend setting info
    * @param userId number
    * @return Promise<IMServerResponse.JsonResponse<unknown>>
    */
   public async getAll(
     userId: number,
   ): Promise<IMServerResponse.JsonResponse<unknown>> {
+    const trans = await this.friendModel.sequelize.transaction();
     try {
       const { rows: friends, count } = await this.friendModel.findAndCountAll({
         where: {
           [Op.or]: [{ userId }, { friendId: userId }],
         },
+        transaction: trans,
       });
 
       const friendsInfo = await Promise.all(
-        friends.map(async (friend) =>
-          (
+        friends.map(async (friend) => {
+          /// @ts-ignore
+          const { info, ...setting } = (
             await friend.$get(
               userId === friend.userId ? 'infoFromFriend' : 'infoFromUser',
               {
-                attributes: { exclude: ['pwd'] },
+                attributes: [
+                  'remark',
+                  'astrolabe',
+                  'block',
+                  'createdAt',
+                  'updatedAt',
+                ],
+                include: {
+                  model: UserModel,
+                  attributes: {
+                    exclude: ['pwd'],
+                  },
+                },
+                transaction: trans,
               },
             )
-          ).toJSON(),
-        ),
+          ).toJSON();
+
+          return {
+            ...info,
+            ...setting,
+          };
+        }),
       );
+
+      await trans.commit();
 
       return {
         statusCode: HttpStatus.OK,
@@ -244,6 +268,7 @@ export class FriendsService {
         },
       };
     } catch (err) {
+      await trans.rollback();
       throw new InternalServerErrorException('Database Error.');
     }
   }

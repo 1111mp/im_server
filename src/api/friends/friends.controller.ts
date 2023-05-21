@@ -164,8 +164,8 @@ export class FriendsController {
 
   @Get()
   @ApiOperation({
-    summary: 'Get user all friend, not include friend setting info',
-    description: 'Get user all friend, not include friend setting info',
+    summary: 'Get user all friend, include friend setting info',
+    description: 'Get user all friend, include friend setting info',
   })
   @ApiBearerAuth('token')
   @ApiBearerAuth('userid')

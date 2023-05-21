@@ -9,6 +9,7 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 import * as dayjs from 'dayjs';
 import { User } from 'src/api/users/models/user.model';
+import { FriendSetting } from './friend-setting.model';
 
 @Table
 export class Friend extends Model<Friend> {
@@ -39,17 +40,23 @@ export class Friend extends Model<Friend> {
   })
   updatedAt;
 
-  @ForeignKey(() => User)
+  @ForeignKey(() => FriendSetting)
   @Column(DataType.INTEGER)
   userId;
 
-  @BelongsTo(() => User, { foreignKey: 'userId', targetKey: 'id' })
-  infoFromUser: User;
+  @BelongsTo(() => FriendSetting, {
+    foreignKey: 'userId',
+    targetKey: 'friendId',
+  })
+  infoFromUser: FriendSetting;
 
   @ForeignKey(() => User)
   @Column(DataType.INTEGER)
   friendId;
 
-  @BelongsTo(() => User, { foreignKey: 'friendId', targetKey: 'id' })
-  infoFromFriend: User;
+  @BelongsTo(() => FriendSetting, {
+    foreignKey: 'friendId',
+    targetKey: 'friendId',
+  })
+  infoFromFriend: FriendSetting;
 }
