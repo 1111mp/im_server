@@ -40,8 +40,7 @@ export class AuthService {
 
     return {
       statusCode: HttpStatus.OK,
-      token,
-      data: user,
+      data: { ...user, token },
     };
   }
 

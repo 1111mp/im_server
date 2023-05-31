@@ -110,7 +110,11 @@ export class UsersController {
   })
   async create(
     @Body() createUserDto: CreateUserDto,
-  ): Promise<IMServerResponse.JsonResponse<Omit<User.UserAttributes, 'pwd'>>> {
+  ): Promise<
+    IMServerResponse.JsonResponse<
+      Omit<User.UserAttributes, 'pwd'> & { token: string }
+    >
+  > {
     const { account, pwd } = createUserDto;
 
     if (!account || !pwd) {
@@ -125,9 +129,8 @@ export class UsersController {
 
       return {
         statusCode: HttpStatus.OK,
-        token,
         message: 'Successed.',
-        data: { avatar: null, email: null, ...result },
+        data: { avatar: null, email: null, ...result, token },
       };
     } catch (err) {
       if (err.name === 'SequelizeUniqueConstraintError') {

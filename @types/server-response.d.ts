@@ -16,7 +16,6 @@ declare global {
     interface JsonResponse<T> {
       statusCode: HttpStatus;
       message?: string;
-      token?: string;
       data?: T;
     }
 
