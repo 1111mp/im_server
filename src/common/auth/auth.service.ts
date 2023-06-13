@@ -36,7 +36,7 @@ export class AuthService {
   }
 
   async login(user: Omit<User.UserAttributes, 'pwd'>) {
-    const token = await this.cacheToken(user);
+    const token = await this.cacheToken(user, 60 * 60 * 12);
 
     return {
       statusCode: HttpStatus.OK,
@@ -45,7 +45,7 @@ export class AuthService {
   }
 
   async create(user: Omit<User.UserAttributes, 'pwd'>) {
-    const token = await this.cacheToken(user);
+    const token = await this.cacheToken(user, 60 * 60 * 12);
 
     return token;
   }
