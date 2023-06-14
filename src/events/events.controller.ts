@@ -7,20 +7,26 @@ import {
   Post,
   Query,
   Request,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiExtraModels,
   ApiOperation,
   ApiResponse,
+  ApiConsumes,
+  ApiBody,
   ApiTags,
   getSchemaPath,
 } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { EventsService } from './events.service';
 import { Notify as NotifyModel } from './models/notify.model';
 import { Message as MessageModel } from './models/message.model';
 import { updateNotifyStatusDto } from './dto/create-notify.dto';
 import { MsgReceivedDto } from './dto/create-message.dto';
+import { ImageUploadDto } from './dto/file-upload.dto';
 
 @ApiTags('Events')
 @ApiExtraModels(NotifyModel)
@@ -192,5 +198,39 @@ export class EventsController {
     @Body() msgReceivedDto: MsgReceivedDto,
   ) {
     return this.eventsService.msgReceived(req.user.id, msgReceivedDto);
+  }
+
+  @Post('image')
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('token')
+  @ApiBearerAuth('userid')
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'image file',
+    type: ImageUploadDto,
+  })
+  uploadImage(
+    @Request() req: IMServerRequest.RequestForAuthed,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.eventsService.uploadImage(req.user, file);
+  }
+
+  @Post('video')
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('token')
+  @ApiBearerAuth('userid')
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'image file',
+    type: ImageUploadDto,
+  })
+  uploadVideo(
+    @Request() req: IMServerRequest.RequestForAuthed,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.eventsService.uploadVideo(req.user, file);
   }
 }

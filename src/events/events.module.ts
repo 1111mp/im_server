@@ -12,6 +12,8 @@ import { EventsService } from './events.service';
 import { ProtoService } from 'src/common/proto/proto.service';
 import { EventsGateway } from './events.gateway';
 import { IMQueueName } from './constants';
+import { MulterModule } from '@nestjs/platform-express';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Global()
 @Module({
@@ -19,6 +21,13 @@ import { IMQueueName } from './constants';
     SequelizeModule.forFeature([Message, MessageAck, MessageRead, Notify]),
     BullModule.registerQueueAsync({
       name: IMQueueName,
+    }),
+    MulterModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        dest: configService.get('MULTER_DEST'),
+      }),
+      inject: [ConfigService],
     }),
     GroupsModule,
   ],

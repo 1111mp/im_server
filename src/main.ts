@@ -1,4 +1,6 @@
+import { join } from 'path';
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -7,12 +9,19 @@ import { LoggerService } from './common/logger/logger.service';
 import { SocketIOAdapter } from './events/socket-io-adapter';
 
 async function bootstrap() {
-  const app = await NestFactory.create(ApplicationModule, {
-    bufferLogs: true,
-  });
+  const app = await NestFactory.create<NestExpressApplication>(
+    ApplicationModule,
+    {
+      bufferLogs: true,
+    },
+  );
 
   const configService = app.get(ConfigService);
   const port = configService.get<number>('PORT');
+
+  app.useStaticAssets(join(__dirname, '..', '..', 'uploads/'), {
+    prefix: '/uploads/',
+  });
 
   app.setGlobalPrefix('api');
   app.enableVersioning({

@@ -1,3 +1,5 @@
+import { join } from 'path';
+import { rename, ensureDir } from 'fs-extra';
 import {
   BadRequestException,
   HttpStatus,
@@ -8,8 +10,10 @@ import {
 import { Op } from 'sequelize';
 import { InjectModel } from '@nestjs/sequelize';
 import { InjectQueue } from '@nestjs/bull';
+import { ConfigService } from '@nestjs/config';
 import { validate } from 'class-validator';
 
+import * as ffmpeg from 'fluent-ffmpeg';
 import { Notify } from './models/notify.model';
 import { GroupsService } from 'src/api/groups/groups.service';
 import { Message as MessageModel } from './models/message.model';
@@ -26,10 +30,14 @@ import { CacheFnResult } from 'src/common/cache/decotators/cache-fn.decorator';
 
 import type { Transaction } from 'sequelize';
 import type { Queue } from 'bull';
+import { runFfmpegCmd, runScreenShotCmd } from 'src/utils/ffmpeg';
 
 @Injectable()
 export class EventsService {
+  private readonly uploadPath: string;
+
   constructor(
+    private readonly configService: ConfigService,
     @InjectModel(Notify)
     private readonly notifyModel: typeof Notify,
     @InjectModel(MessageModel)
@@ -40,7 +48,9 @@ export class EventsService {
     private readonly messageReadModel: typeof MessageReadModel,
     @InjectQueue(IMQueueName) private readonly imQueue: Queue<unknown>,
     private readonly groupService: GroupsService,
-  ) {}
+  ) {
+    this.uploadPath = this.configService.get('MULTER_DEST');
+  }
 
   public createNotify(notify: CreateNotifyDto, trans: Transaction = null) {
     return this.notifyModel.create(notify, { transaction: trans });
@@ -379,5 +389,69 @@ export class EventsService {
     });
 
     return [instance, null];
+  }
+
+  public async uploadImage(user: User.UserInfo, file: Express.Multer.File) {
+    const path = join(this.uploadPath, `${user.id}`, '/');
+
+    await ensureDir(path);
+
+    const { originalname, path: filePath } = file;
+    const finalPath = path + originalname;
+    const name = originalname.split('.');
+    const smallPath = path + name[0] + '-small.' + name[1];
+
+    await rename(filePath, finalPath);
+
+    await runFfmpegCmd(ffmpeg(finalPath).size('20x?').output(smallPath));
+
+    return {
+      statusCode: HttpStatus.OK,
+      data: {
+        path: finalPath,
+        smallPath,
+      },
+    };
+  }
+
+  public async uploadVideo(user: User.UserInfo, file: Express.Multer.File) {
+    const path = join(this.uploadPath, `${user.id}`, '/');
+
+    await ensureDir(path);
+
+    const { originalname, path: filePath } = file;
+    const finalPath = path + originalname;
+    const name = originalname.split('.');
+    const shotName = name[0] + '.png';
+    const smallName = name[0] + '-small.png';
+
+    await rename(filePath, finalPath);
+
+    await Promise.all([
+      runScreenShotCmd(
+        ffmpeg(finalPath).screenshot({
+          count: 1,
+          filename: shotName,
+          folder: path,
+        }),
+      ),
+      runScreenShotCmd(
+        ffmpeg(finalPath).screenshot({
+          count: 1,
+          filename: smallName,
+          folder: path,
+          size: '20x?',
+        }),
+      ),
+    ]);
+
+    return {
+      statusCode: HttpStatus.OK,
+      data: {
+        path: finalPath,
+        shotPath: path + shotName,
+        smallPath: path + smallName,
+      },
+    };
   }
 }

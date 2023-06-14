@@ -23,7 +23,7 @@ export class ElectronService {
     @InjectModel(ElectronModel)
     private readonly electronModel: typeof ElectronModel,
   ) {
-    this.uploadPath = this.configService.get("MULTER_DEST")
+    this.uploadPath = this.configService.get('MULTER_DEST');
   }
 
   /**

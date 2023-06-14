@@ -3,7 +3,6 @@ import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { BullModule } from '@nestjs/bull';
-import { MulterModule } from '@nestjs/platform-express';
 
 import { redisModule } from './common/redis/redis.config';
 import { EventsModule } from './events/events.module';
@@ -72,13 +71,7 @@ if (process.env.NODE_ENV === 'dev') {
       }),
       inject: [ConfigService],
     }),
-    MulterModule.registerAsync({
-      imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        dest: configService.get('MULTER_DEST'),
-      }),
-      inject: [ConfigService],
-    }),
+
     LoggerModule,
     PermissionModule,
     EventsModule,
