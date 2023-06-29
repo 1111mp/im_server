@@ -224,7 +224,7 @@ export class EventsController {
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
   @ApiBody({
-    description: 'image file',
+    description: 'video file',
     type: ImageUploadDto,
   })
   uploadVideo(
