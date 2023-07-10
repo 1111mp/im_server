@@ -6,7 +6,7 @@ import { ApplicationModule } from './../src/app.module';
 describe('AppController (e2e)', () => {
   let app: INestApplication;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [ApplicationModule],
     }).compile();
@@ -20,5 +20,9 @@ describe('AppController (e2e)', () => {
       .get('/')
       .expect(200)
       .expect('Hello World!');
+  });
+
+  afterAll(() => {
+    app.close();
   });
 });

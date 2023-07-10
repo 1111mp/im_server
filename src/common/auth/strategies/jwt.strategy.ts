@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-jwt';
-import { User } from '../../../api/users/models/user.model';
+import { User } from 'src/api/users/models/user.model';
 import { IORedisKey } from 'src/common/redis/redis.module';
 import { ConfigService } from '@nestjs/config';
 
@@ -30,7 +30,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: User) {
-    // refresh token expiration time. (1 hour)
+    // refresh token expiration time. (12 hour)
     const auth_key = `${process.env.USER_AUTH_KEY}::${payload.id}`;
     await this.redisClient.expire(auth_key, 60 * 60 * 12);
 

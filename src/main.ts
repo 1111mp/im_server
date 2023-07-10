@@ -1,12 +1,13 @@
 import { join } from 'path';
 import { NestFactory } from '@nestjs/core';
-import { NestExpressApplication } from '@nestjs/platform-express';
 import { VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ApplicationModule } from './app.module';
 import { LoggerService } from './common/logger/logger.service';
 import { SocketIOAdapter } from './events/socket-io-adapter';
+
+import type { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(
