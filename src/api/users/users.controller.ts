@@ -170,7 +170,7 @@ export class UsersController {
     @Param('id') id: string,
   ) {
     const { authorization } = req.headers;
-    return this.usersService.deleteOne(id, authorization);
+    return this.usersService.removeOne(id, authorization);
   }
 
   @Put()
@@ -192,13 +192,21 @@ export class UsersController {
         },
         message: {
           type: 'string',
-          example: 'Update successed.',
+          example: 'Update successfully.',
+        },
+        data: {
+          $ref: getSchemaPath(UserModel),
         },
       },
     },
   })
   async updateOne(@Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.updateOne(updateUserDto);
+    const user = await this.usersService.updateOne(updateUserDto);
+    return {
+      statusCode: HttpStatus.OK,
+      data: user.toJSON(),
+      message: 'Update successfully.',
+    };
   }
 
   @Get(':id')
