@@ -3,19 +3,16 @@ import { NestFactory } from '@nestjs/core';
 import { VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { ApplicationModule } from './app.module';
+import { AppModule } from './app.module';
 import { LoggerService } from './common/logger/logger.service';
 import { SocketIOAdapter } from './events/socket-io-adapter';
 
 import type { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(
-    ApplicationModule,
-    {
-      bufferLogs: true,
-    },
-  );
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    bufferLogs: true,
+  });
 
   const configService = app.get(ConfigService);
   const port = configService.get<number>('PORT');

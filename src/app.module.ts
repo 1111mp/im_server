@@ -4,6 +4,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { BullModule } from '@nestjs/bull';
 
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 import { redisModule } from './common/redis/redis.config';
 import { EventsModule } from './events/events.module';
 import { LoggerModule } from './common/logger/logger.module';
@@ -80,6 +82,7 @@ if (process.env.NODE_ENV === 'dev') {
     GroupsModule,
     ElectronModule,
   ],
+  controllers: [AppController],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     {
@@ -90,6 +93,7 @@ if (process.env.NODE_ENV === 'dev') {
       provide: APP_INTERCEPTOR,
       useClass: CacheApiInterceptor,
     },
+    AppService,
   ],
 })
-export class ApplicationModule {}
+export class AppModule {}
