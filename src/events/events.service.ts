@@ -72,199 +72,130 @@ export class EventsService {
   /**
    * @description: Get user all offline notifys
    * @param userId number
-   * @return Promise<IMServerResponse.JsonResponse<ModuleIM.Core.Notify[]> & { count: number }>
+   * @return Promise<{ rows: Notify[]; count: number; }>
    */
-  public async getOfflineNotify(
-    userId: number,
-  ): Promise<
-    IMServerResponse.JsonResponse<ModuleIM.Core.Notify[]> & { count: number }
-  > {
-    try {
-      const { rows, count } = await this.notifyModel.findAndCountAll({
-        where: {
-          receiver: userId,
-          status: ModuleIM.Common.NotifyStatus.Initial,
-        },
-      });
-
-      const notifys = await Promise.all(
-        rows.map(async (notify) => {
-          const info = await notify.$get('senderInfo', {
-            attributes: { exclude: ['pwd'] },
-          });
-
-          return {
-            ...notify.toJSON(),
-            sender: info.toJSON(),
-          };
-        }),
-      );
-
-      return {
-        statusCode: HttpStatus.OK,
-        count,
-        data: notifys,
-      };
-    } catch (err) {
-      throw new InternalServerErrorException(
-        `[Database error] ${err.name}: ${err.message}`,
-      );
-    }
+  public async getOfflineNotifys(userId: number): Promise<{
+    rows: Notify[];
+    count: number;
+  }> {
+    return await this.notifyModel.findAndCountAll({
+      raw: true,
+      where: {
+        receiver: userId,
+        status: ModuleIM.Common.NotifyStatus.Initial,
+      },
+      include: UserModel,
+    });
   }
 
   /**
    * @description: Notify received
    * @param receivedNotifyDto: updateNotifyStatusDto,
-   * @return Promise<IMServerResponse.JsonResponse<unknown>>
+   * @return Promise<void>
    */
-  public async receivedNotify(
+  public async notifyReceived(
     receivedNotifyDto: updateNotifyStatusDto,
-  ): Promise<IMServerResponse.JsonResponse<unknown>> {
-    const errors = await validate(receivedNotifyDto);
-    if (errors.length)
-      throw new BadRequestException('Incorrect request parameter.');
-
+  ): Promise<void> {
     const notify = await this.notifyModel.findOne({
       where: { id: receivedNotifyDto.notifyId },
     });
 
-    if (!notify || notify.status !== ModuleIM.Common.NotifyStatus.Initial) {
-      throw new NotFoundException('Request has expired.');
-    }
+    if (!notify)
+      throw new NotFoundException(
+        `No notify found with id ${receivedNotifyDto.notifyId}`,
+      );
 
-    const [count] = await this.updateNotifyStatus(
-      receivedNotifyDto.notifyId,
-      ModuleIM.Common.NotifyStatus.Received,
-    );
-
-    if (count === 1)
-      return { statusCode: HttpStatus.OK, message: 'Successfully.' };
-
-    if (count === 0) throw new NotFoundException('No resources are updated.');
-
-    throw new InternalServerErrorException('Database error.');
+    await notify.update({ status: ModuleIM.Common.NotifyStatus.Received });
   }
 
   /**
    * @description: Notify Readed
    * @param receivedNotifyDto: updateNotifyStatusDto,
-   * @return Promise<IMServerResponse.JsonResponse<unknown>>
+   * @return Promise<void>
    */
-  public async readedNotify(
+  public async notifyReaded(
     readedNotifyDto: updateNotifyStatusDto,
-  ): Promise<IMServerResponse.JsonResponse<unknown>> {
-    const errors = await validate(readedNotifyDto);
-    if (errors.length)
-      throw new BadRequestException('Incorrect request parameter.');
-
+  ): Promise<void> {
     const notify = await this.notifyModel.findOne({
       where: { id: readedNotifyDto.notifyId },
     });
 
-    if (!notify || notify.status !== ModuleIM.Common.NotifyStatus.Received) {
-      throw new NotFoundException('Request has expired.');
-    }
+    if (!notify)
+      throw new NotFoundException(
+        `No notify found with id ${readedNotifyDto.notifyId}`,
+      );
 
-    const [count] = await this.updateNotifyStatus(
-      readedNotifyDto.notifyId,
-      ModuleIM.Common.NotifyStatus.Readed,
-    );
-
-    if (count === 1)
-      return { statusCode: HttpStatus.OK, message: 'Successfully.' };
-
-    if (count === 0) throw new NotFoundException('No resources are updated.');
-
-    throw new InternalServerErrorException('Database error.');
+    await notify.update({ status: ModuleIM.Common.NotifyStatus.Readed });
   }
 
   /**
    * @description: Get user all offline messages
    * @param userId number
    * @param getOfflineMsgsDto GetOfflineMsgsDto,
-   * @return Promise<IMServerResponse.JsonResponse<unknown> & { count: number }>
+   * @return Promise<{ rows: MessageModel[]; count: number; }>
    */
   public async getOfflineMsgs(
     userId: number,
     getOfflineMsgsDto: GetOfflineMsgsDto,
-  ): Promise<IMServerResponse.JsonResponse<unknown> & { count: number }> {
+  ): Promise<{
+    rows: MessageModel[];
+    count: number;
+  }> {
     const { currentPage, pageSize } = getOfflineMsgsDto;
 
-    try {
-      const { lastAck = 0 } = (await this.getLastAck(userId)) || {};
-      const userGroups = await UserModel.build({ id: userId }).$get('groups', {
-        raw: true,
-        attributes: ['id'],
-        // @ts-ignore
-        joinTableAttributes: [],
-      });
+    const { lastAck = 0 } = (await this.getLastAck(userId)) || {};
+    const userGroups = await UserModel.build({ id: userId }).$get('groups', {
+      raw: true,
+      attributes: ['id'],
+      // @ts-ignore
+      joinTableAttributes: [],
+    });
 
-      const { rows, count } = await this.messageModel.findAndCountAll({
-        // raw: true,
-        where: {
-          id: {
-            [Op.gt]: lastAck,
-          },
-          [Op.or]: [
-            { receiver: userId },
-            {
-              groupId: userGroups.map(({ id }) => id),
-            },
-          ],
+    return await this.messageModel.findAndCountAll({
+      // raw: true,
+      where: {
+        id: {
+          [Op.gt]: lastAck,
         },
-        include: {
-          model: UserModel,
-          attributes: {
-            exclude: ['pwd'],
+        [Op.or]: [
+          { receiver: userId },
+          {
+            groupId: userGroups.map(({ id }) => id),
           },
-        },
+        ],
+      },
+      include: {
+        model: UserModel,
         attributes: {
-          exclude: ['createdAt', 'updatedAt'],
+          exclude: ['pwd'],
         },
-        order: [['timer', 'DESC']],
-        offset: (currentPage - 1) * pageSize,
-        limit: pageSize,
-      });
-
-      return {
-        statusCode: HttpStatus.OK,
-        count,
-        data: rows,
-      };
-    } catch (err) {
-      console.log(err);
-      throw new InternalServerErrorException('Database error.');
-    }
+      },
+      attributes: {
+        exclude: ['createdAt', 'updatedAt'],
+      },
+      order: [['timer', 'DESC']],
+      offset: (currentPage - 1) * pageSize,
+      limit: pageSize,
+    });
   }
 
   /**
    * @description: messsage received
    * @param userId number,
    * @param msgReceivedDto MsgReceivedDto,
-   * @return Promise<IMServerResponse.JsonResponse<unknown>>
+   * @return Promise<void>
    */
   public async msgReceived(
     userId: number,
     msgReceivedDto: MsgReceivedDto,
-  ): Promise<IMServerResponse.JsonResponse<unknown>> {
+  ): Promise<void> {
     const { id } = msgReceivedDto;
 
-    try {
-      await this.upsertLastAck({
-        receiver: userId,
-        lastAck: id,
-        lastAckErr: null,
-      });
-
-      return {
-        statusCode: HttpStatus.OK,
-        message: 'Successfully',
-      };
-    } catch (err) {
-      throw new InternalServerErrorException(
-        `[Database error] ${err.name}: ${err.message}`,
-      );
-    }
+    await this.upsertLastAck({
+      receiver: userId,
+      lastAck: id,
+      lastAckErr: null,
+    });
   }
 
   /**
@@ -330,13 +261,12 @@ export class EventsService {
    * @param receiver  number
    * @return Promise<MessageAckModel>
    */
-  public getLastAck(receiver: number, trans?: Transaction) {
+  public getLastAck(receiver: number) {
     return this.messageAckModel.findOne({
       raw: true,
       where: {
         receiver,
       },
-      transaction: trans,
     });
   }
 
@@ -391,7 +321,10 @@ export class EventsService {
     return [instance, null];
   }
 
-  public async uploadImage(user: User.UserInfo, file: Express.Multer.File) {
+  public async uploadImage(
+    user: User.UserInfo,
+    file: Express.Multer.File,
+  ): Promise<{ path: string; smallPath: string }> {
     const path = join(this.uploadPath, `${user.id}`, '/');
 
     await ensureDir(path);
@@ -406,15 +339,15 @@ export class EventsService {
     await runFfmpegCmd(ffmpeg(finalPath).size('20x?').output(smallPath));
 
     return {
-      statusCode: HttpStatus.OK,
-      data: {
-        path: finalPath,
-        smallPath,
-      },
+      path: finalPath,
+      smallPath,
     };
   }
 
-  public async uploadVideo(user: User.UserInfo, file: Express.Multer.File) {
+  public async uploadVideo(
+    user: User.UserInfo,
+    file: Express.Multer.File,
+  ): Promise<{ path: string; shotPath: string; smallPath: string }> {
     const path = join(this.uploadPath, `${user.id}`, '/');
 
     await ensureDir(path);
@@ -446,12 +379,9 @@ export class EventsService {
     ]);
 
     return {
-      statusCode: HttpStatus.OK,
-      data: {
-        path: finalPath,
-        shotPath: path + shotName,
-        smallPath: path + smallName,
-      },
+      path: finalPath,
+      shotPath: path + shotName,
+      smallPath: path + smallName,
     };
   }
 }

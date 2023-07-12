@@ -66,7 +66,7 @@ export class EventsGateway
   /****************************** for message ***********************************/
 
   @SubscribeMessage('on-message')
-  private async handleMessage(
+  async handleMessage(
     @MessageBody() data: Uint8Array,
     @ConnectedSocket() client: Socket,
   ): Promise<Uint8Array> {
@@ -123,7 +123,7 @@ export class EventsGateway
 
   // for read message
   @SubscribeMessage('on-message:read')
-  private async handleMessageRead(
+  async handleMessageRead(
     @MessageBody() data: Uint8Array,
     @ConnectedSocket() client: Socket,
   ): Promise<Uint8Array> {
@@ -188,7 +188,7 @@ export class EventsGateway
 
   // listener when receive notify
   @SubscribeMessage('on-notify')
-  private handleNotify(
+  handleNotify(
     @MessageBody() data: Uint8Array,
     @ConnectedSocket() client: Socket,
   ) {

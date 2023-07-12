@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty } from 'class-validator';
 
 export class GetOfflineMsgsDto {
   @ApiProperty({ type: 'number', required: true })
@@ -10,5 +11,6 @@ export class GetOfflineMsgsDto {
 
 export class MsgReceivedDto {
   @ApiProperty({ type: 'bigint', required: true })
+  @IsNotEmpty()
   id: bigint;
 }

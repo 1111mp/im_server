@@ -180,7 +180,7 @@ describe('UsersService', () => {
   describe('removeOne', () => {
     it('should remove a user', async () => {
       const destroyStub = jest.fn();
-      const findSpy = jest.spyOn(model, 'findOne').mockReturnValueOnce({
+      const findSpy = jest.spyOn(model, 'findOne').mockReturnValue({
         destroy: destroyStub,
       } as any);
 
@@ -200,7 +200,7 @@ describe('UsersService', () => {
   describe('updateOne', () => {
     it('should update a cat', async () => {
       const updateStub = jest.fn().mockReturnValue({ toJSON: jest.fn() });
-      const findSpy = jest.spyOn(model, 'findOne').mockReturnValueOnce({
+      const findSpy = jest.spyOn(model, 'findOne').mockReturnValue({
         update: updateStub,
       } as any);
 

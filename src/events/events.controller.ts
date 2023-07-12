@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -27,6 +28,7 @@ import { Message as MessageModel } from './models/message.model';
 import { updateNotifyStatusDto } from './dto/create-notify.dto';
 import { MsgReceivedDto } from './dto/create-message.dto';
 import { ImageUploadDto } from './dto/file-upload.dto';
+import { validate } from 'class-validator';
 
 @ApiTags('Events')
 @ApiExtraModels(NotifyModel)
@@ -65,8 +67,16 @@ export class EventsController {
       },
     },
   })
-  getOfflineNotify(@Request() req: IMServerRequest.RequestForAuthed) {
-    return this.eventsService.getOfflineNotify(req.user.id);
+  async getOfflineNotify(@Request() req: IMServerRequest.RequestForAuthed) {
+    const { rows, count } = await this.eventsService.getOfflineNotifys(
+      req.user.id,
+    );
+
+    return {
+      statusCode: HttpStatus.OK,
+      count,
+      data: rows,
+    };
   }
 
   @Post('notify/received')
@@ -94,8 +104,14 @@ export class EventsController {
       },
     },
   })
-  received(@Body() receivedNotifyDto: updateNotifyStatusDto) {
-    return this.eventsService.receivedNotify(receivedNotifyDto);
+  async received(@Body() receivedNotifyDto: updateNotifyStatusDto) {
+    const errors = await validate(updateNotifyStatusDto);
+    if (errors.length)
+      throw new BadRequestException('Incorrect request parameter.');
+
+    await this.eventsService.notifyReceived(receivedNotifyDto);
+
+    return { statusCode: HttpStatus.OK, message: 'Successfully.' };
   }
 
   @Post('notify/readed')
@@ -123,8 +139,14 @@ export class EventsController {
       },
     },
   })
-  readed(@Body() readedNotifyDto: updateNotifyStatusDto) {
-    return this.eventsService.readedNotify(readedNotifyDto);
+  async readed(@Body() readedNotifyDto: updateNotifyStatusDto) {
+    const errors = await validate(readedNotifyDto);
+    if (errors.length)
+      throw new BadRequestException('Incorrect request parameter.');
+
+    await this.eventsService.notifyReaded(readedNotifyDto);
+
+    return { statusCode: HttpStatus.OK, message: 'Successfully.' };
   }
 
   @Get('message')
@@ -157,15 +179,24 @@ export class EventsController {
       },
     },
   })
-  getOfflineMsgs(
+  async getOfflineMsgs(
     @Request() req: IMServerRequest.RequestForAuthed,
     @Query('currentPage') currentPage: string,
     @Query('pageSize') pageSize: string,
   ) {
-    return this.eventsService.getOfflineMsgs(req.user.id, {
-      currentPage: currentPage ? parseInt(currentPage) : 1,
-      pageSize: pageSize ? parseInt(pageSize) : 100,
-    });
+    const { rows, count } = await this.eventsService.getOfflineMsgs(
+      req.user.id,
+      {
+        currentPage: currentPage ? parseInt(currentPage) : 1,
+        pageSize: pageSize ? parseInt(pageSize) : 100,
+      },
+    );
+
+    return {
+      statusCode: HttpStatus.OK,
+      count,
+      data: rows,
+    };
   }
 
   @Post('message/received')
@@ -193,11 +224,20 @@ export class EventsController {
       },
     },
   })
-  msgReceived(
+  async msgReceived(
     @Request() req: IMServerRequest.RequestForAuthed,
     @Body() msgReceivedDto: MsgReceivedDto,
   ) {
-    return this.eventsService.msgReceived(req.user.id, msgReceivedDto);
+    const errors = await validate(msgReceivedDto);
+    if (errors.length)
+      throw new BadRequestException('Incorrect request parameter.');
+
+    await this.eventsService.msgReceived(req.user.id, msgReceivedDto);
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Successfully',
+    };
   }
 
   @Post('image')
@@ -210,11 +250,22 @@ export class EventsController {
     description: 'image file',
     type: ImageUploadDto,
   })
-  uploadImage(
+  async uploadImage(
     @Request() req: IMServerRequest.RequestForAuthed,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    return this.eventsService.uploadImage(req.user, file);
+    const { path, smallPath } = await this.eventsService.uploadImage(
+      req.user,
+      file,
+    );
+
+    return {
+      statusCode: HttpStatus.OK,
+      data: {
+        path,
+        smallPath,
+      },
+    };
   }
 
   @Post('video')
@@ -227,10 +278,22 @@ export class EventsController {
     description: 'video file',
     type: ImageUploadDto,
   })
-  uploadVideo(
+  async uploadVideo(
     @Request() req: IMServerRequest.RequestForAuthed,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    return this.eventsService.uploadVideo(req.user, file);
+    const { path, shotPath, smallPath } = await this.eventsService.uploadVideo(
+      req.user,
+      file,
+    );
+
+    return {
+      statusCode: HttpStatus.OK,
+      data: {
+        path,
+        shotPath,
+        smallPath,
+      },
+    };
   }
 }
