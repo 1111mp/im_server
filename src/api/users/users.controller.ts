@@ -1,14 +1,11 @@
 import {
   BadRequestException,
   Body,
-  ConflictException,
   Controller,
   Delete,
   Get,
   HttpCode,
   HttpStatus,
-  InternalServerErrorException,
-  NotFoundException,
   Param,
   Post,
   Put,
@@ -36,6 +33,7 @@ import {
 } from './dto/create-user.dto';
 import { Public } from 'src/common/auth/decorators/jwt.decorator';
 import { CacheApi } from 'src/common/cache/decotators/cache-api.decorator';
+import { validate } from 'class-validator';
 
 @ApiTags('User')
 @ApiExtraModels(UserModel)
@@ -115,33 +113,23 @@ export class UsersController {
       Omit<User.UserAttributes, 'pwd'> & { token: string }
     >
   > {
-    const { account, pwd } = createUserDto;
+    const errors = await validate(createUserDto);
+    if (errors.length)
+      throw new BadRequestException('Incorrect request parameter.');
 
-    if (!account || !pwd) {
-      throw new BadRequestException('Parameter error');
-    }
+    const user = await this.usersService.createOne(createUserDto);
 
-    try {
-      const user = await this.usersService.createOne(createUserDto);
+    const { pwd, ...result } = user;
+    const token = await this.authService.create(result);
 
-      const { pwd, ...result } = user;
-      const token = await this.authService.create(result);
-
-      return {
-        statusCode: HttpStatus.OK,
-        message: 'Successed.',
-        data: { avatar: null, email: null, ...result, token },
-      };
-    } catch (err) {
-      if (err.name === 'SequelizeUniqueConstraintError') {
-        throw new ConflictException('The account already exists.');
-      } else {
-        throw new InternalServerErrorException(`${err.name}: ${err.message}`);
-      }
-    }
+    return {
+      statusCode: HttpStatus.OK,
+      data: { avatar: null, email: null, ...result, token },
+      message: 'successfully.',
+    };
   }
 
-  @Delete(':id')
+  @Delete()
   @ApiOperation({
     summary: 'Delete a user',
     description: 'Delete a user by userid',
@@ -165,12 +153,13 @@ export class UsersController {
       },
     },
   })
-  async deleteOne(
-    @Request() req: IMServerRequest.RequestForHeader,
-    @Param('id') id: string,
-  ) {
-    const { authorization } = req.headers;
-    return this.usersService.removeOne(id, authorization);
+  async removeOne(@Request() req: IMServerRequest.RequestForHeader) {
+    const { userid, authorization } = req.headers;
+    await this.usersService.removeOne(parseInt(userid), authorization);
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Successfully.',
+    };
   }
 
   @Put()
@@ -201,10 +190,14 @@ export class UsersController {
     },
   })
   async updateOne(@Body() updateUserDto: UpdateUserDto) {
+    const errors = await validate(updateUserDto);
+    if (errors.length)
+      throw new BadRequestException('Incorrect request parameter.');
+
     const user = await this.usersService.updateOne(updateUserDto);
     return {
       statusCode: HttpStatus.OK,
-      data: user.toJSON(),
+      data: user,
       message: 'Update successfully.',
     };
   }
@@ -238,10 +231,6 @@ export class UsersController {
     @Param('id') id: string,
   ): Promise<IMServerResponse.JsonResponse<User.UserAttributes>> {
     const user = await this.usersService.findOne(id);
-
-    if (!user) {
-      throw new NotFoundException();
-    }
 
     return {
       statusCode: HttpStatus.OK,

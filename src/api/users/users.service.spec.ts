@@ -1,5 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { HttpStatus, InternalServerErrorException } from '@nestjs/common';
+import {
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { getModelToken } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { UsersService } from './users.service';
@@ -89,18 +92,6 @@ describe('UsersService', () => {
     expect(service).toBeDefined();
   });
 
-  describe('getUserModel', () => {
-    it('should get a single user', () => {
-      const findSpy = jest.spyOn(model, 'findOne');
-
-      expect(service.getUserModel(10007));
-      expect(findSpy).toBeCalledWith({
-        attributes: { exclude: ['pwd'] },
-        where: { id: 10007 },
-      });
-    });
-  });
-
   describe('findByAccount', () => {
     it('should return a found user info', async () => {
       const { transaction, commit } = transactionHelper(sequelize);
@@ -139,7 +130,6 @@ describe('UsersService', () => {
         () =>
           ({
             toJSON: jest.fn(() => testUser),
-            $set: jest.fn(),
             $get: roleStub,
           }) as any,
       );
@@ -187,26 +177,29 @@ describe('UsersService', () => {
     });
   });
 
-  describe('deleteOne', () => {
+  describe('removeOne', () => {
     it('should remove a user', async () => {
-      const { commit, transaction } = transactionHelper(sequelize);
+      const destroyStub = jest.fn();
+      const findSpy = jest.spyOn(model, 'findOne').mockReturnValueOnce({
+        destroy: destroyStub,
+      } as any);
 
-      jest.spyOn(model, 'destroy').mockImplementation(async () => 1);
+      const retVal = await service.removeOne(10007, '');
+      expect(findSpy).toBeCalledWith({ where: { id: 10007 } });
+      expect(retVal).toBeUndefined();
+    });
 
-      const retVal = await service.removeOne('10007', '');
-
-      expect(transaction).toBeCalledTimes(1);
-      expect(commit).toBeCalledTimes(1);
-      expect(retVal).toEqual({
-        statusCode: HttpStatus.OK,
-        message: 'Successfully.',
-      });
+    it('should throw an error', () => {
+      expect(service.removeOne(10007, '')).rejects.toThrowError(
+        NotFoundException,
+      );
+      expect(model.findOne).toBeCalledWith({ where: { id: 10007 } });
     });
   });
 
   describe('updateOne', () => {
     it('should update a cat', async () => {
-      const updateStub = jest.fn();
+      const updateStub = jest.fn().mockReturnValue({ toJSON: jest.fn() });
       const findSpy = jest.spyOn(model, 'findOne').mockReturnValueOnce({
         update: updateStub,
       } as any);

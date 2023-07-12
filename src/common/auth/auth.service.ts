@@ -26,7 +26,6 @@ export class AuthService {
     pwd: string,
   ): Promise<Omit<User.UserInfo, 'pwd'>> {
     const user = await this.usersService.findByAccount(account);
-    if (!user) throw new NotFoundException();
 
     if (user && compareSync(pwd, user.pwd)) {
       const { pwd, ...result } = user;
@@ -44,7 +43,7 @@ export class AuthService {
     };
   }
 
-  async create(user: Omit<User.UserAttributes, 'pwd'>) {
+  async create(user: Omit<User.UserInfo, 'pwd'>) {
     const token = await this.cacheToken(user, 60 * 60 * 12);
 
     return token;
