@@ -31,222 +31,134 @@ export class GroupsService {
    * @description: create one group
    * @param user User.UserInfo
    * @param createFriendDto CreateGroupDto
-   * @returns Promise<IMServerResponse.JsonResponse<unknown>>
+   * @returns Promise<unknown>
    */
-  public async createOne(
-    user: User.UserInfo,
-    createGroupDto: CreateGroupDto,
-  ): Promise<IMServerResponse.JsonResponse<unknown>> {
+  public async createOne(user: User.UserInfo, createGroupDto: CreateGroupDto) {
     const { members, ...createDto } = createGroupDto;
+    const transaction = await this.groupModel.sequelize.transaction();
     try {
-      const trans = await this.groupModel.sequelize.transaction();
-
       const group = await this.groupModel.create(
         { ...createDto, creator: user.id },
-        { transaction: trans },
+        { transaction },
       );
 
       await group.$set('members', members, {
-        transaction: trans,
+        transaction,
       });
 
       const membersInfo = await group.$get('members', {
         attributes: { exclude: ['pwd'] },
-        transaction: trans,
+        transaction,
       });
 
-      await trans.commit();
+      await transaction.commit();
 
       return {
-        statusCode: HttpStatus.OK,
-        message: 'Create group successful.',
-        data: {
-          ...group.toJSON(),
-          count: members.length,
-          members: [...membersInfo],
-        },
+        ...group.toJSON(),
+        count: members.length,
+        members: [...membersInfo],
       };
     } catch (err) {
+      await transaction.rollback();
       this.logger.error(
         `[creator]: ${user.id} [members]: ${members}. Create group failed. ${err.name}: ${err.message}`,
       );
-      if (err.name === 'SequelizeForeignKeyConstraintError') {
+      if (err.name === 'SequelizeForeignKeyConstraintError')
         throw new ForbiddenException(
           'The params members contains an invalid user id.',
         );
-      }
-
-      throw new InternalServerErrorException(`${err.name}: ${err.message}`);
     }
   }
 
   /**
    * @description: delete a group by id
    * @param id number
-   * @return Promise<IMServerResponse.JsonResponse<unknown>>
+   * @return Promise<void>
    */
-  public async deleteOne(
-    user: User.UserInfo,
-    id: number,
-  ): Promise<IMServerResponse.JsonResponse<unknown>> {
+  public async deleteOne(user: User.UserInfo, id: number): Promise<void> {
     const group = await this.groupModel.findOne({
       where: { id },
     });
 
-    if (!group) {
-      throw new NotFoundException(`This group(${id}) does not exist.`);
-    }
+    if (!group) throw new NotFoundException(`No group found with id ${id}`);
+    if (group.creator !== user.id) throw new UnauthorizedException();
 
-    if (group.creator !== user.id) {
-      throw new UnauthorizedException();
-    }
-
+    const transaction = await this.groupModel.sequelize.transaction();
     try {
-      const trans = await this.groupModel.sequelize.transaction();
       const members = await group.$get('members');
 
       await group.$remove('members', members, {
-        transaction: trans,
+        transaction,
       });
 
-      await group.destroy({ transaction: trans });
+      await group.destroy({ transaction });
 
-      await trans.commit();
+      await transaction.commit();
 
       // A group delete message should be sent to all members
-
-      return {
-        statusCode: HttpStatus.OK,
-        message: 'Successed to delete group.',
-      };
     } catch (err) {
+      await transaction.rollback();
       throw new InternalServerErrorException(
         `[Database error]: ${err.name} ${err.message}`,
       );
     }
   }
 
-  public async updateOne(id: number, updateGroupDto: UpdateGroupDto) {
-    const { name, avatar } = updateGroupDto;
-
-    if (!name && !avatar) {
-      throw new BadRequestException();
-    }
-
-    const [count] = await this.groupModel.update(
-      { name, avatar },
-      {
-        where: { id },
-      },
-    );
-
-    if (count === 1) {
-      return { statusCode: HttpStatus.OK, message: 'Update successed.' };
-    }
-
-    if (count === 0) {
-      throw new NotFoundException('No resources are updated.');
-    }
-
-    throw new InternalServerErrorException('Database error.');
-  }
-
-  public async addMembers(
-    id: number,
-    addMembersDto: AddMembersDto,
-  ): Promise<IMServerResponse.JsonResponse<unknown>> {
+  public async updateOne({ id, ...updateGroupDto }: UpdateGroupDto) {
     const group = await this.groupModel.findOne({ where: { id } });
 
-    const { members } = addMembersDto;
+    if (!group) throw new NotFoundException(`No group found with id ${id}`);
 
-    if (!group) {
-      throw new NotFoundException('No resources are updated.');
-    }
-
-    try {
-      const res = await group.$add('members', members);
-
-      if (!res) {
-        throw new ForbiddenException('Do not add repeatedly.');
-      }
-
-      // need send a notify message to new added members
-
-      return { statusCode: HttpStatus.OK, message: 'Update successed.' };
-    } catch (err) {
-      if (err.name === 'ForbiddenException') throw err;
-
-      if (err.name === 'SequelizeForeignKeyConstraintError') {
-        throw new NotFoundException('User does not exist.');
-      }
-      throw new InternalServerErrorException(
-        `[Database error]: ${err.name} ${err.message}`,
-      );
-    }
+    await group.update(updateGroupDto);
   }
 
-  public async getOne(
-    id: number,
-  ): Promise<IMServerResponse.JsonResponse<unknown>> {
+  public async addMembers({ id, members }: AddMembersDto): Promise<void> {
     const group = await this.groupModel.findOne({ where: { id } });
 
-    if (!group) {
-      throw new NotFoundException();
-    }
+    if (!group) throw new NotFoundException(`No group found with id ${id}`);
 
-    try {
-      const members = await group.$get('members', {
-        raw: true,
-        attributes: { exclude: ['pwd'] },
-        // @ts-ignore
-        joinTableAttributes: [],
-      });
-
-      return {
-        statusCode: HttpStatus.OK,
-        data: { ...group.toJSON(), count: members.length, members },
-      };
-    } catch (err) {
-      throw new InternalServerErrorException(
-        `[Database error]: ${err.name} ${err.message}`,
-      );
-    }
+    await group.$add('members', members);
+    // need send a notify message to new added members
   }
 
-  public async getAll(
-    user: User.UserInfo,
-  ): Promise<IMServerResponse.JsonResponse<ModuleIM.Core.Group[]>> {
-    try {
-      const groups = await UserModel.build({ id: user.id }).$get('groups', {
-        raw: true,
-        attributes: {
-          include: [
-            [
-              literal(
-                `(
+  public async getOne(id: number) {
+    const group = await this.groupModel.findOne({ where: { id } });
+
+    if (!group) throw new NotFoundException(`No group found with id ${id}`);
+
+    const members = await group.$get('members', {
+      raw: true,
+      attributes: { exclude: ['pwd'] },
+      // @ts-ignore
+      joinTableAttributes: [],
+    });
+
+    return { ...group.toJSON(), count: members.length, members };
+  }
+
+  public async getAll(user: User.UserInfo): Promise<ModuleIM.Core.Group[]> {
+    const groups = await UserModel.build({ id: user.id }).$get('groups', {
+      raw: true,
+      attributes: {
+        include: [
+          [
+            literal(
+              `(
                   SELECT COUNT(*)
                   FROM Members AS Member
                   WHERE
                     Member.groupId = Group.id
                 )`,
-              ),
-              'count',
-            ],
+            ),
+            'count',
           ],
-        },
-        // @ts-ignore
-        joinTableAttributes: [],
-      });
+        ],
+      },
+      // @ts-ignore
+      joinTableAttributes: [],
+    });
 
-      return {
-        statusCode: HttpStatus.OK,
-        data: groups,
-      };
-    } catch (err) {
-      throw new InternalServerErrorException(
-        `[Database error]: ${err.name} ${err.message}`,
-      );
-    }
+    return groups;
   }
 
   public async getGroupMembersById(groupId: number) {

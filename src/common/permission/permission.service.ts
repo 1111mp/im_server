@@ -1,10 +1,6 @@
-import {
-  ConflictException,
-  HttpStatus,
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { Sequelize } from 'sequelize-typescript';
 import { Role } from './models/role.model';
 import { Permission } from './models/permission.model';
 import { CreateRoleDto } from './dto/create-role.dto';
@@ -13,61 +9,35 @@ import { CreatePermDto } from './dto/create-permission.dto';
 @Injectable()
 export class PermissionService {
   constructor(
+    private readonly sequelize: Sequelize,
     @InjectModel(Role)
     private readonly roleModel: typeof Role,
     @InjectModel(Permission)
     private readonly permModel: typeof Permission,
   ) {}
 
-  async createPerm(createPermDto: CreatePermDto) {
-    try {
-      const perm = await this.permModel.create(createPermDto);
-
-      return {
-        statusCode: HttpStatus.OK,
-        message: 'Successed.',
-        data: perm,
-      };
-    } catch (err) {
-      if (err.name === 'SequelizeUniqueConstraintError') {
-        throw new ConflictException('The permission already exists.');
-      } else {
-        throw new InternalServerErrorException(`${err.name}: ${err.message}`);
-      }
-    }
+  createOne(createPermDto: CreatePermDto) {
+    return this.permModel.create(createPermDto);
   }
 
   async createRole(createRoleDto: CreateRoleDto) {
-    // const role = await this.roleModel.findOne({ where: { id: 5 } });
-    // await role.$add('permissions', [Permission.build({ id: 1 })], {transaction:t});
-    const { permissions } = createRoleDto;
-    const trans = await this.roleModel.sequelize.transaction();
+    const { permissions, ...roleDto } = createRoleDto;
+    const transaction = await this.sequelize.transaction();
     try {
-      const role = await this.roleModel.create(createRoleDto, {
-        transaction: trans,
+      const role = await this.roleModel.create(roleDto, {
+        transaction,
       });
-      await role.$set(
-        'permissions',
-        permissions.map((perm) => Permission.build({ id: perm })),
-        {
-          transaction: trans,
-        },
-      );
+      await role.$set('permissions', permissions, {
+        transaction,
+      });
 
-      await trans.commit();
+      await transaction.commit();
 
-      return {
-        statusCode: HttpStatus.OK,
-        message: 'Successed.',
-        data: role,
-      };
+      return role;
     } catch (err) {
-      await trans.rollback();
-      if (err.name === 'SequelizeUniqueConstraintError') {
+      await transaction.rollback();
+      if (err.name === 'SequelizeUniqueConstraintError')
         throw new ConflictException('The role already exists.');
-      } else {
-        throw new InternalServerErrorException(`${err.name}: ${err.message}`);
-      }
     }
   }
 }

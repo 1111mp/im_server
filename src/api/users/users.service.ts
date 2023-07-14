@@ -1,6 +1,5 @@
 import {
   ConflictException,
-  HttpStatus,
   Inject,
   Injectable,
   InternalServerErrorException,
@@ -13,7 +12,6 @@ import { User } from './models/user.model';
 import { CreateUserDto, UpdateUserDto } from './dto/create-user.dto';
 
 import type { Redis } from 'ioredis';
-import { Role } from 'src/common/permission/models/role.model';
 
 @Injectable()
 export class UsersService {

@@ -9,6 +9,7 @@ import {
   Get,
   Put,
   HttpCode,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -26,6 +27,7 @@ import {
 } from './dto/create-group.dto';
 import { Group as GroupModel } from 'src/api/groups/models/group.model';
 import { User } from '../users/models/user.model';
+import { validate } from 'class-validator';
 
 @ApiTags('Groups')
 @ApiExtraModels(GroupModel)
@@ -70,11 +72,21 @@ export class GroupsController {
       },
     },
   })
-  create(
+  async create(
     @Request() req: IMServerRequest.RequestForAuthed,
     @Body() createGroupDto: CreateGroupDto,
   ) {
-    return this.groupsService.createOne(req.user, createGroupDto);
+    const errors = await validate(createGroupDto);
+    if (errors.length)
+      throw new BadRequestException('Incorrect request parameter.');
+
+    const group = await this.groupsService.createOne(req.user, createGroupDto);
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Create a group successed.',
+      data: group,
+    };
   }
 
   @Delete(':id')
@@ -100,14 +112,19 @@ export class GroupsController {
       },
     },
   })
-  DeleteOne(
+  async DeleteOne(
     @Request() req: IMServerRequest.RequestForAuthed,
     @Param('id') id: string,
   ) {
-    return this.groupsService.deleteOne(req.user, parseInt(id));
+    await this.groupsService.deleteOne(req.user, parseInt(id));
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Successed to delete group.',
+    };
   }
 
-  @Put(':id')
+  @Put()
   @ApiOperation({
     summary: 'Update a groups basic info',
     description: 'Update a groups basic info',
@@ -130,11 +147,17 @@ export class GroupsController {
       },
     },
   })
-  updateOne(@Param('id') id: string, @Body() updateGroupDto: UpdateGroupDto) {
-    return this.groupsService.updateOne(parseInt(id), updateGroupDto);
+  async updateOne(@Body() updateGroupDto: UpdateGroupDto) {
+    const errors = await validate(updateGroupDto);
+    if (errors.length)
+      throw new BadRequestException('Incorrect request parameter.');
+
+    await this.groupsService.updateOne(updateGroupDto);
+
+    return { statusCode: HttpStatus.OK, message: 'Update successed.' };
   }
 
-  @Post(':id')
+  @Post()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Add members to group',
@@ -142,8 +165,14 @@ export class GroupsController {
   })
   @ApiBearerAuth('token')
   @ApiBearerAuth('userid')
-  addMembers(@Param('id') id: string, @Body() addMembersDto: AddMembersDto) {
-    return this.groupsService.addMembers(parseInt(id), addMembersDto);
+  async addMembers(@Body() addMembersDto: AddMembersDto) {
+    const errors = await validate(addMembersDto);
+    if (errors.length)
+      throw new BadRequestException('Incorrect request parameter.');
+
+    await this.groupsService.addMembers(addMembersDto);
+
+    return { statusCode: HttpStatus.OK, message: 'Update successed.' };
   }
 
   @Get(':id')
@@ -179,8 +208,13 @@ export class GroupsController {
       },
     },
   })
-  getOne(@Param('id') id: string) {
-    return this.groupsService.getOne(parseInt(id));
+  async getOne(@Param('id') id: string) {
+    const group = await this.groupsService.getOne(parseInt(id));
+
+    return {
+      statusCode: HttpStatus.OK,
+      data: group,
+    };
   }
 
   @Get()
@@ -207,7 +241,12 @@ export class GroupsController {
       },
     },
   })
-  getAll(@Request() req: IMServerRequest.RequestForAuthed) {
-    return this.groupsService.getAll(req.user);
+  async getAll(@Request() req: IMServerRequest.RequestForAuthed) {
+    const groups = await this.groupsService.getAll(req.user);
+
+    return {
+      statusCode: HttpStatus.OK,
+      data: groups,
+    };
   }
 }
