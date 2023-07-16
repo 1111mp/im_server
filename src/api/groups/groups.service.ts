@@ -1,7 +1,5 @@
 import {
-  BadRequestException,
   ForbiddenException,
-  HttpStatus,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -154,6 +152,45 @@ export class GroupsService {
           ],
         ],
       },
+      order: [['name', 'DESC']],
+      // @ts-ignore
+      joinTableAttributes: [],
+    });
+
+    return groups;
+  }
+
+  public async getAllWithMembers(
+    user: User.UserInfo,
+  ): Promise<ModuleIM.Core.Group[]> {
+    const groups = await UserModel.build({ id: user.id }).$get('groups', {
+      // raw: true,
+      attributes: {
+        include: [
+          [
+            literal(
+              `(
+                  SELECT COUNT(*)
+                  FROM Members AS Member
+                  WHERE
+                    Member.groupId = Group.id
+                )`,
+            ),
+            'count',
+          ],
+        ],
+      },
+      include: [
+        {
+          model: UserModel,
+          as: 'members',
+          attributes: { exclude: ['pwd'] },
+          through: {
+            attributes: [],
+          },
+        },
+      ],
+      order: [['name', 'ASC']],
       // @ts-ignore
       joinTableAttributes: [],
     });

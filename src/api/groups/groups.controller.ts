@@ -175,6 +175,55 @@ export class GroupsController {
     return { statusCode: HttpStatus.OK, message: 'Update successed.' };
   }
 
+  @Get('withMembers')
+  @ApiOperation({
+    summary: 'Get user all groups with members',
+    description: 'Get user all groups with members',
+  })
+  @ApiBearerAuth('token')
+  @ApiBearerAuth('userid')
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Successed to create a group.',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: {
+          type: 'number',
+          example: 200,
+        },
+        data: {
+          type: 'array',
+          items: {
+            allOf: [
+              { $ref: getSchemaPath(GroupModel) },
+              {
+                properties: {
+                  count: {
+                    type: 'number',
+                    example: 1,
+                  },
+                  members: {
+                    type: 'array',
+                    items: { $ref: getSchemaPath(User) },
+                  },
+                },
+              },
+            ],
+          },
+        },
+      },
+    },
+  })
+  async getAllWithMembers(@Request() req: IMServerRequest.RequestForAuthed) {
+    const groups = await this.groupsService.getAllWithMembers(req.user);
+
+    return {
+      statusCode: HttpStatus.OK,
+      data: groups,
+    };
+  }
+
   @Get(':id')
   @ApiOperation({
     summary: 'Get user a groups info',
@@ -197,6 +246,10 @@ export class GroupsController {
             { $ref: getSchemaPath(GroupModel) },
             {
               properties: {
+                count: {
+                  type: 'number',
+                  example: 1,
+                },
                 members: {
                   type: 'array',
                   items: { $ref: getSchemaPath(User) },
