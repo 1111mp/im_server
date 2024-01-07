@@ -46,8 +46,7 @@ export class UsersService {
     });
 
     if (!user)
-      if (!user)
-        throw new NotFoundException(`No user found with account ${account}`);
+      throw new NotFoundException(`No user found with account ${account}`);
 
     const role = await user.$get('role', { transaction: trans });
     const permissions = (
